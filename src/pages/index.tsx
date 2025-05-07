@@ -6,5 +6,5 @@ const prompt = Prompt({
 })
 
 export default function Home() {
-  return <h1>Good luck home service project</h1>
+  return <h1 className={prompt.className}>Good luck home service project</h1>
 }
