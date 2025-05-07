@@ -22,5 +22,3 @@ export default async function handler(
     res.status(200).json({ data, error })
   }
 }
-
-// nextval('sub_services_id_seq'::regclass)
