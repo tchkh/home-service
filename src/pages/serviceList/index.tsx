@@ -1,5 +1,5 @@
 // import { Prompt } from 'next/font/google';
-import ServiceCard from '@/components/forms/serviceCard';
+import ServiceCard from '@/components/ServiceCard';
 
 // const prompt = Prompt({
 //    subsets: ['latin', 'thai'],
