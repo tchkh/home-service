@@ -9,7 +9,8 @@ export default async function handler(
       try {
          const { data: services, error } = await supabase
             .from('services_with_card')
-            .select('*');
+            .select('*')
+            .order('id', { ascending: true });
          if (error) {
             return res.status(500).json({ error: 'Error fetching services' });
          }
