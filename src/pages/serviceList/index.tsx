@@ -1,4 +1,5 @@
 import { Prompt } from 'next/font/google';
+import { Prompt } from 'next/font/google';
 import ServiceCard from '@/components/ServiceCard';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
