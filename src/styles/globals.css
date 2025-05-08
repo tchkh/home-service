@@ -213,6 +213,11 @@
   background-color: var(--gray-300);
 }
 
+.btn--icon.activate {
+  color: var(--blue-600);
+  background-color: var(--blue-100);
+}
+
 /* Disabled State */
 .btn--primary:disabled {
   background-color: var(--gray-300);
