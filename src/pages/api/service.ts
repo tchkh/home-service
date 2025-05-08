@@ -8,9 +8,8 @@ export default async function handler(
    if (req.method === 'GET') {
       try {
          const { data: services, error } = await supabase
-            .from('services')
-            .select('*')
-            .in('id', [1, 2, 3, 4, 5]);
+            .from('services_with_card')
+            .select('*');
          if (error) {
             return res.status(500).json({ error: 'Error fetching services' });
          }
@@ -19,11 +18,4 @@ export default async function handler(
          console.log('error at get methor', error);
       }
    }
-   // if (req.method === 'GET') {
-   //    try {
-   //       return res.status(200).json({ message: 'start services' });
-   //    } catch (error) {
-   //       console.log('error at get methor', error);
-   //    }
-   // }
 }
