@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -38,17 +38,47 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      // ใช้ Supabase เพื่อการเข้าสู่ระบบ
+      // 1. พยายามเข้าสู่ระบบโดยใช้ Supabase Auth ก่อน
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         })
 
-      if (authError) {
-        setError(authError.message)
+      // 2. ถ้า Supabase Auth สำเร็จ
+      if (!authError && authData.user) {
+        // นำทางไปยังหน้าที่เหมาะสม
+        router.push('/')
         return
       }
+
+      // 3. ถ้า Supabase Auth ล้มเหลวด้วยเหตุผลบางอย่าง (เช่น API เข้าไม่ถึง)
+      // ทดลองใช้ fallback authentication
+      console.warn('Supabase Auth failed, trying fallback auth', authError)
+
+      // เรียกใช้ API fallback-login ของเรา
+      const fallbackResponse = await fetch('/api/auth/fallback-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+      })
+
+      const fallbackResult = await fallbackResponse.json()
+
+      if (!fallbackResponse.ok || !fallbackResult.success) {
+        setError(fallbackResult.error || 'การเข้าสู่ระบบล้มเหลว')
+        return
+      }
+
+      // 4. Fallback authentication สำเร็จ
+      // เก็บ token ใน localStorage หรือ cookies
+      localStorage.setItem('fallback_token', fallbackResult.token)
+      localStorage.setItem('user_id', fallbackResult.user.id)
 
       // ถ้าสำเร็จ นำทางไปยังหน้า homepage
       router.push('/')
