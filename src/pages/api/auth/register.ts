@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import supabase from '../../../lib/supabase'
+import bcrypt from 'bcrypt'
+import crypto from 'crypto'
 
 interface RegisterResponseSuccess {
   success: true
@@ -10,6 +12,13 @@ interface RegisterResponseSuccess {
 interface RegisterResponseError {
   success: false
   message: string
+}
+
+interface UserBackupAuth {
+  id: string // user ID จาก auth.users
+  backup_hash: string // รหัสผ่านที่เข้ารหัสด้วย bcrypt
+  recovery_token: string // token สำหรับกู้คืนบัญชี
+  last_updated: Date
 }
 
 type RegisterResponse = RegisterResponseSuccess | RegisterResponseError
@@ -93,7 +102,7 @@ export default async function handler(
     }
 
     // ใช้ Supabase สำหรับการลงทะเบียน
-    const { data, error } = await supabase.auth.signUp({
+    const { data: authData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -110,10 +119,28 @@ export default async function handler(
       })
     }
 
+    // สร้าง backup authentication record
+    const passwordHash = await bcrypt.hash(password, 10)
+    const recoveryToken = crypto.randomBytes(32).toString('hex')
+
+    const { error: backupError } = await supabase
+      .from('user_backup_auth')
+      .insert({
+        id: authData.user?.id,
+        backup_hash: passwordHash,
+        recovery_token: recoveryToken,
+        last_updated: new Date(),
+      })
+
+    if (backupError) {
+      console.error('Failed to create backup auth:', backupError)
+      // ส่งรายงานข้อผิดพลาดแต่ไม่ต้องยกเลิกการลงทะเบียน
+    }
+
     return res.status(201).json({
       success: true,
       message: 'ลงทะเบียนผู้ใช้สำเร็จ โปรดตรวจสอบอีเมลเพื่อยืนยันบัญชี',
-      user: data.user,
+      user: authData.user,
     })
   } catch (error: unknown) {
     console.error('เกิดข้อผิดพลาดในการลงทะเบียน:', error)
