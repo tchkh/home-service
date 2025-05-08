@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import supabase from '../../../lib/supabase'
+import supabase, { supabaseAdmin } from '../../../lib/supabase'
 import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 
@@ -12,13 +12,6 @@ interface RegisterResponseSuccess {
 interface RegisterResponseError {
   success: false
   message: string
-}
-
-interface UserBackupAuth {
-  id: string // user ID จาก auth.users
-  backup_hash: string // รหัสผ่านที่เข้ารหัสด้วย bcrypt
-  recovery_token: string // token สำหรับกู้คืนบัญชี
-  last_updated: Date
 }
 
 type RegisterResponse = RegisterResponseSuccess | RegisterResponseError
@@ -34,6 +27,17 @@ export default async function handler(
   }
 
   try {
+    // ตรวจสอบว่ามี supabaseAdmin หรือไม่
+    if (!supabaseAdmin) {
+      console.error(
+        'SUPABASE_SERVICE_ROLE_KEY is missing - cannot perform admin operations'
+      )
+      return res.status(500).json({
+        success: false,
+        message: 'Server configuration error - missing admin credentials',
+      })
+    }
+
     const { name, email, password, tel, imageUrl } = req.body
 
     if (!name || !email || !password || !tel) {
@@ -47,24 +51,16 @@ export default async function handler(
       firstName: string
       lastName: string
     } {
-      // Trim the input to remove extra spaces
       const trimmedName = fullName.trim()
-
-      // Find the position of the last space in the name
       const lastSpaceIndex = trimmedName.lastIndexOf(' ')
-
-      // If there's no space, return the whole string as firstName and empty string as lastName
       if (lastSpaceIndex === -1) {
         return {
           firstName: trimmedName,
           lastName: '',
         }
       }
-
-      // Extract firstName and lastName based on the position of the last space
       const firstName = trimmedName.substring(0, lastSpaceIndex)
       const lastName = trimmedName.substring(lastSpaceIndex + 1)
-
       return { firstName, lastName }
     }
 
@@ -81,28 +77,8 @@ export default async function handler(
         .json({ success: false, message: 'รูปแบบอีเมลไม่ถูกต้อง' })
     }
 
-    // เพิ่มข้อมูลผู้ใช้ใน Supabase
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .insert([
-        {
-          first_name: firstName,
-          last_name: lastName,
-          email,
-          tel,
-          image_url: imageUrl,
-        },
-      ])
-
-    if (userError) {
-      return res.status(400).json({
-        success: false,
-        message: userError.message,
-      })
-    }
-
-    // ใช้ Supabase สำหรับการลงทะเบียน
-    const { data: authData, error } = await supabase.auth.signUp({
+    // 1. ลงทะเบียนผ่าน Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -112,29 +88,64 @@ export default async function handler(
       },
     })
 
-    if (error) {
+    if (authError) {
       return res.status(400).json({
         success: false,
-        message: error.message,
+        message: authError.message,
       })
     }
 
-    // สร้าง backup authentication record
-    const passwordHash = await bcrypt.hash(password, 10)
+    if (!authData.user?.id) {
+      return res.status(500).json({
+        success: false,
+        message: 'เกิดข้อผิดพลาดในการลงทะเบียน: ไม่มี User ID',
+      })
+    }
+
+    // 2. เพิ่มข้อมูลในตาราง users
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .insert([
+        {
+          id: authData.user.id,
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          tel,
+          image_url: imageUrl || null,
+        },
+      ])
+
+    if (userError) {
+      console.error('Error creating user profile:', userError)
+      return res.status(400).json({
+        success: false,
+        message: userError.message,
+      })
+    }
+
+    // 3. สร้าง backup authentication record โดยใช้ supabaseAdmin
+    const saltRounds = 10
+    const passwordHash = await bcrypt.hash(password, saltRounds)
     const recoveryToken = crypto.randomBytes(32).toString('hex')
 
-    const { error: backupError } = await supabase
+    const { error: backupError } = await supabaseAdmin
       .from('user_backup_auth')
       .insert({
-        id: authData.user?.id,
+        id: authData.user.id,
         backup_hash: passwordHash,
         recovery_token: recoveryToken,
-        last_updated: new Date(),
+        last_updated: new Date().toISOString(),
       })
 
     if (backupError) {
       console.error('Failed to create backup auth:', backupError)
-      // ส่งรายงานข้อผิดพลาดแต่ไม่ต้องยกเลิกการลงทะเบียน
+      // ตรวจสอบว่า error เกิดจาก RLS หรือไม่
+      if (backupError.message.includes('permission denied')) {
+        console.error(
+          'This may be a Row Level Security (RLS) issue - check your policies'
+        )
+      }
     }
 
     return res.status(201).json({
@@ -142,11 +153,11 @@ export default async function handler(
       message: 'ลงทะเบียนผู้ใช้สำเร็จ โปรดตรวจสอบอีเมลเพื่อยืนยันบัญชี',
       user: authData.user,
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('เกิดข้อผิดพลาดในการลงทะเบียน:', error)
     return res.status(500).json({
       success: false,
-      message: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์',
+      message: error.message || 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์',
     })
   }
 }
