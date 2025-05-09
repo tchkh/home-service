@@ -1,21 +1,42 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@supabase/supabase-js'
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const supabase = createPagesServerClient({ req, res })
+const supabaseAdmin = (token: string) =>
+  createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    }
+  )
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const authHeader = req.headers.authorization
 
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Missing or invalid token" })
+  }
+
+  const token = authHeader.replace("Bearer ", "")
+  const supabase = supabaseAdmin(token)
+
+  // ตรวจสอบผู้ใช้จาก access_token
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser()
 
-  if (!user) return res.status(401).json({ error: "Unauthorized" });
+  if (userError || !user) {
+    return res.status(401).json({ error: "Unauthorized" })
+  }
+
   const { data, error } = await supabase
-    .from('users')
-    .select('id, first_name, last_name, image_url')
-    .eq('id', user.id)
+    .from("users")
+    .select("id, first_name, last_name, image_url")
+    .eq("id", user.id)
     .single()
 
   if (error) {

@@ -1,6 +1,22 @@
-import '@/styles/globals.css'
-import type { AppProps } from 'next/app'
+import "@/styles/globals.css";
+import type { AppProps } from "next/app";
+import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
+import { useRouter } from "next/router";
 
 export default function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+  const router = useRouter();
+  const navbarPages = ["/login", "/register"];
+  const footerPages = ["/"];
+
+  const showNavbar = navbarPages.includes(router.pathname);
+  const showFooter = footerPages.includes(router.pathname);
+
+  return (
+    <>
+      {showNavbar && <Navbar />}
+        <Component {...pageProps} />
+      {showFooter && <Footer />}
+    </>
+  );
 }
