@@ -1,10 +1,5 @@
 import Image from 'next/image';
-import { Prompt } from 'next/font/google';
 // import Vector from '../../public/asset/svgs/Vector.svg';
-const prompt = Prompt({
-   subsets: ['latin', 'thai'],
-   weight: ['300', '400', '500', '600'],
-});
 
 interface ServiceCardProps {
    id: number;
@@ -52,7 +47,7 @@ export default function ServiceCard({
    // max-w-[350px] max-h-[365px]  md:my-[48px] md:mx-[37px]my-6 mx-4
    return (
       <div
-         className={`${prompt.className} my-6 mx-4 md:my-[48px] md:mx-[37px] max-w-[340px] max-h-[365px] rounded-[8px] flex flex-col justify-start bg-[var(--white)] shadow-sm `}
+         className={`max-w-[350px] max-h-[365px] rounded-[8px] flex flex-col justify-start bg-[var(--white)] shadow-sm `}
          key={id}
       >
          <div
