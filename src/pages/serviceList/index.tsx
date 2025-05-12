@@ -35,13 +35,6 @@ export default function Home() {
       min_price: string;
       max_price: string;
    }
-   interface SearchType {
-      search: string;
-      category: string;
-      minPrice?: number | null;
-      maxPrice?: number | null;
-      sortBy: string;
-   }
 
    const [dataCard, setServiceCard] = useState<ServiceCardProps[]>([]);
    const [dataQuery, setDataQuery] = useState<SearchType>({
