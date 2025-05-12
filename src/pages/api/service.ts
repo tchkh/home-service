@@ -7,20 +7,26 @@ export default async function handler(
 ) {
    if (req.method === 'GET') {
       try {
-         const { search, category, minPrice, maxPrice, sortBy } = req.query as {
-            search?: string;
-            category?: string;
-            minPrice?: string;
-            maxPrice?: string;
-            sortBy?: string;
-         };
-         console.log('req.query :  ', req.query);
-
+         const { search, category, minPrice, maxPrice, sortBy, onLimit } =
+            req.query as {
+               search?: string;
+               category?: string;
+               minPrice?: string;
+               maxPrice?: string;
+               sortBy?: string;
+               onLimit?: string;
+            };
+         // เช็คว่าส่ง limit มาไหม
+         let limit;
+         if (onLimit) {
+            limit = Number(onLimit);
+         } else {
+            limit = 8;
+         }
          let query = supabase
-
             .from('services_with_card')
             .select('*')
-            .range(0, 8);
+            .range(0, limit);
 
          if (search) {
             query = query.ilike('service_title', `%${search}%`);
