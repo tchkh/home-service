@@ -8,6 +8,10 @@ const prompt = Prompt({
    weight: ['300', '400', '500', '600'],
 });
 
+/* 
+เก็บใน useState เป็น object
+เมื่อ useState เป็น ให้ useEffect ทำงาน
+*/
 // export const getServerSideProps = async () => {
 //    // เป็นการ render ฝั่ง server ก่อน ตามด้วย runฝั่ง client
 //    // getServerSideProps เป็น function ที่ run บน next เท่านั้น
@@ -30,38 +34,37 @@ export default function Home() {
       min_price: string;
       max_price: string;
    }
-
    interface SearchType {
       search: string;
       category: string;
-      minPrice: number;
-      maxPrice: number;
+      minPrice?: number | null;
+      maxPrice?: number | null;
       sortBy: string;
    }
 
-   const searchParams: SearchType = {
-      search: 'ติดตั้งแอร์',
-      category: 'บริการทั่วไป',
-      minPrice: 300,
-      maxPrice: 2000,
+   const [dataCard, setServiceCard] = useState<ServiceCardProps[]>([]);
+   const [dataQuery, setDataQuery] = useState<SearchType>({
+      search: '',
+      category: '',
+      minPrice: null,
+      maxPrice: null,
       sortBy: 'title',
-   };
+   });
+
    // URLSearchParams จะแปลง object เป็น  ?minPrice='500'&?maxPrice=`4000`
    const queryString = new URLSearchParams({
-      minPrice: searchParams.minPrice.toString(),
-      maxPrice: searchParams.maxPrice.toString(),
-      sortBy: searchParams.sortBy,
+      search: dataQuery.search,
+      category: dataQuery.category,
+      minPrice: (dataQuery.minPrice ?? '').toString(),
+      maxPrice: (dataQuery.maxPrice ?? '').toString(),
+      sortBy: dataQuery.sortBy,
    }).toString();
-
-   console.log('queryString: ', queryString);
-   const [dataCard, setServiceCard] = useState<ServiceCardProps[]>([]);
-   const searchTest = '';
-   const categoryTest = '';
 
    const getDataService = async () => {
       try {
+         // search=${searchTest}&category=${categoryTest}&
          const res = await axios.get(
-            `http://localhost:3000/api/service?search=${searchTest}&category=${categoryTest}&${queryString}`
+            `http://localhost:3000/api/service?${queryString}`
          );
          setServiceCard(res.data);
       } catch (error) {
