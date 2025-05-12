@@ -31,11 +31,42 @@ export default function Home() {
       max_price: string;
    }
 
+   interface SearchType {
+      search: string;
+      category: string;
+      minPrice: number;
+      maxPrice: number;
+      sortBy: string;
+   }
+
+   const searchParams: SearchType = {
+      search: 'ติดตั้งแอร์',
+      category: 'บริการทั่วไป',
+      minPrice: 300,
+      maxPrice: 2000,
+      sortBy: 'title',
+   };
+   // URLSearchParams จะแปลง object เป็น  ?minPrice='500'&?maxPrice=`4000`
+   const queryString = new URLSearchParams({
+      minPrice: searchParams.minPrice.toString(),
+      maxPrice: searchParams.maxPrice.toString(),
+      sortBy: searchParams.sortBy,
+   }).toString();
+
+   console.log('queryString: ', queryString);
    const [dataCard, setServiceCard] = useState<ServiceCardProps[]>([]);
+   const searchTest = '';
+   const categoryTest = '';
 
    const getDataService = async () => {
-      const res = await axios.get('http://localhost:3000/api/service');
-      setServiceCard(res.data);
+      try {
+         const res = await axios.get(
+            `http://localhost:3000/api/service?search=${searchTest}&category=${categoryTest}&${queryString}`
+         );
+         setServiceCard(res.data);
+      } catch (error) {
+         console.log('error: ', error);
+      }
    };
 
    useEffect(() => {
