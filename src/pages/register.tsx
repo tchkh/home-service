@@ -1,18 +1,12 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/router'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import supabase from '../lib/supabase'
-import { useRouter } from 'next/router'
-import Link from 'next/link'
-import { Prompt } from 'next/font/google'
-import crypto from 'crypto'
 import { termsContent, privacyContent } from '../data/legal'
-
-const prompt = Prompt({
-  subsets: ['latin', 'thai'],
-  weight: ['300', '400', '500', '600'],
-})
+import supabase from '../lib/supabase'
+import Link from 'next/link'
+import crypto from 'crypto'
 
 // สร้าง schema สำหรับการตรวจสอบข้อมูล
 const registerSchema = z.object({
@@ -240,7 +234,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className={prompt.className}>
+    <>
       <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-(--bg)">
         <div className="w-full max-w-md bg-(--white) rounded-lg shadow-md p-6 md:p-8">
           <h1 className="text-heading-1 text-center text-navy-900 mb-8">
@@ -432,6 +426,6 @@ export default function RegisterPage() {
           content={privacyContent}
         />
       </div>
-    </div>
+    </>
   )
 }

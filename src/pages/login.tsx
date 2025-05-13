@@ -1,17 +1,11 @@
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import supabase from '../lib/supabase'
-import { useRouter } from 'next/router'
 import Link from 'next/link'
-import { Prompt } from 'next/font/google'
 import axios from 'axios'
-
-const prompt = Prompt({
-  subsets: ['latin', 'thai'],
-  weight: ['300', '400', '500', '600'],
-})
 
 // สร้าง schema สำหรับการตรวจสอบข้อมูล
 const loginSchema = z.object({
@@ -110,7 +104,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={prompt.className}>
+    <>
       <div className="flex flex-col items-center justify-center p-4 bg-gray-50">
         <div className="w-full max-w-md bg-white rounded-lg shadow-md p-6 md:p-8">
           <h1 className="text-heading-1 text-center text-navy-900 mb-8">
@@ -214,6 +208,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
