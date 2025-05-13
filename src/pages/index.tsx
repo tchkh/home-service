@@ -1,6 +1,5 @@
 import { Prompt } from "next/font/google";
 import Navbar from "@/components/shared/Navbar";
-import Footer from "@/components/shared/Footer";
 import { useRouter } from "next/router";
 
 const prompt = Prompt({
@@ -11,11 +10,9 @@ const prompt = Prompt({
 export default function Home() {
   const router = useRouter();
   return (
-    <div className={`${prompt.className} flex flex-col min-h-screen`}>
+    <div className={`${prompt.className}`}>
       <Navbar />
-
       {/* Hero Section */}
-      {/* <h1 className={prompt.className}>Good luck home service project</h1> */}
       <section className="bg-[color:var(--blue-100)] py-[5%] relative overflow-hidden h-[704px] md:h-auto">
         <div className="container md:px-20 px-4 relative z-10 ">
           <div className="items-center">
@@ -47,7 +44,7 @@ export default function Home() {
         <div className="absolute right-0 bottom-0 md:right-[10%] ">
           <img
             src="/asset/images/plumber-pointing-lateral.png"
-            alt=""
+            alt="plumber-pointing-lateral"
             className="w-[327px] md:relative md:w-[100%]"
           />
         </div>
@@ -64,7 +61,7 @@ export default function Home() {
           </div>
           <button 
             className="btn btn--primary py-[10px] px-[24px]"
-            onClick={() => router.push("/service")}
+            onClick={() => router.push("/serviceList")}
             >
             ดูบริการท้ังหมด
           </button>
