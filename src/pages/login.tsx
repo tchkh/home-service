@@ -1,16 +1,11 @@
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import supabase from '../lib/supabase'
-import { useRouter } from 'next/router'
 import Link from 'next/link'
-import { Prompt } from 'next/font/google'
-
-const prompt = Prompt({
-  subsets: ['latin', 'thai'],
-  weight: ['300', '400', '500', '600'],
-})
+import axios from 'axios'
 
 // สร้าง schema สำหรับการตรวจสอบข้อมูล
 const loginSchema = z.object({
@@ -38,52 +33,51 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      // 1. พยายามเข้าสู่ระบบโดยใช้ Supabase Auth ก่อน
-      const { data: authData, error: authError } =
-        await supabase.auth.signInWithPassword({
+      // 1. พยายามเข้าสู่ระบบโดยใช้ API login ปกติก่อน
+      const res = await axios.post('/api/auth/login', {
+        email: data.email,
+        password: data.password,
+      })
+
+      if (res.status === 200) {
+        // เข้าสู่ระบบสำเร็จ นำทางไปยังหน้าหลัก
+        router.push('/')
+        return
+      }
+    } catch (error: any) {
+      console.warn('การเข้าสู่ระบบปกติล้มเหลว กำลังลองใช้ระบบสำรอง', error)
+
+      // 2. ถ้าการเข้าสู่ระบบปกติล้มเหลว ลองใช้ระบบสำรอง
+      try {
+        const fallbackResponse = await axios.post('/api/auth/fallback-login', {
           email: data.email,
           password: data.password,
         })
 
-      // 2. ถ้า Supabase Auth สำเร็จ
-      if (!authError && authData.user) {
-        // นำทางไปยังหน้าที่เหมาะสม
-        router.push('/')
-        return
+        const fallbackResult = fallbackResponse.data
+
+        if (fallbackResponse.status === 200 && fallbackResult.success) {
+          // เก็บข้อมูลการเข้าสู่ระบบใน cookie อย่างปลอดภัย
+          const secure = window.location.protocol === 'https:' ? '; secure' : ''
+          document.cookie = `fallback_token=${fallbackResult.token}; path=/; max-age=86400; samesite=strict${secure}`
+          document.cookie = `user_id=${fallbackResult.user.id}; path=/; max-age=86400; samesite=strict${secure}`
+
+          // นำทางไปยังหน้าหลัก
+          router.push('/')
+          return
+        } else {
+          // แสดงข้อความข้อผิดพลาดจาก API
+          setError(
+            fallbackResult.error || 'การเข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง'
+          )
+        }
+      } catch (fallbackError: any) {
+        // จัดการกรณีที่ API fallback-login มีปัญหา
+        setError(
+          fallbackError.response?.data?.error ||
+            'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง'
+        )
       }
-
-      // 3. ถ้า Supabase Auth ล้มเหลวด้วยเหตุผลบางอย่าง (เช่น API เข้าไม่ถึง)
-      // ทดลองใช้ fallback authentication
-      console.warn('Supabase Auth failed, trying fallback auth', authError)
-
-      // เรียกใช้ API fallback-login ของเรา
-      const fallbackResponse = await fetch('/api/auth/fallback-login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
-      })
-
-      const fallbackResult = await fallbackResponse.json()
-
-      if (!fallbackResponse.ok || !fallbackResult.success) {
-        setError(fallbackResult.error || 'การเข้าสู่ระบบล้มเหลว')
-        return
-      }
-
-      // 4. Fallback authentication สำเร็จ
-      // เก็บ token ใน localStorage หรือ cookies
-      localStorage.setItem('fallback_token', fallbackResult.token)
-      localStorage.setItem('user_id', fallbackResult.user.id)
-
-      // ถ้าสำเร็จ นำทางไปยังหน้า homepage
-      router.push('/')
-    } catch (error) {
-      setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง')
     } finally {
       setIsLoading(false)
     }
@@ -110,8 +104,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={prompt.className}>
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50">
+    <>
+      <div className="flex flex-col items-center justify-center p-4 bg-gray-50">
         <div className="w-full max-w-md bg-white rounded-lg shadow-md p-6 md:p-8">
           <h1 className="text-heading-1 text-center text-navy-900 mb-8">
             เข้าสู่ระบบ
@@ -214,6 +208,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
