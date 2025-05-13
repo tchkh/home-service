@@ -1,16 +1,11 @@
-import { Prompt } from "next/font/google";
 import Navbar from "@/components/shared/Navbar";
 import { useRouter } from "next/router";
 
-const prompt = Prompt({
-  subsets: ["latin", "thai"],
-  weight: ["300", "400", "500", "600"],
-});
 
 export default function Home() {
   const router = useRouter();
   return (
-    <div className={`${prompt.className}`}>
+    <div>
       <Navbar />
       {/* Hero Section */}
       <section className="bg-[color:var(--blue-100)] py-[5%] relative overflow-hidden h-[704px] md:h-auto">
