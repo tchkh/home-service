@@ -21,7 +21,7 @@ export default async function handler(
          if (onLimit) {
             limit = Number(onLimit);
          } else {
-            limit = 8;
+            limit = 5;
          }
          let query = supabase
             .from('services_with_card')
@@ -33,7 +33,11 @@ export default async function handler(
          }
 
          if (category) {
-            query = query.eq('category_name', category);
+            if (category !== 'บริการทั้งหมด') {
+               // ไม่ได้ใช้ คำถามทำไม่ถึง query categoryAll ไม่ได้
+               const categoryAll = '';
+               query = query.eq('category_name', category);
+            }
          }
 
          if (minPrice) {
@@ -44,10 +48,10 @@ export default async function handler(
             query = query.lte('max_price', maxPrice);
          }
 
-         if (sortBy === 'price_asc') {
-            query = query.order('min_price', { ascending: true });
-         } else if (sortBy === 'price_desc') {
-            query = query.order('min_price', { ascending: false });
+         if (sortBy === 'ascending') {
+            query = query.order('service_title', { ascending: true });
+         } else if (sortBy === 'descending ') {
+            query = query.order('service_title', { ascending: false });
          } else if (sortBy === 'title') {
             query = query.order('id', { ascending: true });
          }

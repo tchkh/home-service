@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
    faMagnifyingGlass,
-   faCaretDown,
+   faAngleDown,
 } from '@fortawesome/free-solid-svg-icons';
 // ส่วน shadcn
 import * as Slider from '@radix-ui/react-slider';
@@ -68,18 +68,26 @@ export default function Home() {
       sortBy: string;
       onLimit: number | null;
    }
-
+   // ส่วน DATA
    const [dataCard, setServiceCard] = useState<ServiceCardProps[]>([]);
+   // console.log('dataCard: ', dataCard);
    const [dataQuery, setDataQuery] = useState<SearchType>({
       search: '',
-      category: '',
+      category: 'บริการทั้งหมด',
       minPrice: null,
       maxPrice: null,
       sortBy: 'title',
       onLimit: null,
    });
-   const [inputSearch, setInputSearch] = useState<string>('');
+   const typeSortBy: { [key: string]: string } = {
+      title: 'บริการแนะนำ',
+      poppular: 'บริการยอดนิยม',
+      ascending: 'ตามตัวอักษร (Ascending)',
+      descending: 'ตามตัวอักษร (Descending)',
+   };
 
+   // ส่วนรับ event input
+   const [inputSearch, setInputSearch] = useState<string>('');
    // URLSearchParams จะแปลง object เป็น  ?minPrice='500'&?maxPrice=`4000`
    const queryString = new URLSearchParams({
       search: dataQuery.search,
@@ -97,7 +105,19 @@ export default function Home() {
          search: inputSearch,
       }));
    };
+   //  เก็บค่า category
+   const uniqueDataCard = dataCard.filter(
+      (item, index, self) =>
+         index === self.findIndex((t) => t.category_name === item.category_name)
+   );
+   // เปลี่ยนค่า sortBy
 
+   const changeSortBy = (value: string) => {
+      setDataQuery((prevState) => ({
+         ...prevState,
+         sortBy: value,
+      }));
+   };
    // ส่วน rang slider ราคา
    const [range, setRange] = useState([0, 2000]); // กำหนดค่าเริ่มต้น min/max
    // const [isDragging, setIsDragging] = useState<number | null>(null); // 0 หรือ 1
@@ -128,6 +148,7 @@ export default function Home() {
       >
          {/* ส่วน search bar */}
          <section className="w-[375px]  h-[134px] bg-[var(--white)] flex flex-col p-4 gap-y-4 ">
+            {/* ส่วนค้นหา */}
             <div className={`flex  gap-x-4 w-full`}>
                <div className="relative w-full ">
                   <span className="absolute left-4 top-1/2 transform -translate-y-1/2">
@@ -151,17 +172,57 @@ export default function Home() {
                   ค้นหา
                </button>
             </div>
-            <div className="flex flex-row border-blue-600 border-2">
-               {/* ส่วนSlider */}
+            <div className="flex flex-row ">
+               {/* หมวดหมู่บริการ */}
+               <Select onValueChange={changeSortBy} value={dataQuery.category}>
+                  <SelectTrigger className="relative box-border w-[114px] h-[42px] px-0 py-0 border-0 ">
+                     <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
+                        หมวดหมู่บริการ
+                        <p
+                           // placeholder={`${dataQuery.category}`}
+                           className="text-heading-5 w-[84px] truncate text-[var(--gray-950)] "
+                        >
+                           {dataQuery.category}
+                        </p>
+                     </h2>
+                  </SelectTrigger>
+                  <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
+                     <SelectItem
+                        value={'บริการทั้งหมด'}
+                        className={`${
+                           dataQuery.category === 'บริการทั้งหมด'
+                              ? 'text-[var(--blue-700)]'
+                              : ''
+                        }`}
+                     >
+                        บริการทั้งหมด
+                     </SelectItem>
+                     {uniqueDataCard.map((value) => (
+                        <SelectItem
+                           key={value.id}
+                           value={value.category_name}
+                           className={`${
+                              value.category_name === dataQuery.category
+                                 ? 'text-[var(--blue-700)]'
+                                 : ''
+                           }`}
+                        >
+                           {value.category_name}
+                        </SelectItem>
+                     ))}
+                  </SelectContent>
+               </Select>
+               <div className="border-1 border-[var(--gray-300)] h-full"></div>
+               {/* ส่วน ราคา Slider */}
                <Popover>
-                  <PopoverTrigger className="flex flex-col items-start relative box-border w-[115px] h-[42px] px-[10px] border-2 border-red-400 ">
+                  <PopoverTrigger className="flex flex-col items-start relative box-border w-[114px] h-[42px] px-[10px]  ">
                      <p className="text-body-4 text-[var(--gray-700)]">ราคา</p>
                      <p className="text-heading-5 text-[var(--gray-950)] ">
                         {range[0]}-{range[1]}฿
                      </p>
                      <FontAwesomeIcon
-                        icon={faCaretDown}
-                        className="absolute bottom-[10px] right-[5px] translate-y-1 text-[10px]"
+                        icon={faAngleDown}
+                        className="absolute top-[12px] right-[5px] text-[13px] text-[#7F7F7F] "
                      />
                   </PopoverTrigger>
                   <PopoverContent className="w-[253px] h-[112px] flex flex-col items-start bg-[var(--white)] box-border gap-y-4 py-5 px-4 rounded-lg border-0 ">
@@ -205,6 +266,33 @@ export default function Home() {
                      </form>
                   </PopoverContent>
                </Popover>
+               <div className="border-1 border-[var(--gray-300)] h-full"></div>
+               {/* เรียงตาม */}
+               <Select onValueChange={changeSortBy} value={dataQuery.sortBy}>
+                  <SelectTrigger className="relative box-border w-[114px] h-[42px] px-[10px] py-0 border-0 ">
+                     <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
+                        เรียงตาม
+                        <p className="text-heading-5 w-[84px] truncate text-[var(--gray-950)] ">
+                           ตามตัวอักษร
+                        </p>
+                     </h2>
+                  </SelectTrigger>
+                  <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
+                     {Object.entries(typeSortBy).map(([value, label]) => (
+                        <SelectItem
+                           key={value}
+                           value={value}
+                           className={`${
+                              value === dataQuery.sortBy
+                                 ? 'text-[var(--blue-700)]'
+                                 : ''
+                           }`}
+                        >
+                           {label}
+                        </SelectItem>
+                     ))}
+                  </SelectContent>
+               </Select>
             </div>
          </section>
          {/* ส่วน card */}
