@@ -46,7 +46,7 @@ export async function registerUser(input: RegisterInput) {
     password,
     options: {
       data: {
-        name,
+        display_name: name,
       },
     },
   })
