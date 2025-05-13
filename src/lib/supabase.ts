@@ -1,30 +1,33 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import { Database } from '../types/supabase'
+import { env } from '../config/env'
 
-// ตรวจสอบว่า environment variables มีค่าหรือไม่
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-// ตรวจสอบว่า URL และ key มีค่าหรือไม่
-if (!supabaseUrl) {
-  throw new Error('NEXT_PUBLIC_SUPABASE_URL is required')
-}
-
-if (!supabaseAnonKey) {
-  throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is required')
-}
-
-// Client ปกติสำหรับการใช้งานทั่วไป
-export const supabase: SupabaseClient<Database> = createClient<Database>(
-  supabaseUrl,
-  supabaseAnonKey
+// สร้าง Supabase client สำหรับการใช้งานทั่วไป
+export const supabase = createClient(
+  env.NEXT_PUBLIC_SUPABASE_URL,
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
-// Client ที่มีสิทธิ์ admin สำหรับการจัดการข้อมูลพิเศษ
-export const supabaseAdmin: SupabaseClient<Database> | null =
-  supabaseServiceRoleKey
-    ? createClient<Database>(supabaseUrl, supabaseServiceRoleKey)
-    : null
+// สร้าง Supabase admin client สำหรับการจัดการข้อมูลพิเศษ
+export const supabaseAdmin = env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
+  : null
+
+/**
+ * ฟังก์ชันสำหรับใช้งาน supabaseAdmin อย่างปลอดภัย
+ * @param callback ฟังก์ชันที่จะทำงานกับ supabaseAdmin
+ * @param fallback ฟังก์ชันที่จะทำงานเมื่อไม่มี supabaseAdmin
+ */
+export async function withAdmin<T>(
+  callback: (admin: SupabaseClient) => Promise<T>,
+  fallback?: () => Promise<T> | T
+): Promise<T> {
+  if (!supabaseAdmin) {
+    if (fallback) {
+      return await fallback()
+    }
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for this operation')
+  }
+  return await callback(supabaseAdmin)
+}
 
 export default supabase
