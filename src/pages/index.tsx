@@ -2,10 +2,9 @@ import Navbar from "@/components/shared/Navbar";
 import { useRouter } from "next/router";
 
 
-
 export default function Home() {
   const router = useRouter();
-  return  (
+  return (
     <div>
       <Navbar />
       {/* Hero Section */}
