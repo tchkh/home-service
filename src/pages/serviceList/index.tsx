@@ -4,13 +4,30 @@ import ServiceCard from '@/components/ServiceCard';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import {
+   faMagnifyingGlass,
+   faCaretDown,
+} from '@fortawesome/free-solid-svg-icons';
+// ส่วน shadcn
+import * as Slider from '@radix-ui/react-slider';
+import {
+   Select,
+   SelectContent,
+   SelectItem,
+   SelectTrigger,
+   // SelectValue,
+} from '@/components/ui/select';
+import {
+   Popover,
+   PopoverContent,
+   PopoverTrigger,
+} from '@/components/ui/popover';
 
 const prompt = Prompt({
    subsets: ['latin', 'thai'],
    weight: ['300', '400', '500', '600'],
 });
-
+// ส่วน icon
 const iconSearch = (
    <FontAwesomeIcon
       className="text-[var(--gray-300)]"
@@ -74,11 +91,20 @@ export default function Home() {
       onLimit: (dataQuery.onLimit ?? '').toString(),
    }).toString();
 
+   // รับการเปลี่ยนค่า input
    const inputTextSearch = () => {
       setDataQuery((prevState) => ({
          ...prevState,
          search: inputSearch,
       }));
+   };
+
+   // ส่วน rang slider ราคา
+   const [range, setRange] = useState([0, 2000]); // กำหนดค่าเริ่มต้น min/max
+   // const [isDragging, setIsDragging] = useState<number | null>(null); // 0 หรือ 1
+
+   const handleChange = (value: number[]) => {
+      setRange(value);
    };
 
    const getDataService = async () => {
@@ -96,6 +122,7 @@ export default function Home() {
    useEffect(() => {
       getDataService();
    }, [, dataQuery]);
+
    return (
       <div
          className={`${prompt.className} flex flex-col  items-center bg-[var(--gray-200)]`}
@@ -125,7 +152,61 @@ export default function Home() {
                   ค้นหา
                </button>
             </div>
-            <div className="border-amber-600 border-2"></div>
+            <div className="flex flex-row border-blue-600 border-2">
+               {/* ส่วนSlider */}
+               <Popover>
+                  <PopoverTrigger className="flex flex-col items-start relative box-border w-[115px] h-[42px] px-[10px] border-2 border-red-400 ">
+                     <p className="text-body-4 text-[var(--gray-700)]">ราคา</p>
+                     <p className="text-heading-5 text-[var(--gray-950)] ">
+                        {range[0]}-{range[1]}฿
+                     </p>
+                     <FontAwesomeIcon
+                        icon={faCaretDown}
+                        className="absolute bottom-[10px] right-[5px] translate-y-1 text-[10px]"
+                     />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[253px] h-[112px] flex flex-col items-start bg-[var(--white)] box-border gap-y-4 py-5 px-4 rounded-lg border-0 ">
+                     <p className="text-body-3 text-[var(--gray-700)]">
+                        {range[0]}-{range[1]}฿
+                     </p>
+                     {/* แถบ rang */}
+                     <form className="bg-[var(--white)] w-[100%] h-fit ">
+                        <Slider.Root
+                           className="relative flex items-center w-full h-5 touch-none select-none  "
+                           value={range}
+                           onValueChange={handleChange}
+                           min={0}
+                           max={2000}
+                           step={1}
+                        >
+                           <Slider.Track className="  relative h-[4px] grow rounded-full bg-[var(--gray-300)] ">
+                              <Slider.Range className="  absolute h-full rounded-full bg-[var(--blue-700)]" />
+                           </Slider.Track>
+                           {range.map((value, index) => (
+                              <Slider.Thumb
+                                 key={index}
+                                 // ส่วนที่ต้องการให้ hidden
+                                 // onPointerDown={() => setIsDragging(index)}
+                                 // onPointerUp={() => setIsDragging(null)}
+                                 className="relative block size-[13px] rounded-full bg-[var(--blue-700)] shadow-md hover:bg-[var(--blue-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)]"
+                              >
+                                 <div className="block absolute top-[4px] left-[4px] size-[5px] rounded-full bg-[var(--white)]"></div>
+                                 <div className="text-body-4 absolute top-[15px] left-1/2 -translate-x-1/2 whitespace-nowrap text-[var(--blue-700)]">
+                                    {value.toLocaleString()}
+                                 </div>
+                                 {/* ส่วนที่ต้องการให้ hidden */}
+                                 {/* {isDragging === index && (
+                                    <div className="absolute top-[24px] left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-violet-600 px-2 py-1 text-xs text-white shadow">
+                                       {value.toLocaleString()}฿
+                                    </div>
+                                 )} */}
+                              </Slider.Thumb>
+                           ))}
+                        </Slider.Root>
+                     </form>
+                  </PopoverContent>
+               </Popover>
+            </div>
          </section>
          {/* ส่วน card */}
          <section className="max-w-[1440px] grid grid-cols-1 justify-items-center px-3 pt-6 pb-14 md:pt-[60px] md:px-[160px] md:pb-[133px] gap-y-6 gap-x-4 md:grid-cols-3 md:gap-y-[48px]  md:gap-x-[37px] ">
