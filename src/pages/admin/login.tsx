@@ -6,12 +6,6 @@ import supabase from '../../lib/supabase'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import Head from 'next/head'
-import { Prompt } from 'next/font/google'
-
-const prompt = Prompt({
-  subsets: ['latin', 'thai'],
-  weight: ['300', '400', '500', '600'],
-})
 
 // สร้าง schema สำหรับการตรวจสอบข้อมูล
 const adminLoginSchema = z.object({
