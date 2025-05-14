@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className={prompt.className}>
+    <>
       <Head>
         <title>เข้าสู่ระบบแอดมิน | HomeServices</title>
         <meta
@@ -153,6 +153,6 @@ export default function AdminLoginPage() {
           </form>
         </div>
       </div>
-    </div>
+    </>
   )
 }
