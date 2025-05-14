@@ -214,8 +214,8 @@
 }
 
 .btn--icon.activate {
-  color: var(--blue-600);
-  background-color: var(--blue-100);
+   color: var(--blue-600);
+   background-color: var(--blue-100);
 }
 
 /* Disabled State */
