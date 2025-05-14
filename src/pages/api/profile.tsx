@@ -1,47 +1,26 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { createClient } from '@supabase/supabase-js'
+// pages/api/profile.ts
+import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
+import { NextApiRequest, NextApiResponse } from "next";
 
-const supabaseAdmin = (token: string) =>
-  createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    }
-  )
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const authHeader = req.headers.authorization
+  const supabase = createPagesServerClient({ req, res });
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Missing or invalid token" })
-  }
-
-  const token = authHeader.replace("Bearer ", "")
-  const supabase = supabaseAdmin(token)
-
-  // ตรวจสอบผู้ใช้จาก access_token
   const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
 
-  if (userError || !user) {
-    return res.status(401).json({ error: "Unauthorized" })
+  if (!session || sessionError) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const { data, error } = await supabase
+  const { data: userProfile, error } = await supabase
     .from("users")
-    .select("id, first_name, last_name, image_url")
-    .eq("id", user.id)
-    .single()
+    .select("*")
+    .eq("id", session.user.id)
+    .single();
 
-  if (error) {
-    return res.status(500).json({ error: error.message })
-  }
+  if (error) return res.status(500).json({ error: "Failed to fetch profile" });
 
-  return res.status(200).json(data)
+  return res.status(200).json({ user: userProfile });
 }
