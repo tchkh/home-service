@@ -230,38 +230,21 @@
    border-color: var(--gray-400);
 }
 
-/* Charlee ส่วน slider */
-/* .SliderRoot {
-   position: relative;
-   display: flex;
-   align-items: center;
+/* charlee */
+#btn-search-mobile {
+   display: inline-flex;
 }
-.SliderRoot[data-orientation='vertical'] {
-   flex-direction: column;
-   width: 20px;
-   height: 100px;
+@media screen and (min-width: 768px) {
+   #btn-search-mobile {
+      display: none;
+   }
 }
-
-.SliderTrack {
-   position: relative;
-   flex-grow: 1;
-   background-color: grey;
+#btn-search-desktop {
+   display: none;
 }
-.SliderTrack[data-orientation='vertical'] {
-   width: 3px;
+@media screen and (min-width: 768px) {
+   #btn-search-desktop {
+      display: inline-flex;
+   }
 }
-
-.SliderRange {
-   position: absolute;
-   background-color: black;
-}
-.SliderRange[data-orientation='vertical'] {
-   width: 100%;
-}
-
-.SliderThumb {
-   display: block;
-   width: 20px;
-   height: 20px;
-   background-color: black;
-} */
+/* charlee */

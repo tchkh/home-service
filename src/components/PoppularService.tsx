@@ -42,7 +42,7 @@ function PoppularService() {
    }).toString();
    useEffect(() => {
       getDataService();
-   }, [, dataQuery]);
+   }, []);
 
    const getDataService = async () => {
       try {
@@ -57,7 +57,6 @@ function PoppularService() {
    };
    return (
       <>
-         <div>start PoppularService</div>
          <div className="max-w-[1440px] grid grid-cols-1 justify-items-center mx-3 my-6  md:mt-[42px] md:px-[160px] md:mb-[65px] gap-y-6 gap-x-4 md:grid-cols-3 md:gap-y-[48px]  md:gap-x-[37px] ">
             {dataCard.map((service) => (
                <ServiceCard

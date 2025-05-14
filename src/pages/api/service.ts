@@ -21,7 +21,7 @@ export default async function handler(
          if (onLimit) {
             limit = Number(onLimit);
          } else {
-            limit = 5;
+            limit = 8;
          }
          let query = supabase
             .from('services_with_card')

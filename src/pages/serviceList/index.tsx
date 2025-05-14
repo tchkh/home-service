@@ -7,6 +7,8 @@ import {
    faMagnifyingGlass,
    faAngleDown,
 } from '@fortawesome/free-solid-svg-icons';
+import futureHome from '../../../public/asset/images/futureHome.png';
+import Image from 'next/image';
 // ส่วน shadcn
 import * as Slider from '@radix-ui/react-slider';
 import {
@@ -162,161 +164,192 @@ export default function Home() {
 
    return (
       <div
-         className={`${prompt.className} flex flex-col  items-center bg-[var(--gray-200)]`}
+         className={`${prompt.className} flex flex-col items-center bg-[var(--gray-200)]  `}
       >
-         {/* ส่วน search bar */}
-         <section className="w-[375px]  h-[134px] bg-[var(--white)] flex flex-col p-4 gap-y-4 ">
-            {/* ส่วนค้นหา */}
-            <div className={`flex  gap-x-4 w-full`}>
-               <div className="relative w-full ">
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                     {iconSearch}
-                  </span>
-                  <input
-                     type="text"
-                     placeholder="ค้นหารายการ..."
-                     className=" text-body-2 pl-10 border-2 border-[var(--gray-300)] min-w-[240px] w-full h-[45px] rounded-lg  placeholder:text-[16px] placeholder:text-[var(--gray-700)] " // เพิ่ม padding ด้านซ้ายเพื่อให้มีพื้นที่สำหรับ icon
-                     value={dataQuery.search}
-                     onChange={(e) => {
-                        setDataQuery((prevState) => ({
-                           ...prevState,
-                           search: e.target.value,
-                        }));
-                     }}
-                  />
-               </div>
-               <button
-                  type="button"
-                  onClick={inputDataQuery}
-                  className="btn btn--primary w-[85px] h-[45px]"
-               >
-                  ค้นหา
-               </button>
-            </div>
-            <div className="flex flex-row ">
-               {/* หมวดหมู่บริการ */}
-               <Select
-                  onValueChange={changeCategory}
-                  value={dataQuery.category}
-               >
-                  <SelectTrigger className="relative box-border w-[114px] h-[42px] px-0 py-0 border-0 ">
-                     <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
-                        หมวดหมู่บริการ
-                        <p
-                           // placeholder={`${dataQuery.category}`}
-                           className="text-heading-5 w-[84px] truncate text-[var(--gray-950)] "
-                        >
-                           {dataQuery.category}
-                        </p>
-                     </h2>
-                  </SelectTrigger>
-                  <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
-                     <SelectItem
-                        value={'บริการทั้งหมด'}
-                        className={`${
-                           dataQuery.category === 'บริการทั้งหมด'
-                              ? 'text-[var(--blue-700)]'
-                              : ''
-                        }`}
-                     >
-                        บริการทั้งหมด
-                     </SelectItem>
-                     {uniqueDataCard.map((value) => (
+         {/* ส่วน search bar  max-w-[1130px]*/}
+         <section
+            className={`flex flex-col justify-center items-center h-[240px] w-full gap-y-[17px] text-[var(--white)] bg-size-[auto_1440px] bg-position-[center_bottom_-28rem] bg-[rgba(0,26,81,0.60)] bg-[url('/asset/images/backgroundService.jpg')] bg-blend-overlay `}
+         >
+            <h1 className="text-heading-1">บริการของเรา</h1>
+            <p className="text-body-1   text-center">
+               ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน และอื่น ๆ อีกมากมาย{' '}
+               <br />
+               โดยพนักงานแม่บ้าน และช่างมืออาชีพ
+            </p>
+         </section>
+         <section className="sticky top-[49px] md:top-[59px] z-50 bg-[var(--white)] w-full h-[134px] md:h-[84px] flex justify-center ">
+            <div className="container flex flex-col md:justify-between items-center px-[5%] py-4 gap-y-4 md:flex-row     ">
+               {/* ส่วนค้นหา */}
+               {/* max-w-[350px] */}
+               <section className={`flex gap-x-4 w-full md:max-w-[350px] `}>
+                  <label htmlFor="inputSearch" className="relative w-full ">
+                     <span className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                        {iconSearch}
+                     </span>
+                     <input
+                        id="inputSearch"
+                        type="text"
+                        placeholder="ค้นหารายการ..."
+                        className=" text-body-2 pl-10 border-2 border-[var(--gray-300)] min-w-[240px] w-full h-[45px] rounded-lg  placeholder:text-[16px] placeholder:text-[var(--gray-700)] " // เพิ่ม padding ด้านซ้ายเพื่อให้มีพื้นที่สำหรับ icon
+                        value={dataQuery.search}
+                        onChange={(e) => {
+                           setDataQuery((prevState) => ({
+                              ...prevState,
+                              search: e.target.value,
+                           }));
+                        }}
+                     />
+                  </label>
+                  <button
+                     type="button"
+                     onClick={inputDataQuery}
+                     id="btn-search-mobile"
+                     className="btn btn--primary w-[85px] h-[45px] "
+                  >
+                     ค้นหา
+                  </button>
+               </section>
+               {/* ส่วนตัวเลือก */}
+               <section className="flex flex-row md:justify-end justify-around items-center w-full h-full md:w-fit md:gap-x-[8px] lg:gap-x-[32px] md:ml-2 ">
+                  {/* หมวดหมู่บริการ */}
+                  <Select
+                     onValueChange={changeCategory}
+                     value={dataQuery.category}
+                  >
+                     <SelectTrigger className="relative box-border w-[114px]  md:w-[120px] h-[42px] px-0 py-0 border-0 ">
+                        <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
+                           หมวดหมู่บริการ
+                           <p
+                              // placeholder={`${dataQuery.category}`}
+                              className="text-heading-5 w-[84px] overflow-hidden text-ellipsis md:overflow-visible text-[var(--gray-950)] "
+                           >
+                              {dataQuery.category}
+                           </p>
+                        </h2>
+                     </SelectTrigger>
+                     <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
                         <SelectItem
-                           key={value.id}
-                           value={value.category_name}
+                           value={'บริการทั้งหมด'}
                            className={`${
-                              value.category_name === dataQuery.category
+                              dataQuery.category === 'บริการทั้งหมด'
                                  ? 'text-[var(--blue-700)]'
                                  : ''
                            }`}
                         >
-                           {value.category_name}
+                           บริการทั้งหมด
                         </SelectItem>
-                     ))}
-                  </SelectContent>
-               </Select>
-               <div className="border-1 border-[var(--gray-300)] h-full"></div>
-               {/* ส่วน ราคา Slider */}
-               <Popover>
-                  <PopoverTrigger className="flex flex-col items-start relative box-border w-[114px] h-[42px] px-[10px]  ">
-                     <p className="text-body-4 text-[var(--gray-700)]">ราคา</p>
-                     <p className="text-heading-5 text-[var(--gray-950)] ">
-                        {range[0]}-{range[1]}฿
-                     </p>
-                     <FontAwesomeIcon
-                        icon={faAngleDown}
-                        className="absolute top-[12px] right-[5px] text-[13px] text-[#7F7F7F] "
-                     />
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[253px] h-[112px] flex flex-col items-start bg-[var(--white)] box-border gap-y-4 py-5 px-4 rounded-lg border-0 ">
-                     <p className="text-body-3 text-[var(--gray-700)]">
-                        {range[0]}-{range[1]}฿
-                     </p>
-                     {/* แถบ rang */}
-                     <form className="bg-[var(--white)] w-[100%] h-fit ">
-                        <Slider.Root
-                           className="relative flex items-center w-full h-5 touch-none select-none  "
-                           value={range}
-                           onValueChange={handleChange}
-                           min={0}
-                           max={2000}
-                           step={1}
-                        >
-                           <Slider.Track className="  relative h-[4px] grow rounded-full bg-[var(--gray-300)] ">
-                              <Slider.Range className="  absolute h-full rounded-full bg-[var(--blue-700)]" />
-                           </Slider.Track>
-                           {range.map((value, index) => (
-                              <Slider.Thumb
-                                 key={index}
-                                 // ส่วนที่ต้องการให้ hidden
-                                 // onPointerDown={() => setIsDragging(index)}
-                                 // onPointerUp={() => setIsDragging(null)}
-                                 className="relative block size-[13px] rounded-full bg-[var(--blue-700)] shadow-md hover:bg-[var(--blue-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)]"
-                              >
-                                 <div className="block absolute top-[4px] left-[4px] size-[5px] rounded-full bg-[var(--white)]"></div>
-                                 <div className="text-body-4 absolute top-[15px] left-1/2 -translate-x-1/2 whitespace-nowrap text-[var(--blue-700)]">
-                                    {value.toLocaleString()}
-                                 </div>
-                                 {/* ส่วนที่ต้องการให้ hidden */}
-                                 {/* {isDragging === index && (
+                        {uniqueDataCard.map((value) => (
+                           <SelectItem
+                              key={value.id}
+                              value={value.category_name}
+                              className={`${
+                                 value.category_name === dataQuery.category
+                                    ? 'text-[var(--blue-700)]'
+                                    : ''
+                              }`}
+                           >
+                              {value.category_name}
+                           </SelectItem>
+                        ))}
+                     </SelectContent>
+                  </Select>
+                  <div className="border-1 border-[var(--gray-300)] h-full "></div>
+                  {/* ส่วน ราคา Slider */}
+                  <Popover>
+                     <PopoverTrigger className="flex flex-col items-start relative box-border w-[114px] md:w-[120px] h-[42px] px-[10px]  ">
+                        <p className="text-body-4 text-[var(--gray-700)]">
+                           ราคา
+                        </p>
+                        <p className="text-heading-5 text-[var(--gray-950)] ">
+                           {range[0]}-{range[1]}฿
+                        </p>
+                        <FontAwesomeIcon
+                           icon={faAngleDown}
+                           className="absolute top-[12px] right-[5px] text-[13px] text-[#7F7F7F] "
+                        />
+                     </PopoverTrigger>
+                     <PopoverContent className="w-[253px] h-[112px] flex flex-col items-start bg-[var(--white)] box-border gap-y-4 py-5 px-4 rounded-lg border-0 ">
+                        <p className="text-body-3 text-[var(--gray-700)]">
+                           {range[0]}-{range[1]}฿
+                        </p>
+                        {/* แถบ rang */}
+                        <form className="bg-[var(--white)] w-[100%] h-fit ">
+                           <Slider.Root
+                              className="relative flex items-center w-full h-5 touch-none select-none  "
+                              value={range}
+                              onValueChange={handleChange}
+                              min={0}
+                              max={2000}
+                              step={1}
+                           >
+                              <Slider.Track className="  relative h-[4px] grow rounded-full bg-[var(--gray-300)] ">
+                                 <Slider.Range className="  absolute h-full rounded-full bg-[var(--blue-700)]" />
+                              </Slider.Track>
+                              {range.map((value, index) => (
+                                 <Slider.Thumb
+                                    key={index}
+                                    // ส่วนที่ต้องการให้ hidden
+                                    // onPointerDown={() => setIsDragging(index)}
+                                    // onPointerUp={() => setIsDragging(null)}
+                                    className="relative block size-[13px] rounded-full bg-[var(--blue-700)] shadow-md hover:bg-[var(--blue-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)]"
+                                 >
+                                    <div className="block absolute top-[4px] left-[4px] size-[5px] rounded-full bg-[var(--white)]"></div>
+                                    <div className="text-body-4 absolute top-[15px] left-1/2 -translate-x-1/2 whitespace-nowrap text-[var(--blue-700)]">
+                                       {value.toLocaleString()}
+                                    </div>
+                                    {/* ส่วนที่ต้องการให้ hidden */}
+                                    {/* {isDragging === index && (
                                     <div className="absolute top-[24px] left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-violet-600 px-2 py-1 text-xs text-white shadow">
                                        {value.toLocaleString()}฿
                                     </div>
                                  )} */}
-                              </Slider.Thumb>
+                                 </Slider.Thumb>
+                              ))}
+                           </Slider.Root>
+                        </form>
+                     </PopoverContent>
+                  </Popover>
+                  <div className="border-1 border-[var(--gray-300)] h-full"></div>
+                  {/* เรียงตาม */}
+                  <div className="flex items-center md:w-fit">
+                     <Select
+                        onValueChange={changeSortBy}
+                        value={dataQuery.sortBy}
+                     >
+                        <SelectTrigger className="relative box-border w-[114px] md:w-fit  h-[42px] px-[10px] py-0 border-0 ">
+                           <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
+                              เรียงตาม
+                              <p className="text-heading-5 w-[84px]  lg:w-fit overflow-hidden text-ellipsis text-[var(--gray-950)] ">
+                                 {typeSortBy[dataQuery.sortBy]}
+                              </p>
+                           </h2>
+                        </SelectTrigger>
+                        <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
+                           {Object.entries(typeSortBy).map(([value, label]) => (
+                              <SelectItem
+                                 key={value}
+                                 value={value}
+                                 className={`${
+                                    value === dataQuery.sortBy
+                                       ? 'text-[var(--blue-700)]'
+                                       : ''
+                                 }`}
+                              >
+                                 {label}
+                              </SelectItem>
                            ))}
-                        </Slider.Root>
-                     </form>
-                  </PopoverContent>
-               </Popover>
-               <div className="border-1 border-[var(--gray-300)] h-full"></div>
-               {/* เรียงตาม */}
-               <Select onValueChange={changeSortBy} value={dataQuery.sortBy}>
-                  <SelectTrigger className="relative box-border w-[114px] h-[42px] px-[10px] py-0 border-0 ">
-                     <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
-                        เรียงตาม
-                        <p className="text-heading-5 w-[84px] truncate text-[var(--gray-950)] ">
-                           {typeSortBy[dataQuery.sortBy]}
-                        </p>
-                     </h2>
-                  </SelectTrigger>
-                  <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
-                     {Object.entries(typeSortBy).map(([value, label]) => (
-                        <SelectItem
-                           key={value}
-                           value={value}
-                           className={`${
-                              value === dataQuery.sortBy
-                                 ? 'text-[var(--blue-700)]'
-                                 : ''
-                           }`}
-                        >
-                           {label}
-                        </SelectItem>
-                     ))}
-                  </SelectContent>
-               </Select>
+                        </SelectContent>
+                     </Select>
+                     <button
+                        type="button"
+                        onClick={inputDataQuery}
+                        id="btn-search-desktop"
+                        className="btn btn--primary w-[86px] h-[45px] ml-3"
+                     >
+                        ค้นหา
+                     </button>
+                  </div>
+               </section>
             </div>
          </section>
          {/* ส่วน card */}
@@ -332,6 +365,25 @@ export default function Home() {
                   maxPrice={service.max_price}
                />
             ))}
+         </section>
+         <section className="relative overflow-hidden w-full h-[284px]  flex items-center bg-[var(--blue-600)]">
+            <Image
+               src={futureHome}
+               alt="futureHome"
+               width={500}
+               height={500}
+               priority={true}
+               className="hidden md:flex z-1 absolute w-auto h-[120%] -right-[98px] top-0 opacity-50 "
+            />
+
+            <p className="z-2 text-heading-3 w-full text-[var(--white)] text-center ">
+               เพราะเราคือช่าง ผู้ให้บริการเรื่องบ้านอันดับ 1 แบบครบวงจร
+               โดยทีมช่างมืออาชีพมากกว่า 100 ทีม <br />
+               สามารถตอบโจทย์ด้านการบริการเรื่องบ้านของคุณ และสร้าง <br />
+               ความสะดวกสบายในการติดต่อกับทีมช่าง ได้ทุกที่ ทุกเวลา ตลอด 24 ชม.{' '}
+               <br />
+               มั่นใจ ช่างไม่ทิ้งงาน พร้อมรับประกันคุณภาพงาน
+            </p>
          </section>
       </div>
    );
