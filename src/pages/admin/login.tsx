@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import supabase from '../../lib/supabase'
-import { useRouter } from 'next/router'
 import Image from 'next/image'
 import Head from 'next/head'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
 
 // สร้าง schema สำหรับการตรวจสอบข้อมูล
 const adminLoginSchema = z.object({
@@ -16,9 +16,9 @@ const adminLoginSchema = z.object({
 type AdminLoginInputs = z.infer<typeof adminLoginSchema>
 
 export default function AdminLoginPage() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   const {
     register,
@@ -34,31 +34,27 @@ export default function AdminLoginPage() {
 
     try {
       // ล็อกอินด้วย Supabase
-      const { data: authData, error: authError } =
-        await supabase.auth.signInWithPassword({
-          email: data.email,
-          password: data.password,
-        })
+      const response = await axios.post('/api/admin/login', {
+        email: data.email,
+        password: data.password,
+      })
 
-      if (authError) {
-        setError(authError.message)
-        return
+      // ถ้าสำเร็จ ทำการ redirect
+      if (response.data.success) {
+        router.push('/admin/dashboard')
       }
+    } catch (error: any) {
+      // จัดการกับข้อผิดพลาด
+      console.error('Login error:', error)
 
-      // ตรวจสอบว่าเป็น admin หรือไม่
-      const isAdmin = authData.user?.user_metadata?.role === 'admin'
-
-      if (!isAdmin) {
-        // ถ้าไม่ใช่ admin ให้ทำการ sign out
-        await supabase.auth.signOut()
-        setError('คุณไม่มีสิทธิ์เข้าใช้งานส่วนของผู้ดูแลระบบ')
-        return
+      // ดึงข้อความ error จาก axios response
+      if (error.response && error.response.data) {
+        setError(
+          error.response.data.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'
+        )
+      } else {
+        setError(error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ')
       }
-
-      // ถ้าเป็น admin ให้นำทางไปยังหน้า admin dashboard
-      router.push('/admin/dashboard')
-    } catch (error) {
-      setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง')
     } finally {
       setIsLoading(false)
     }

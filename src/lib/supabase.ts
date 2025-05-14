@@ -3,14 +3,15 @@ import { env } from '../config/env'
 
 // สร้าง Supabase client สำหรับการใช้งานทั่วไป
 export const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  env.NEXT_PUBLIC_SUPABASE_URL as string,
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
 )
 
 // สร้าง Supabase admin client สำหรับการจัดการข้อมูลพิเศษ
-export const supabaseAdmin = env.SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
-  : null
+export const supabaseAdmin = createClient(
+  env.NEXT_PUBLIC_SUPABASE_URL as string,
+  env.SUPABASE_SERVICE_ROLE_KEY as string
+)
 
 /**
  * ฟังก์ชันสำหรับใช้งาน supabaseAdmin อย่างปลอดภัย
