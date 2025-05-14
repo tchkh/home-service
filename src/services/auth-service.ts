@@ -43,7 +43,7 @@ export async function registerUser(input: RegisterInput) {
     .select('*', { count: 'exact', head: true })
     .eq('email', email)
 
-  if (isEmailExists) {
+  if (!isEmailExists) {
     throw new Error('อีเมลนี้มีอยู่ในระบบแล้ว')
   }
 
