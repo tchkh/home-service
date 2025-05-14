@@ -71,6 +71,15 @@ export default function Home() {
    // ส่วน DATA
    const [dataCard, setServiceCard] = useState<ServiceCardProps[]>([]);
    // console.log('dataCard: ', dataCard);
+   const [fetchDataQuery, setFetchDataQuery] = useState<SearchType>({
+      search: '',
+      category: 'บริการทั้งหมด',
+      minPrice: null,
+      maxPrice: null,
+      sortBy: 'title',
+      onLimit: null,
+   });
+   console.log('fetchDataQuery: ', fetchDataQuery);
    const [dataQuery, setDataQuery] = useState<SearchType>({
       search: '',
       category: 'บริการทั้งหมด',
@@ -79,6 +88,7 @@ export default function Home() {
       sortBy: 'title',
       onLimit: null,
    });
+   // console.log('dataQuery: ', dataQuery);
    const typeSortBy: { [key: string]: string } = {
       title: 'บริการแนะนำ',
       poppular: 'บริการยอดนิยม',
@@ -87,31 +97,39 @@ export default function Home() {
    };
 
    // ส่วนรับ event input
-   const [inputSearch, setInputSearch] = useState<string>('');
+   // const [inputSearch, setInputSearch] = useState<string>('');
    // URLSearchParams จะแปลง object เป็น  ?minPrice='500'&?maxPrice=`4000`
    const queryString = new URLSearchParams({
-      search: dataQuery.search,
-      category: dataQuery.category,
-      minPrice: (dataQuery.minPrice ?? '').toString(),
-      maxPrice: (dataQuery.maxPrice ?? '').toString(),
-      sortBy: dataQuery.sortBy,
-      onLimit: (dataQuery.onLimit ?? '').toString(),
+      search: fetchDataQuery.search,
+      category: fetchDataQuery.category,
+      minPrice: (fetchDataQuery.minPrice ?? '').toString(),
+      maxPrice: (fetchDataQuery.maxPrice ?? '').toString(),
+      sortBy: fetchDataQuery.sortBy,
+      onLimit: (fetchDataQuery.onLimit ?? '').toString(),
    }).toString();
 
-   // รับการเปลี่ยนค่า input
-   const inputTextSearch = () => {
-      setDataQuery((prevState) => ({
+   //  คำสั่งเปลี่ยนค่า dataCard ตาม qeury
+   const inputDataQuery = () => {
+      setFetchDataQuery((prevState) => ({
          ...prevState,
-         search: inputSearch,
+         ...dataQuery,
       }));
    };
    //  เก็บค่า category
-   const uniqueDataCard = dataCard.filter(
-      (item, index, self) =>
-         index === self.findIndex((t) => t.category_name === item.category_name)
-   );
-   // เปลี่ยนค่า sortBy
+   const uniqueDataCard = dataCard.filter((item, index, arr) => {
+      return (
+         index === arr.findIndex((t) => t.category_name === item.category_name)
+      );
+   });
 
+   // เปลี่ยนค่า sortBy
+   const changeCategory = (value: string) => {
+      setDataQuery((prevState) => ({
+         ...prevState,
+         category: value,
+      }));
+   };
+   // เปลี่ยนค่า sortBy
    const changeSortBy = (value: string) => {
       setDataQuery((prevState) => ({
          ...prevState,
@@ -140,7 +158,7 @@ export default function Home() {
 
    useEffect(() => {
       getDataService();
-   }, [, dataQuery]);
+   }, [, fetchDataQuery]);
 
    return (
       <div
@@ -158,15 +176,18 @@ export default function Home() {
                      type="text"
                      placeholder="ค้นหารายการ..."
                      className=" text-body-2 pl-10 border-2 border-[var(--gray-300)] min-w-[240px] w-full h-[45px] rounded-lg  placeholder:text-[16px] placeholder:text-[var(--gray-700)] " // เพิ่ม padding ด้านซ้ายเพื่อให้มีพื้นที่สำหรับ icon
-                     value={inputSearch}
+                     value={dataQuery.search}
                      onChange={(e) => {
-                        setInputSearch(e.target.value);
+                        setDataQuery((prevState) => ({
+                           ...prevState,
+                           search: e.target.value,
+                        }));
                      }}
                   />
                </div>
                <button
                   type="button"
-                  onClick={inputTextSearch}
+                  onClick={inputDataQuery}
                   className="btn btn--primary w-[85px] h-[45px]"
                >
                   ค้นหา
@@ -174,7 +195,10 @@ export default function Home() {
             </div>
             <div className="flex flex-row ">
                {/* หมวดหมู่บริการ */}
-               <Select onValueChange={changeSortBy} value={dataQuery.category}>
+               <Select
+                  onValueChange={changeCategory}
+                  value={dataQuery.category}
+               >
                   <SelectTrigger className="relative box-border w-[114px] h-[42px] px-0 py-0 border-0 ">
                      <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
                         หมวดหมู่บริการ
@@ -273,7 +297,7 @@ export default function Home() {
                      <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
                         เรียงตาม
                         <p className="text-heading-5 w-[84px] truncate text-[var(--gray-950)] ">
-                           ตามตัวอักษร
+                           {typeSortBy[dataQuery.sortBy]}
                         </p>
                      </h2>
                   </SelectTrigger>
