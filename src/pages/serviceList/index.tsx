@@ -23,6 +23,8 @@ import {
    PopoverContent,
    PopoverTrigger,
 } from '@/components/ui/popover';
+// import { number } from 'zod';
+// import { boolean } from 'zod';
 
 const prompt = Prompt({
    subsets: ['latin', 'thai'],
@@ -71,7 +73,7 @@ export default function Home() {
       onLimit: number | null;
    }
    // ส่วน DATA
-   const [dataCard, setServiceCard] = useState<ServiceCardProps[]>([]);
+   const [dataCard, setDataCard] = useState<ServiceCardProps[]>([]);
    // console.log('dataCard: ', dataCard);
    const [fetchDataQuery, setFetchDataQuery] = useState<SearchType>({
       search: '',
@@ -81,7 +83,12 @@ export default function Home() {
       sortBy: 'title',
       onLimit: null,
    });
-   console.log('fetchDataQuery: ', fetchDataQuery);
+   // console.log('fetchDataQuery: ', fetchDataQuery);
+   // ส่วน rang slider ราคา
+   const [serviceMaxPrice, setServiceMaxPrice] = useState<number>(0);
+   const [range, setRange] = useState<number[]>([]); // กำหนดค่าเริ่มต้น min/max
+   // const [isDragging, setIsDragging] = useState<number | null>(null); // 0 หรือ 1
+
    const [dataQuery, setDataQuery] = useState<SearchType>({
       search: '',
       category: 'บริการทั้งหมด',
@@ -90,7 +97,9 @@ export default function Home() {
       sortBy: 'title',
       onLimit: null,
    });
-   // console.log('dataQuery: ', dataQuery);
+
+   const [uniqueDataCard, setUniqueDataCard] = useState<string[]>([]);
+
    const typeSortBy: { [key: string]: string } = {
       title: 'บริการแนะนำ',
       poppular: 'บริการยอดนิยม',
@@ -118,19 +127,28 @@ export default function Home() {
       }));
    };
    //  เก็บค่า category
-   const uniqueDataCard = dataCard.filter((item, index, arr) => {
-      return (
-         index === arr.findIndex((t) => t.category_name === item.category_name)
-      );
-   });
+   // const dataTagCategory = dataCard.filter((item, index, arr) => {
+   //    return (
+   //       index === arr.findIndex((t) => t.category_name === item.category_name)
+   //    );
+   // });
+   const allCategory = (data: ServiceCardProps[]) => {
+      console.log('run allCategory');
+      const dataTagCategory = data
+         .map((item) => item.category_name)
+         .filter((name, index, arr) => index === arr.indexOf(name));
+      setUniqueDataCard((prevState) => [...prevState, ...dataTagCategory]);
+      // }
+   };
 
-   // เปลี่ยนค่า sortBy
+   // เปลี่ยนค่า Category
    const changeCategory = (value: string) => {
       setDataQuery((prevState) => ({
          ...prevState,
          category: value,
       }));
    };
+
    // เปลี่ยนค่า sortBy
    const changeSortBy = (value: string) => {
       setDataQuery((prevState) => ({
@@ -138,35 +156,69 @@ export default function Home() {
          sortBy: value,
       }));
    };
-   // ส่วน rang slider ราคา
-   const [range, setRange] = useState([0, 2000]); // กำหนดค่าเริ่มต้น min/max
-   // const [isDragging, setIsDragging] = useState<number | null>(null); // 0 หรือ 1
+
+   // เปลี่ยนค่า rang ราคา
+   const setMaxPrice = (data: ServiceCardProps[]) => {
+      const maxPrice = Math.max(
+         ...data.map((service): number => {
+            const price = Number(service.max_price);
+            return price;
+         })
+      );
+      setRange([0, maxPrice]);
+      setServiceMaxPrice(maxPrice);
+   };
+   // console.log('maxPrice: ', maxPrice);
 
    const handleChange = (value: number[]) => {
       setRange(value);
+      setDataQuery((prevState) => ({
+         ...prevState,
+         ...prevState,
+         minPrice: value[0],
+         maxPrice: value[1],
+      }));
    };
 
-   const getDataService = async () => {
+   const fetchData = async () => {
+      return await axios.get(
+         `http://localhost:3000/api/service?${queryString}`
+      );
+   };
+
+   const firstGetDataService = async () => {
       try {
          // search=${searchTest}&category=${categoryTest}&
-         const res = await axios.get(
-            `http://localhost:3000/api/service?${queryString}`
-         );
-         setServiceCard(res.data);
+         const res = await fetchData();
+         setDataCard(res.data);
+         allCategory(res.data);
+         setMaxPrice(res.data);
       } catch (error) {
          console.log('error: ', error);
       }
    };
+   const getDataService = async () => {
+      try {
+         // search=${searchTest}&category=${categoryTest}&
+         const res = await fetchData();
+         setDataCard(res.data);
+      } catch (error) {
+         console.log('error: ', error);
+      }
+   };
+   useEffect(() => {
+      firstGetDataService();
+   }, []);
 
    useEffect(() => {
       getDataService();
-   }, [, fetchDataQuery]);
+   }, [fetchDataQuery]);
 
    return (
       <div
          className={`${prompt.className} flex flex-col items-center bg-[var(--gray-200)]  `}
       >
-         {/* ส่วน search bar  max-w-[1130px]*/}
+         {/* ส่วน บริการของเรา*/}
          <section
             className={`flex flex-col justify-center items-center h-[240px] w-full gap-y-[17px] text-[var(--white)] bg-size-[auto_1440px] bg-position-[center_bottom_-28rem] bg-[rgba(0,26,81,0.60)] bg-[url('/asset/images/backgroundService.jpg')] bg-blend-overlay `}
          >
@@ -177,10 +229,11 @@ export default function Home() {
                โดยพนักงานแม่บ้าน และช่างมืออาชีพ
             </p>
          </section>
+         {/* ส่วน search bar  max-w-[1130px]*/}
          <section className="sticky top-[49px] md:top-[59px] z-50 bg-[var(--white)] w-full h-[134px] md:h-[84px] flex justify-center ">
             <div className="container flex flex-col md:justify-between items-center px-[5%] py-4 gap-y-4 md:flex-row     ">
                {/* ส่วนค้นหา */}
-               {/* max-w-[350px] */}
+
                <section className={`flex gap-x-4 w-full md:max-w-[350px] `}>
                   <label htmlFor="inputSearch" className="relative w-full ">
                      <span className="absolute left-4 top-1/2 transform -translate-y-1/2">
@@ -238,17 +291,17 @@ export default function Home() {
                         >
                            บริการทั้งหมด
                         </SelectItem>
-                        {uniqueDataCard.map((value) => (
+                        {uniqueDataCard.map((value, index) => (
                            <SelectItem
-                              key={value.id}
-                              value={value.category_name}
+                              key={index}
+                              value={value}
                               className={`${
-                                 value.category_name === dataQuery.category
+                                 value === dataQuery.category
                                     ? 'text-[var(--blue-700)]'
                                     : ''
                               }`}
                            >
-                              {value.category_name}
+                              {value}
                            </SelectItem>
                         ))}
                      </SelectContent>
@@ -279,7 +332,7 @@ export default function Home() {
                               value={range}
                               onValueChange={handleChange}
                               min={0}
-                              max={2000}
+                              max={serviceMaxPrice}
                               step={1}
                            >
                               <Slider.Track className="  relative h-[4px] grow rounded-full bg-[var(--gray-300)] ">
