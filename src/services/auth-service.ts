@@ -36,6 +36,16 @@ export async function registerUser(input: RegisterInput) {
   if (!validateEmail(email)) {
     throw new Error('รูปแบบอีเมลไม่ถูกต้อง')
   }
+  // users?.users.some(user => user.email === email)
+
+  const isEmailExists = await supabase
+    .from('users') // หรือตารางที่เก็บข้อมูลผู้ใช้ของคุณ
+    .select('*', { count: 'exact', head: true })
+    .eq('email', email)
+
+  if (isEmailExists) {
+    throw new Error('อีเมลนี้มีอยู่ในระบบแล้ว')
+  }
 
   // แยกชื่อจริงและนามสกุล
   const { firstName, lastName } = splitName(name)
