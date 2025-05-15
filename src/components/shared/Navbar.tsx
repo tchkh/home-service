@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import axios from "axios";
-import type { User } from "@/types";
-import Link from "next/link";
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+import axios from 'axios'
+import type { User } from '@/types'
+import Link from 'next/link'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,47 +10,48 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu'
+import Image from 'next/image'
 
 function Navbar() {
-  const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [isActivate, setIsActivate] = useState(false);
-  const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [isActivate, setIsActivate] = useState(false)
+  const [loading, setLoading] = useState<boolean>(true)
 
-  const handleLogin = () => router.push("/login");
-  const handleRegister = () => router.push("/register");
+  const handleLogin = () => router.push('/login')
+  const handleRegister = () => router.push('/register')
 
   const handleLogout = async () => {
-    const res = await axios("/api/auth/logout", {
-      method: "POST",
-    });
+    const res = await axios('/api/auth/logout', {
+      method: 'POST',
+    })
     if (res.status === 200) {
-      window.location.href = "/";
+      window.location.href = '/'
     }
-  };
+  }
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("/api/profile");
+        const res = await axios.get('/api/profile')
         if (res.status === 200) {
-          setUser(res.data.user);
+          setUser(res.data.user)
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-        setUser(null);
-      } else {
-        console.error("Unexpected error while fetching user:", error);
-      }
+          setUser(null)
+        } else {
+          console.error('Unexpected error while fetching user:', error)
+        }
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchUser();
-  }, []);
+    fetchUser()
+  }, [])
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[color:var(--white)] shadow-sm">
@@ -60,8 +61,10 @@ function Navbar() {
             className="text-[color:var(--blue-600)] flex items-center"
             href="/"
           >
-            <img
+            <Image
               src="/asset/svgs/houseLogo.svg"
+              width={32}
+              height={32}
               alt="house icon"
               className="md:w-[32px] md:h-[32px]"
             />
@@ -84,8 +87,10 @@ function Navbar() {
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger>
                   {user?.image_url ? (
-                    <img
+                    <Image
                       src={user.image_url}
+                      width={32}
+                      height={32}
                       alt="avatar"
                       className="w-[32px] h-[32px] rounded-full object-cover"
                     />
@@ -103,36 +108,56 @@ function Navbar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                    onClick={() => router.push("/user/profile")}
+                    onClick={() => router.push('/user/profile')}
                   >
-                    <img src="/asset/svgs/account.svg" alt="account icon" />
+                    <Image
+                      src="/asset/svgs/account.svg"
+                      width={16}
+                      height={16}
+                      alt="account icon"
+                    />
                     ข้อมูลผู้ใช้งาน
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                    onClick={() => router.push("/service/repair")}
+                    onClick={() => router.push('/service/repair')}
                   >
-                    <img src="/asset/svgs/list.svg" alt="list icon" />
+                    <Image
+                      src="/asset/svgs/list.svg"
+                      width={16}
+                      height={16}
+                      alt="list icon"
+                    />
                     รายการคำสั่งซ่อม
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                    onClick={() => router.push("/service/history")}
+                    onClick={() => router.push('/service/history')}
                   >
-                    <img src="/asset/svgs/history.svg" alt="history icon" />
+                    <Image
+                      src="/asset/svgs/history.svg"
+                      width={16}
+                      height={16}
+                      alt="history icon"
+                    />
                     ประวัติการซ่อม
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
                     onClick={handleLogout}
                   >
-                    <img src="/asset/svgs/logout.svg" alt="logout icon" />
+                    <Image
+                      src="/asset/svgs/logout.svg"
+                      width={16}
+                      height={16}
+                      alt="logout icon"
+                    />
                     ออกจากระบบ
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <button
-                className={`btn btn--icon ${isActivate ? "activate" : ""}`}
+                className={`btn btn--icon ${isActivate ? 'activate' : ''}`}
                 onClick={() => setIsActivate(!isActivate)}
                 aria-pressed={isActivate}
               >
@@ -175,14 +200,16 @@ function Navbar() {
               <DropdownMenuTrigger>
                 {user?.image_url ? (
                   <div className="flex gap-2">
-                    <img
+                    <Image
                       src={user.image_url}
+                      width={32}
+                      height={32}
                       alt="avatar"
                       className="w-[32px] h-[32px] rounded-full object-cover"
                     />
                     <div
                       className={`btn btn--icon ${
-                        isActivate ? "activate" : ""
+                        isActivate ? 'activate' : ''
                       }`}
                       onClick={() => setIsActivate(!isActivate)}
                       aria-pressed={isActivate}
@@ -219,30 +246,50 @@ function Navbar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                  onClick={() => router.push("/user/profile")}
+                  onClick={() => router.push('/user/profile')}
                 >
-                  <img src="/asset/svgs/account.svg" alt="account icon" />
+                  <Image
+                    src="/asset/svgs/account.svg"
+                    width={16}
+                    height={16}
+                    alt="account icon"
+                  />
                   ข้อมูลผู้ใช้งาน
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                  onClick={() => router.push("/service/repair")}
+                  onClick={() => router.push('/service/repair')}
                 >
-                  <img src="/asset/svgs/list.svg" alt="list icon" />
+                  <Image
+                    src="/asset/svgs/list.svg"
+                    width={16}
+                    height={16}
+                    alt="list icon"
+                  />
                   รายการคำสั่งซ่อม
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                  onClick={() => router.push("/service/history")}
+                  onClick={() => router.push('/service/history')}
                 >
-                  <img src="/asset/svgs/history.svg" alt="history icon" />
+                  <Image
+                    src="/asset/svgs/history.svg"
+                    width={16}
+                    height={16}
+                    alt="history icon"
+                  />
                   ประวัติการซ่อม
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
                   onClick={handleLogout}
                 >
-                  <img src="/asset/svgs/logout.svg" alt="logout icon" />
+                  <Image
+                    src="/asset/svgs/logout.svg"
+                    width={16}
+                    height={16}
+                    alt="logout icon"
+                  />
                   ออกจากระบบ
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -252,7 +299,12 @@ function Navbar() {
               className="md:hidden flex item-center"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              <img src="/asset/svgs/menu.svg" alt="menu icon" />
+              <Image
+                src="/asset/svgs/menu.svg"
+                width={16}
+                height={16}
+                alt="menu icon"
+              />
             </button>
           )}
         </div>
@@ -278,7 +330,7 @@ function Navbar() {
         </div>
       )}
     </nav>
-  );
+  )
 }
 
-export default Navbar;
+export default Navbar
