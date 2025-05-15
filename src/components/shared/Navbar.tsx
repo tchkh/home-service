@@ -88,8 +88,10 @@ function Navbar() {
                 <DropdownMenuTrigger>
                   {user?.image_url ? (
                     <div className="w-[32px] h-[32px] rounded-full overflow-hidden">
-                      <img
+                      <Image
                         src={user.image_url}
+                        width={32}
+                        height={32}
                         alt="avatar"
                         className="w-full h-full object-cover"
                       />
@@ -201,8 +203,10 @@ function Navbar() {
                 {user?.image_url ? (
                   <div className="flex gap-2">
                     <div className="w-[32px] h-[32px] rounded-full overflow-hidden">
-                      <img
+                      <Image
                         src={user.image_url}
+                        width={32}
+                        height={32}
                         alt="avatar"
                         className="w-full h-full object-cover"
                       />
