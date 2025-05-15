@@ -4,16 +4,21 @@ import { useRouter } from 'next/router'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { termsContent, privacyContent } from '../data/legal'
-import supabase from '../lib/supabase'
 import Link from 'next/link'
-import crypto from 'crypto'
+import axios from 'axios'
 
 // สร้าง schema สำหรับการตรวจสอบข้อมูล
 const registerSchema = z.object({
-  fullName: z.string().min(2, 'กรุณากรอกชื่อ-นามสกุล'),
+  fullName: z
+    .string()
+    .regex(/^[A-Za-z\s]+$/, 'กรุณากรอกข้อมูลเป็นภาษาอังกฤษเท่านั้น'),
   phone: z.string().min(9, 'กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง'),
-  email: z.string().email('กรุณากรอกอีเมลให้ถูกต้อง'),
-  password: z.string().min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'),
+  email: z
+    .string()
+    .email('กรุณากรอกอีเมลให้ถูกต้อง')
+    .endsWith('.com', { message: 'กรุณาใช้โดเมน .com เท่านั้น' }),
+  password: z.string().min(12, 'รหัสผ่านต้องมีอย่างน้อย 12 ตัวอักษร'),
+
   acceptTerms: z.boolean().refine(val => val === true, {
     message: 'กรุณายอมรับข้อตกลงและเงื่อนไข',
   }),
@@ -44,110 +49,20 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const res = await axios.post('/api/auth/register', {
+        name: data.fullName,
         email: data.email,
         password: data.password,
-        options: {
-          data: {
-            fullName: data.fullName,
-            phone: data.phone,
-          },
-        },
+        tel: data.phone,
       })
 
-      if (authError) {
-        setError(authError.message)
-        return
-      }
-
-      // ตรวจสอบว่ามี user ID หรือไม่
-      if (!authData.user?.id) {
-        setError('เกิดข้อผิดพลาดในการลงทะเบียน: ไม่สามารถสร้างบัญชีผู้ใช้ได้')
-        return
-      }
-
-      function splitName(fullName: string): {
-        firstName: string
-        lastName: string
-      } {
-        // Trim the input to remove extra spaces
-        const trimmedName = fullName.trim()
-
-        // Find the position of the last space in the name
-        const lastSpaceIndex = trimmedName.lastIndexOf(' ')
-
-        // If there's no space, return the whole string as firstName and empty string as lastName
-        if (lastSpaceIndex === -1) {
-          return {
-            firstName: trimmedName,
-            lastName: '',
-          }
-        }
-
-        // Extract firstName and lastName based on the position of the last space
-        const firstName = trimmedName.substring(0, lastSpaceIndex)
-        const lastName = trimmedName.substring(lastSpaceIndex + 1)
-
-        return { firstName, lastName }
-      }
-
-      const { firstName, lastName } = splitName(data.fullName)
-      console.log({ 'First Name': firstName, 'Last Name': lastName })
-
-      function getGravatarUrl(email: string, size: number = 200): string {
-        const md5 = crypto
-          .createHash('md5')
-          .update(email.toLowerCase().trim())
-          .digest('hex')
-        return `https://www.gravatar.com/avatar/${md5}?d=mp&s=${size}`
-      }
-
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: authData.user.id, // ใช้ ID จาก auth
-            first_name: firstName,
-            last_name: lastName,
-            email: data.email,
-            tel: data.phone,
-            image_url: getGravatarUrl(data.email), // URL ของภาพโปรไฟล์เริ่มต้น
-          },
-        ])
-
-      if (userError) {
-        setError(userError.message)
-        return
-      }
-
-      // สร้าง backup auth record โดยเรียกใช้ API endpoint
-      try {
-        const backupResponse = await fetch('/api/auth/create-backup-auth', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: authData.user.id,
-            password: data.password,
-          }),
-        })
-
-        const backupResult = await backupResponse.json()
-
-        if (!backupResponse.ok) {
-          console.error('Failed to create backup auth:', backupResult.error)
-          // ไม่จำเป็นต้องหยุดการลงทะเบียน
-        }
-      } catch (backupError) {
-        console.error('Error creating backup auth:', backupError)
-        // ไม่จำเป็นต้องหยุดการลงทะเบียน
-      }
-
       // ถ้าสำเร็จ นำทางไปยังหน้า login
-      router.push('/login')
-    } catch (error) {
-      setError('เกิดข้อผิดพลาดในการลงทะเบียน กรุณาลองใหม่อีกครั้ง')
+      if (res.status === 201) {
+        router.push('/login')
+        return
+      }
+    } catch (error: any) {
+      setError(error.response.data.message)
     } finally {
       setIsLoading(false)
     }
