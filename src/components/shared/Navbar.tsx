@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import type { User } from "@/types";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -34,21 +33,20 @@ function Navbar() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const supabase = createClientComponentClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
-        const { data: userProfile } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
-
-        setUser(userProfile);
+      try {
+        const res = await axios.get("/api/profile");
+        if (res.status === 200) {
+          setUser(res.data.user);
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+        setUser(null);
+      } else {
+        console.error("Unexpected error while fetching user:", error);
       }
-      setLoading(false);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchUser();
