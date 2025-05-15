@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 /**
  * แยกชื่อเต็มเป็นชื่อจริงและนามสกุล
  * @param fullName ชื่อเต็ม
