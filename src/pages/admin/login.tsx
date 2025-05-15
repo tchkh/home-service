@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
       }
     } catch (error: any) {
       // จัดการกับข้อผิดพลาด
-      console.error('Login error:', error)
+      setError(error)
 
       // ดึงข้อความ error จาก axios response
       if (error.response && error.response.data) {

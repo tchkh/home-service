@@ -11,7 +11,6 @@ export default async function handler(
 
   try {
     const { email, password } = req.body
-    console.log('Attempting login with:', email) // เพิ่ม log
 
     // 1. ทำการ login ด้วย supabase auth
     const supabase = createPagesServerClient({ req, res })
@@ -21,7 +20,6 @@ export default async function handler(
     })
 
     if (authError) {
-      console.log('Auth error:', authError.message)
       return res.status(400).json({ message: authError.message })
     }
 
@@ -31,8 +29,6 @@ export default async function handler(
       .select('*')
       .eq('email', email)
       .single()
-
-    console.log('Admin check:', { adminData, adminError, email })
 
     // ถ้าไม่พบในตาราง admins หรือมี error
     if (adminError || !adminData) {
@@ -49,7 +45,6 @@ export default async function handler(
       user: data.user,
     })
   } catch (error: any) {
-    console.error('Login handler error:', error)
     return res
       .status(500)
       .json({ message: error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' })
