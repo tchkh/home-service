@@ -41,7 +41,13 @@
       "supabase": "^2.22.6",
       "swagger": "^0.7.5",
       "tailwind-merge": "^3.2.0",
-      "zod": "^3.24.4"
+      "zod": "^3.24.4",
+    "@radix-ui/react-label": "^2.1.6",
+    "@radix-ui/react-slot": "^1.2.2",
+    "formidable": "^3.5.4",
+    "next-themes": "^0.4.6",
+    "sonner": "^2.0.3",
+    "uuid": "^11.1.0"
    },
    "devDependencies": {
       "@eslint/eslintrc": "^3",
