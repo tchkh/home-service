@@ -87,13 +87,13 @@ function Navbar() {
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger>
                   {user?.image_url ? (
-                    <Image
-                      src={user.image_url}
-                      width={32}
-                      height={32}
-                      alt="avatar"
-                      className="w-[32px] h-[32px] rounded-full object-cover"
-                    />
+                    <div className="w-[32px] h-[32px] rounded-full overflow-hidden">
+                      <img
+                        src={user.image_url}
+                        alt="avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   ) : (
                     <div className="w-[32px] h-[32px] bg-gray-300 rounded-full flex items-center justify-center">
                       <span className="text-xs font-medium text-gray-600">
@@ -200,13 +200,13 @@ function Navbar() {
               <DropdownMenuTrigger>
                 {user?.image_url ? (
                   <div className="flex gap-2">
-                    <Image
-                      src={user.image_url}
-                      width={32}
-                      height={32}
-                      alt="avatar"
-                      className="w-[32px] h-[32px] rounded-full object-cover"
-                    />
+                    <div className="w-[32px] h-[32px] rounded-full overflow-hidden">
+                      <img
+                        src={user.image_url}
+                        alt="avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <div
                       className={`btn btn--icon ${
                         isActivate ? 'activate' : ''

@@ -5,13 +5,19 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import supabase from '../lib/supabase'
 import Link from 'next/link'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios' // เพิ่ม import AxiosError
 
 // สร้าง schema สำหรับการตรวจสอบข้อมูล
 const loginSchema = z.object({
   email: z.string().email('กรุณากรอกอีเมลให้ถูกต้อง'),
   password: z.string().min(1, 'กรุณากรอกรหัสผ่าน'),
 })
+
+// สร้าง interface สำหรับ error response
+interface ErrorResponse {
+  error?: string
+  message?: string
+}
 
 type LoginFormInputs = z.infer<typeof loginSchema>
 
@@ -44,7 +50,7 @@ export default function LoginPage() {
         router.push('/')
         return
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.warn('การเข้าสู่ระบบปกติล้มเหลว กำลังลองใช้ระบบสำรอง', error)
 
       // 2. ถ้าการเข้าสู่ระบบปกติล้มเหลว ลองใช้ระบบสำรอง
@@ -71,12 +77,19 @@ export default function LoginPage() {
             fallbackResult.error || 'การเข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง'
           )
         }
-      } catch (fallbackError: any) {
+      } catch (fallbackError: unknown) {
         // จัดการกรณีที่ API fallback-login มีปัญหา
-        setError(
-          fallbackError.response?.data?.error ||
-            'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง'
-        )
+        if (axios.isAxiosError(fallbackError)) {
+          // Type guard เพื่อตรวจสอบว่าเป็น AxiosError
+          const axiosError = fallbackError as AxiosError<ErrorResponse>
+          setError(
+            axiosError.response?.data?.error ||
+              'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง'
+          )
+        } else {
+          // กรณีที่เป็น error ชนิดอื่น
+          setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง')
+        }
       }
     } finally {
       setIsLoading(false)
@@ -86,7 +99,7 @@ export default function LoginPage() {
   // ฟังก์ชันสำหรับเข้าสู่ระบบด้วย Facebook
   const handleFacebookLogin = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
@@ -96,7 +109,7 @@ export default function LoginPage() {
       if (error) {
         setError(error.message)
       }
-    } catch (error) {
+    } catch {
       setError(
         'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Facebook กรุณาลองใหม่อีกครั้ง'
       )

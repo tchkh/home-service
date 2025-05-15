@@ -5,7 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { termsContent, privacyContent } from '../data/legal'
 import Link from 'next/link'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios' // เพิ่ม import AxiosError
+
+// สร้าง interface สำหรับ error response
+interface ErrorResponse {
+  message?: string
+  error?: string
+}
 
 // สร้าง schema สำหรับการตรวจสอบข้อมูล
 const registerSchema = z.object({
@@ -61,8 +67,23 @@ export default function RegisterPage() {
         router.push('/login')
         return
       }
-    } catch (error: any) {
-      setError(error.response.data.message)
+    } catch (error: unknown) {
+      // ใช้ axios.isAxiosError เพื่อตรวจสอบว่าเป็น AxiosError
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<ErrorResponse>
+        // เข้าถึง message จาก response data อย่างปลอดภัย
+        setError(
+          axiosError.response?.data?.message ||
+            axiosError.response?.data?.error ||
+            'เกิดข้อผิดพลาดในการลงทะเบียน กรุณาลองใหม่อีกครั้ง'
+        )
+      } else if (error instanceof Error) {
+        // กรณีเป็น Error ทั่วไป
+        setError(error.message || 'เกิดข้อผิดพลาดในการลงทะเบียน')
+      } else {
+        // กรณีเป็น error ที่ไม่รู้จัก
+        setError('เกิดข้อผิดพลาดในการลงทะเบียน กรุณาลองใหม่อีกครั้ง')
+      }
     } finally {
       setIsLoading(false)
     }
