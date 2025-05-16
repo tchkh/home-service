@@ -5,6 +5,7 @@ import {
   FileText, 
   LogOut 
 } from "lucide-react";
+import axios from "axios";
 import { cn } from "@/lib/utils";
 
 interface SidebarItemProps {
@@ -12,17 +13,19 @@ interface SidebarItemProps {
   label: string;
   active?: boolean;
   href?: string;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }
-
 const SidebarItem: React.FC<SidebarItemProps> = ({ 
   icon: Icon, 
   label, 
   active = false,
-  href = "#" 
+  href = "#",
+  onClick
 }) => {
   return (
     <a
       href={href}
+      onClick={onClick}
       className={cn(
         "flex items-center gap-3 px-4 py-3 text-sm transition-colors",
         active 
@@ -36,8 +39,20 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   );
 };
 
+
 interface SidebarProps {
   className?: string;
+}
+
+const handleLogout = async() => {
+  try {
+  const res = await axios.post("/api/auth/logout");
+    if (res.status === 200) {
+      window.location.href = "/";
+    }
+  } catch (error) {
+    console.error("Error logging out:", error);
+  }
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
@@ -59,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       </div>
       
       <div className="p-4 mt-auto">
-        <SidebarItem icon={LogOut} label="ออกจากระบบ" />
+        <SidebarItem icon={LogOut} label="ออกจากระบบ" onClick={handleLogout} />
       </div>
     </div>
   );
