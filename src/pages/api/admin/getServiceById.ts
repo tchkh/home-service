@@ -14,14 +14,16 @@ interface ServiceWithDetails {
   image_url: string;
   created_at: Date;
   updated_at: Date;
-  category: {
-    // กำหนดโครงสร้างข้อมูลของ Categories
-    id: string;
-    name: string;
-    description: string;
-    created_at: Date;
-    updated_at: Date;
-  }[] | null;
+  category:
+    | {
+        // กำหนดโครงสร้างข้อมูลของ Categories
+        id: string;
+        name: string;
+        description: string;
+        created_at: Date;
+        updated_at: Date;
+      }[]
+    | null;
   sub_services: {
     // กำหนดโครงสร้างข้อมูลของ Sub-services
     id: string;
@@ -67,6 +69,13 @@ async function fetchServiceWithDetails(
 
     if (error) {
       console.error("Error fetching service with details:", error);
+      // ตรวจสอบ Error Code จาก Supabase ว่าเป็นกรณีไม่พบข้อมูลหรือไม่
+      if (
+        error.code === "PGRST116" &&
+        error.details === "The result contains 0 rows"
+      ) {
+        return null; // Return null เมื่อไม่พบข้อมูล
+      }
       throw error; // โยน Error เพื่อให้ถูกจัดการใน Handler Function
     }
 
@@ -76,7 +85,6 @@ async function fetchServiceWithDetails(
     }
 
     console.log("Data from Supabase:", data);
-    
 
     return data as ServiceWithDetails; // แปลง Type ของข้อมูลให้ตรงกับ Interface ที่กำหนด
   } catch (error) {
@@ -97,6 +105,7 @@ export default async function handler(
 
   try {
     const { serviceId } = ServiceIdSchema.parse(req.query); // ตรวจสอบและดึงค่า serviceId จาก Query
+    console.log("Service ID:", serviceId);
 
     const service = await fetchServiceWithDetails(serviceId); // ดึงข้อมูล Service จากฐานข้อมูล
 
@@ -117,6 +126,7 @@ export default async function handler(
         .status(400)
         .json({ message: "Invalid serviceId provided: Invalid data" }); // ส่ง Error 400 Bad Request
     }
+
     console.error("Error fetching service:", error); // Log Error ไปที่ Console (สำหรับ Debug)
     return res
       .status(500)

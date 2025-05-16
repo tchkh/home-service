@@ -6,7 +6,19 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Trash } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import { ArrowLeft, Trash, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/router"; // เพิ่ม import useRouter
 import { Prompt } from "next/font/google";
 import Image from "next/image";
@@ -22,12 +34,7 @@ const serviceSchema = z.object({
   title: z.string().min(1, "กรุณากรอกชื่อเซอร์วิส"),
   category: z.string().min(1, "กรุณาเลือกประเภท"),
   // image สามารถเป็น string (URL: กรณีใช้รูปภาพเดิม) หรือ File (กรณีใช้รูปภาพใหม่)
-  image: z
-    .union([
-      z.string().url(),
-      z.any(),
-    ])
-    .optional(),
+  image: z.union([z.string().url(), z.any()]).optional(),
   sub_services: z
     .array(
       z.object({
@@ -194,7 +201,10 @@ function EditServicePage() {
       setValue("image", file, { shouldValidate: true });
       setValue("image", file as File, { shouldValidate: true });
     }
-    console.log("Selected image (preview URL):", file ? URL.createObjectURL(file) : null);
+    console.log(
+      "Selected image (preview URL):",
+      file ? URL.createObjectURL(file) : null
+    );
     console.log("Selected file:", file);
   };
 
@@ -212,6 +222,31 @@ function EditServicePage() {
     setValue(`sub_services.${index}.price`, Number(value), {
       shouldValidate: true,
     });
+  };
+
+  const handleDeleteService = async () => {
+    try {
+      // ดึง serviceId จาก URL query parameter
+      const serviceId = router.query.serviceId as string;
+
+      if (!serviceId) {
+        console.error("No serviceId provided");
+        return;
+      } // ถ้าไม่มี serviceId ให้หยุดการทำงาน
+
+      const result = await axios.delete(
+        `/api/admin/deleteServiceById?serviceId=${serviceId}`
+      );
+      if (result.status === 200) {
+        console.log(
+          "EditServicePage: Response from backend (deleteServiceById) :",
+          result.data
+        );
+      }
+      router.push("/admin/services");
+    } catch (err) {
+      console.error("Error deleting service:", err);
+    }
   };
 
   const handleRemoveSubService = (index: number) => {
@@ -232,10 +267,7 @@ function EditServicePage() {
       className={`${prompt.className} flex w-screen min-h-screen bg-[var(--bg)]`}
     >
       <Sidebar className="sticky top-0" />
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full flex flex-col space-y-6"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col">
         {/* Header */}
         <div className="flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
           <div className="flex items-center space-x-4">
@@ -270,7 +302,7 @@ function EditServicePage() {
         </div>
 
         {/* Basic Info */}
-        <div className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto px-5 py-10 bg-[var(--white)] border-1 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
+        <div className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto px-5 py-10 mt-6 bg-[var(--white)] border-1 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
           {/* ชื่อบริการ */}
           <div className="flex flex-row gap-10 space-y-1">
             <Label htmlFor="title" className="w-40 text-heading-5">
@@ -488,6 +520,49 @@ function EditServicePage() {
               </span>
             </div>
           </div>
+        </div>
+        {/* ปุ่มลบ service */}
+        <div className="flex justify-end mr-8">
+<AlertDialog>
+    <AlertDialogTrigger asChild>
+      <Button
+        type="button"
+        variant="ghost"
+        className="underline text-[var(--gray-600)] flex items-center space-x-1"
+      >
+        <Trash />
+        <span>ลบบริการ</span>
+      </Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent className="bg-[var(--white)] rounded-lg shadow-md p-6 w-96">
+      {/* ไอคอนเตือนตรงกลาง */}
+      <div className="flex justify-center">
+        <AlertTriangle className="w-10 h-10 text-red-500" />
+      </div>
+      <AlertDialogHeader className="text-center">
+        <AlertDialogTitle className="flex justify-center text-lg font-semibold text-[var(--gray-950)]">
+          ยืนยันการลบรายการ?
+        </AlertDialogTitle>
+        <AlertDialogDescription className="flex justify-center text-center mt-2 text-md text-[var(--gray-700)]">
+          คุณต้องการลบรายการ ‘ล้างแอร์’<br />
+          ใช่หรือไม่
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter className="flex flex-row justify-center sm:flex-row sm:justify-center items-center gap-2 mt-2">
+        <AlertDialogAction
+          onClick={handleDeleteService}
+          className="w-1/3 px-4 py-2 btn btn--primary"
+        >
+          ลบรายการ
+        </AlertDialogAction>
+        <AlertDialogCancel
+          className="w-1/3 px-4 py-2 btn btn--secondary"
+        >
+          ยกเลิก
+        </AlertDialogCancel>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
         </div>
       </form>
     </div>
