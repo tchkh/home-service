@@ -523,46 +523,45 @@ function EditServicePage() {
         </div>
         {/* ปุ่มลบ service */}
         <div className="flex justify-end mr-8">
-<AlertDialog>
-    <AlertDialogTrigger asChild>
-      <Button
-        type="button"
-        variant="ghost"
-        className="underline text-[var(--gray-600)] flex items-center space-x-1"
-      >
-        <Trash />
-        <span>ลบบริการ</span>
-      </Button>
-    </AlertDialogTrigger>
-    <AlertDialogContent className="bg-[var(--white)] rounded-lg shadow-md p-6 w-96">
-      {/* ไอคอนเตือนตรงกลาง */}
-      <div className="flex justify-center">
-        <AlertTriangle className="w-10 h-10 text-red-500" />
-      </div>
-      <AlertDialogHeader className="text-center">
-        <AlertDialogTitle className="flex justify-center text-lg font-semibold text-[var(--gray-950)]">
-          ยืนยันการลบรายการ?
-        </AlertDialogTitle>
-        <AlertDialogDescription className="flex justify-center text-center mt-2 text-md text-[var(--gray-700)]">
-          คุณต้องการลบรายการ ‘ล้างแอร์’<br />
-          ใช่หรือไม่
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter className="flex flex-row justify-center sm:flex-row sm:justify-center items-center gap-2 mt-2">
-        <AlertDialogAction
-          onClick={handleDeleteService}
-          className="w-1/3 px-4 py-2 btn btn--primary"
-        >
-          ลบรายการ
-        </AlertDialogAction>
-        <AlertDialogCancel
-          className="w-1/3 px-4 py-2 btn btn--secondary"
-        >
-          ยกเลิก
-        </AlertDialogCancel>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                className="underline text-[var(--gray-600)] flex items-center space-x-1"
+              >
+                <Trash />
+                <span>ลบบริการ</span>
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-[var(--white)] rounded-lg shadow-md p-6 w-96">
+              {/* ไอคอนเตือนตรงกลาง */}
+              <div className="flex justify-center">
+                <AlertTriangle className="w-10 h-10 text-red-500" />
+              </div>
+              <AlertDialogHeader className="text-center">
+                <AlertDialogTitle className="flex justify-center text-lg font-semibold text-[var(--gray-950)]">
+                  ยืนยันการลบรายการ?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="flex justify-center text-center mt-2 text-md text-[var(--gray-700)]">
+                  คุณต้องการลบรายการ ‘ล้างแอร์’
+                  <br />
+                  ใช่หรือไม่
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex flex-row justify-center sm:flex-row sm:justify-center items-center gap-2 mt-2">
+                <AlertDialogAction
+                  onClick={handleDeleteService}
+                  className="w-1/3 px-4 py-2 btn btn--primary"
+                >
+                  ลบรายการ
+                </AlertDialogAction>
+                <AlertDialogCancel className="w-1/3 px-4 py-2 btn btn--secondary">
+                  ยกเลิก
+                </AlertDialogCancel>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </form>
     </div>

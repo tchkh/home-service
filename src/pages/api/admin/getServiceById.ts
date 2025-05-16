@@ -14,16 +14,14 @@ interface ServiceWithDetails {
   image_url: string;
   created_at: Date;
   updated_at: Date;
-  category:
-    | {
-        // กำหนดโครงสร้างข้อมูลของ Categories
-        id: string;
-        name: string;
-        description: string;
-        created_at: Date;
-        updated_at: Date;
-      }[]
-    | null;
+  category: {
+    // กำหนดโครงสร้างข้อมูลของ Categories
+    id: string;
+    name: string;
+    description: string;
+    created_at: Date;
+    updated_at: Date;
+  }[] | null;
   sub_services: {
     // กำหนดโครงสร้างข้อมูลของ Sub-services
     id: string;
@@ -33,9 +31,7 @@ interface ServiceWithDetails {
   }[];
 }
 
-// 3. ตั้งค่าการเชื่อมต่อกับ Supabase
-
-// 4. ฟังก์ชันสำหรับดึงข้อมูล Service พร้อม Categories และ Sub-services จาก Supabase
+// 3. ฟังก์ชันสำหรับดึงข้อมูล Service พร้อม Categories และ Sub-services จาก Supabase
 async function fetchServiceWithDetails(
   serviceId: string
 ): Promise<ServiceWithDetails | null> {
@@ -85,7 +81,7 @@ async function fetchServiceWithDetails(
     }
 
     console.log("Data from Supabase:", data);
-
+    
     return data as ServiceWithDetails; // แปลง Type ของข้อมูลให้ตรงกับ Interface ที่กำหนด
   } catch (error) {
     console.error("Error in fetchServiceWithDetails:", error);
@@ -93,7 +89,7 @@ async function fetchServiceWithDetails(
   }
 }
 
-// 5. Handler Function สำหรับ API Route ของ Next.js
+// 4. Handler Function สำหรับ API Route ของ Next.js
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ServiceWithDetails | { message: string }> // กำหนด Type ของ Response
@@ -126,7 +122,6 @@ export default async function handler(
         .status(400)
         .json({ message: "Invalid serviceId provided: Invalid data" }); // ส่ง Error 400 Bad Request
     }
-
     console.error("Error fetching service:", error); // Log Error ไปที่ Console (สำหรับ Debug)
     return res
       .status(500)
