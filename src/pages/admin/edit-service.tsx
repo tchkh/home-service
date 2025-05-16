@@ -537,14 +537,14 @@ function EditServicePage() {
             <AlertDialogContent className="bg-[var(--white)] rounded-lg shadow-md p-6 w-96">
               {/* ไอคอนเตือนตรงกลาง */}
               <div className="flex justify-center">
-                <AlertTriangle className="w-10 h-10 text-red-500" />
+                <AlertTriangle className="w-10 h-10 text-[var(--red)]" />
               </div>
               <AlertDialogHeader className="text-center">
                 <AlertDialogTitle className="flex justify-center text-lg font-semibold text-[var(--gray-950)]">
                   ยืนยันการลบรายการ?
                 </AlertDialogTitle>
                 <AlertDialogDescription className="flex justify-center text-center mt-2 text-md text-[var(--gray-700)]">
-                  คุณต้องการลบรายการ ‘ล้างแอร์’
+                  คุณต้องการลบรายการ ‘{serviceData?.title}’
                   <br />
                   ใช่หรือไม่
                 </AlertDialogDescription>
