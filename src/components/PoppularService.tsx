@@ -1,7 +1,7 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
-import ServiceCard from './ServiceCard';
-import axios from 'axios';
+import React from "react";
+import { useState, useEffect } from "react";
+import ServiceCard from "./ServiceCard";
+import axios from "axios";
 
 function PoppularService() {
    interface ServiceCardProps {
@@ -23,11 +23,11 @@ function PoppularService() {
 
    const [dataCard, setServiceCard] = useState<ServiceCardProps[]>([]);
    const dataQuery: SearchType = {
-      search: '',
-      category: '',
+      search: "",
+      category: "",
       minPrice: null,
       maxPrice: null,
-      sortBy: 'title', //เรียงตาม poppular
+      sortBy: "title", //เรียงตาม poppular
       onLimit: 2,
    };
 
@@ -35,26 +35,26 @@ function PoppularService() {
    const queryString = new URLSearchParams({
       search: dataQuery.search,
       category: dataQuery.category,
-      minPrice: (dataQuery.minPrice ?? '').toString(),
-      maxPrice: (dataQuery.maxPrice ?? '').toString(),
+      minPrice: (dataQuery.minPrice ?? "").toString(),
+      maxPrice: (dataQuery.maxPrice ?? "").toString(),
       sortBy: dataQuery.sortBy,
-      onLimit: (dataQuery.onLimit ?? '').toString(),
+      onLimit: (dataQuery.onLimit ?? "").toString(),
    }).toString();
    useEffect(() => {
+      const getDataService = async () => {
+         try {
+            // search=${searchTest}&category=${categoryTest}&
+            const res = await axios.get(
+               `http://localhost:3000/api/service?${queryString}`
+            );
+            setServiceCard(res.data);
+         } catch (error) {
+            console.log("error: ", error);
+         }
+      };
       getDataService();
-   }, []);
+   }, [queryString]);
 
-   const getDataService = async () => {
-      try {
-         // search=${searchTest}&category=${categoryTest}&
-         const res = await axios.get(
-            `http://localhost:3000/api/service?${queryString}`
-         );
-         setServiceCard(res.data);
-      } catch (error) {
-         console.log('error: ', error);
-      }
-   };
    return (
       <>
          <div className="max-w-[1440px] grid grid-cols-1 justify-items-center mx-3 my-6  md:mt-[42px] md:px-[160px] md:mb-[65px] gap-y-6 gap-x-4 md:grid-cols-3 md:gap-y-[48px]  md:gap-x-[37px] ">

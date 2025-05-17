@@ -1,34 +1,34 @@
-import { Prompt } from 'next/font/google';
-import ServiceCard from '@/components/ServiceCard';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Prompt } from "next/font/google";
+import ServiceCard from "@/components/ServiceCard";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
    faMagnifyingGlass,
    faAngleDown,
-} from '@fortawesome/free-solid-svg-icons';
-import futureHome from '../../../public/asset/images/futureHome.png';
-import Image from 'next/image';
+} from "@fortawesome/free-solid-svg-icons";
+import futureHome from "../../../public/asset/images/futureHome.png";
+import Image from "next/image";
 // ส่วน shadcn
-import * as Slider from '@radix-ui/react-slider';
+import * as Slider from "@radix-ui/react-slider";
 import {
    Select,
    SelectContent,
    SelectItem,
    SelectTrigger,
    // SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
    Popover,
    PopoverContent,
    PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
 // import { number } from 'zod';
 // import { boolean } from 'zod';
 
 const prompt = Prompt({
-   subsets: ['latin', 'thai'],
-   weight: ['300', '400', '500', '600'],
+   subsets: ["latin", "thai"],
+   weight: ["300", "400", "500", "600"],
 });
 // ส่วน icon
 const iconSearch = (
@@ -76,11 +76,11 @@ export default function Home() {
    const [dataCard, setDataCard] = useState<ServiceCardProps[]>([]);
    // console.log('dataCard: ', dataCard);
    const [fetchDataQuery, setFetchDataQuery] = useState<SearchType>({
-      search: '',
-      category: 'บริการทั้งหมด',
+      search: "",
+      category: "บริการทั้งหมด",
       minPrice: null,
       maxPrice: null,
-      sortBy: 'title',
+      sortBy: "title",
       onLimit: null,
    });
    // console.log('fetchDataQuery: ', fetchDataQuery);
@@ -90,21 +90,21 @@ export default function Home() {
    // const [isDragging, setIsDragging] = useState<number | null>(null); // 0 หรือ 1
 
    const [dataQuery, setDataQuery] = useState<SearchType>({
-      search: '',
-      category: 'บริการทั้งหมด',
+      search: "",
+      category: "บริการทั้งหมด",
       minPrice: null,
       maxPrice: null,
-      sortBy: 'title',
+      sortBy: "title",
       onLimit: null,
    });
 
    const [uniqueDataCard, setUniqueDataCard] = useState<string[]>([]);
 
    const typeSortBy: { [key: string]: string } = {
-      title: 'บริการแนะนำ',
-      poppular: 'บริการยอดนิยม',
-      ascending: 'ตามตัวอักษร (Ascending)',
-      descending: 'ตามตัวอักษร (Descending)',
+      title: "บริการแนะนำ",
+      poppular: "บริการยอดนิยม",
+      ascending: "ตามตัวอักษร (Ascending)",
+      descending: "ตามตัวอักษร (Descending)",
    };
 
    // ส่วนรับ event input
@@ -113,10 +113,10 @@ export default function Home() {
    const queryString = new URLSearchParams({
       search: fetchDataQuery.search,
       category: fetchDataQuery.category,
-      minPrice: (fetchDataQuery.minPrice ?? '').toString(),
-      maxPrice: (fetchDataQuery.maxPrice ?? '').toString(),
+      minPrice: (fetchDataQuery.minPrice ?? "").toString(),
+      maxPrice: (fetchDataQuery.maxPrice ?? "").toString(),
       sortBy: fetchDataQuery.sortBy,
-      onLimit: (fetchDataQuery.onLimit ?? '').toString(),
+      onLimit: (fetchDataQuery.onLimit ?? "").toString(),
    }).toString();
 
    //  คำสั่งเปลี่ยนค่า dataCard ตาม qeury
@@ -125,20 +125,6 @@ export default function Home() {
          ...prevState,
          ...dataQuery,
       }));
-   };
-   //  เก็บค่า category
-   // const dataTagCategory = dataCard.filter((item, index, arr) => {
-   //    return (
-   //       index === arr.findIndex((t) => t.category_name === item.category_name)
-   //    );
-   // });
-   const allCategory = (data: ServiceCardProps[]) => {
-      console.log('run allCategory');
-      const dataTagCategory = data
-         .map((item) => item.category_name)
-         .filter((name, index, arr) => index === arr.indexOf(name));
-      setUniqueDataCard((prevState) => [...prevState, ...dataTagCategory]);
-      // }
    };
 
    // เปลี่ยนค่า Category
@@ -158,17 +144,6 @@ export default function Home() {
    };
 
    // เปลี่ยนค่า rang ราคา
-   const setMaxPrice = (data: ServiceCardProps[]) => {
-      const maxPrice = Math.max(
-         ...data.map((service): number => {
-            const price = Number(service.max_price);
-            return price;
-         })
-      );
-      setRange([0, maxPrice]);
-      setServiceMaxPrice(maxPrice);
-   };
-   // console.log('maxPrice: ', maxPrice);
 
    const handleChange = (value: number[]) => {
       setRange(value);
@@ -180,39 +155,66 @@ export default function Home() {
       }));
    };
 
-   const fetchData = async () => {
-      return await axios.get(
-         `http://localhost:3000/api/service?${queryString}`
-      );
-   };
-
-   const firstGetDataService = async () => {
-      try {
-         // search=${searchTest}&category=${categoryTest}&
-         const res = await fetchData();
-         setDataCard(res.data);
-         allCategory(res.data);
-         setMaxPrice(res.data);
-      } catch (error) {
-         console.log('error: ', error);
-      }
-   };
-   const getDataService = async () => {
-      try {
-         // search=${searchTest}&category=${categoryTest}&
-         const res = await fetchData();
-         setDataCard(res.data);
-      } catch (error) {
-         console.log('error: ', error);
-      }
-   };
    useEffect(() => {
+      // เปลี่ยนค่า rang ราคา
+      const setMaxPrice = (data: ServiceCardProps[]) => {
+         const maxPrice = Math.max(
+            ...data.map((service): number => {
+               const price = Number(service.max_price);
+               return price;
+            })
+         );
+         setRange([0, maxPrice]);
+         setServiceMaxPrice(maxPrice);
+      };
+      //  กรองค่า category ไม่ให้ซ้ำ
+      // const dataTagCategory = dataCard.filter((item, index, arr) => {
+      //    return (
+      //       index === arr.findIndex((t) => t.category_name === item.category_name)
+      //    );
+      // });
+      const allCategory = (data: ServiceCardProps[]) => {
+         console.log("run allCategory");
+         const dataTagCategory = data
+            .map((item) => item.category_name)
+            .filter((name, index, arr) => {
+               return index === arr.indexOf(name);
+            });
+         setUniqueDataCard([...dataTagCategory]);
+      };
+
+      //  first Fetch
+      const firstGetDataService = async () => {
+         try {
+            const res = await axios.get(
+               `http://localhost:3000/api/service?${queryString}`
+            );
+            setDataCard(res.data);
+            allCategory(res.data);
+            setMaxPrice(res.data);
+         } catch (error) {
+            console.log("error: ", error);
+         }
+      };
       firstGetDataService();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
 
    useEffect(() => {
+      const getDataService = async () => {
+         try {
+            // search=${searchTest}&category=${categoryTest}&
+            const res = await axios.get(
+               `http://localhost:3000/api/service?${queryString}`
+            );
+            setDataCard(res.data);
+         } catch (error) {
+            console.log("error: ", error);
+         }
+      };
+
       getDataService();
-   }, [fetchDataQuery]);
+   }, [fetchDataQuery, queryString]);
 
    return (
       <div
@@ -224,7 +226,7 @@ export default function Home() {
          >
             <h1 className="text-heading-1">บริการของเรา</h1>
             <p className="text-body-1   text-center">
-               ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน และอื่น ๆ อีกมากมาย{' '}
+               ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน และอื่น ๆ อีกมากมาย{" "}
                <br />
                โดยพนักงานแม่บ้าน และช่างมืออาชีพ
             </p>
@@ -282,11 +284,11 @@ export default function Home() {
                      </SelectTrigger>
                      <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
                         <SelectItem
-                           value={'บริการทั้งหมด'}
+                           value={"บริการทั้งหมด"}
                            className={`${
-                              dataQuery.category === 'บริการทั้งหมด'
-                                 ? 'text-[var(--blue-700)]'
-                                 : ''
+                              dataQuery.category === "บริการทั้งหมด"
+                                 ? "text-[var(--blue-700)]"
+                                 : ""
                            }`}
                         >
                            บริการทั้งหมด
@@ -297,8 +299,8 @@ export default function Home() {
                               value={value}
                               className={`${
                                  value === dataQuery.category
-                                    ? 'text-[var(--blue-700)]'
-                                    : ''
+                                    ? "text-[var(--blue-700)]"
+                                    : ""
                               }`}
                            >
                               {value}
@@ -384,8 +386,8 @@ export default function Home() {
                                  value={value}
                                  className={`${
                                     value === dataQuery.sortBy
-                                       ? 'text-[var(--blue-700)]'
-                                       : ''
+                                       ? "text-[var(--blue-700)]"
+                                       : ""
                                  }`}
                               >
                                  {label}
@@ -433,7 +435,7 @@ export default function Home() {
                เพราะเราคือช่าง ผู้ให้บริการเรื่องบ้านอันดับ 1 แบบครบวงจร
                โดยทีมช่างมืออาชีพมากกว่า 100 ทีม <br />
                สามารถตอบโจทย์ด้านการบริการเรื่องบ้านของคุณ และสร้าง <br />
-               ความสะดวกสบายในการติดต่อกับทีมช่าง ได้ทุกที่ ทุกเวลา ตลอด 24 ชม.{' '}
+               ความสะดวกสบายในการติดต่อกับทีมช่าง ได้ทุกที่ ทุกเวลา ตลอด 24 ชม.{" "}
                <br />
                มั่นใจ ช่างไม่ทิ้งงาน พร้อมรับประกันคุณภาพงาน
             </p>
