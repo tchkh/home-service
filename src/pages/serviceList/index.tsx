@@ -186,9 +186,7 @@ export default function Home() {
       //  first Fetch
       const firstGetDataService = async () => {
          try {
-            const res = await axios.get(
-               `http://localhost:3000/api/service?${queryString}`
-            );
+            const res = await axios.get(`/api/service?${queryString}`);
             setDataCard(res.data);
             allCategory(res.data);
             setMaxPrice(res.data);
@@ -204,9 +202,7 @@ export default function Home() {
       const getDataService = async () => {
          try {
             // search=${searchTest}&category=${categoryTest}&
-            const res = await axios.get(
-               `http://localhost:3000/api/service?${queryString}`
-            );
+            const res = await axios.get(`/api/service?${queryString}`);
             setDataCard(res.data);
          } catch (error) {
             console.log("error: ", error);

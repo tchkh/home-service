@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 function Footer() {
   return (
     <footer className="bg-[color:var(--white)] pt-10">
@@ -5,8 +7,10 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 md:gap-20 gap-5 md:mb-10">
           {/* Logo & Contact */}
           <div className="flex items-center mb-2 gap-2 md:flex md:justify-center">
-            <img
+            <Image
               src="/asset/svgs/houseLogo.svg"
+              width={32}
+              height={32}
               alt="house icon"
               className="md:w-[32px] md:h-[32px] w-[40px] h-[40px]"
             />
@@ -22,8 +26,10 @@ function Footer() {
           </div>
           <div className="text-[color:var(--gray-800)] flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <img
+              <Image
                 src="/asset/svgs/telephone.svg"
+                width={20}
+                height={20}
                 alt="telephone icon"
                 className="w-[20px] h-[20px]"
               />
@@ -32,8 +38,10 @@ function Footer() {
               </a>
             </div>
             <div className="flex items-center gap-2">
-              <img
+              <Image
                 src="/asset/svgs/email.svg"
+                width={20}
+                height={20}
                 alt="email icon"
                 className="w-[20px] h-[20px]"
               />
@@ -64,7 +72,7 @@ function Footer() {
         </div>
       </div>
     </footer>
-  );
+  )
 }
 
-export default Footer;
+export default Footer
