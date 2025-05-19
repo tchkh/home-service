@@ -1,9 +1,9 @@
-import '@/styles/globals.css';
-import type { AppProps } from 'next/app';
-import Navbar from '@/components/shared/Navbar';
-import Footer from '@/components/shared/Footer';
-import { useRouter } from 'next/router';
-import { Prompt } from 'next/font/google';
+import "@/styles/globals.css";
+import type { AppProps } from "next/app";
+import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
+import { useRouter } from "next/router";
+import { Prompt } from "next/font/google";
 
 const prompt = Prompt({
    subsets: ['latin', 'thai'],
