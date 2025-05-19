@@ -26,9 +26,7 @@ export default async function handler(
             return res.status(200).json(services);
          } else {
             // หาไม่มีข้มูลให้ return
-            return res
-               .status(404)
-               .json("Sorry, this service is not available.");
+            return res.status(404).json("No suggestions found.");
          }
       } else {
          //หากไม่มีการใส้คำค้นหาให้ return
