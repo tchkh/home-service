@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { createSupabaseServerClient } from "../supabase/server";
-import { Database } from "@/types/supabase";
+
 
 // ตรวจสอบ session ของผู้ใช้
 export async function getSession(req: NextApiRequest, res: NextApiResponse) {
