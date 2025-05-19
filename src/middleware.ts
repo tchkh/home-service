@@ -6,7 +6,7 @@ const AUTH_ROUTES = ['/register', '/login'];
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (AUTH_ROUTES.some(route => pathname === route)) {
+  if (AUTH_ROUTES.includes(pathname)) {
     return await authRedirectMiddleware(req);
   }
 
@@ -14,9 +14,7 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    ...AUTH_ROUTES,
-  ],
+  matcher: ['/register', '/login'],
 };
 
 
