@@ -43,17 +43,19 @@ export default function AdminLoginPage() {
       if (response.data.success) {
         router.push('/admin/dashboard')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // จัดการกับข้อผิดพลาด
-      setError(error)
-
-      // ดึงข้อความ error จาก axios response
-      if (error.response && error.response.data) {
-        setError(
-          error.response.data.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'
-        )
+      if (axios.isAxiosError(error)) {
+        // ตรวจสอบว่าเป็น Axios error
+        // ดึงข้อความ error จาก axios response
+        if (error.response && error.response.data) {
+          setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง')
+        } else {
+          setError('เกิดข้อผิดพลาดในการเชื่อมต่อ')
+        }
       } else {
-        setError(error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ')
+        // กรณีเป็น error ทั่วไป
+        setError('เกิดข้อผิดพลาดในการเชื่อมต่อ')
       }
     } finally {
       setIsLoading(false)

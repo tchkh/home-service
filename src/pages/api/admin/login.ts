@@ -44,9 +44,7 @@ export default async function handler(
       success: true,
       user: data.user,
     })
-  } catch (error: any) {
-    return res
-      .status(500)
-      .json({ message: error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' })
+  } catch {
+    return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' })
   }
 }
