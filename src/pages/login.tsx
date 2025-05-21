@@ -2,24 +2,16 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import supabase from '../lib/supabase'
 import Link from 'next/link'
 import axios, { AxiosError } from 'axios' // เพิ่ม import AxiosError
-
-// สร้าง schema สำหรับการตรวจสอบข้อมูล
-const loginSchema = z.object({
-  email: z.string().email('กรุณากรอกอีเมลให้ถูกต้อง'),
-  password: z.string().min(1, 'กรุณากรอกรหัสผ่าน'),
-})
+import { loginSchema, LoginFormInputs } from '../schemas/auth'
 
 // สร้าง interface สำหรับ error response
 interface ErrorResponse {
   error?: string
   message?: string
 }
-
-type LoginFormInputs = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const router = useRouter()

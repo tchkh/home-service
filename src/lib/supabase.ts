@@ -1,17 +1,18 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import { env } from '../config/env'
 
 // สร้าง Supabase client สำหรับการใช้งานทั่วไป
 export const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL as string,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
 )
 
 // สร้าง Supabase admin client สำหรับการจัดการข้อมูลพิเศษ
-export const supabaseAdmin = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL as string,
-  env.SUPABASE_SERVICE_ROLE_KEY as string
-)
+export const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null
 
 /**
  * ฟังก์ชันสำหรับใช้งาน supabaseAdmin อย่างปลอดภัย

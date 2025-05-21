@@ -1,24 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-import { Database } from "@/types/supabase";
-
+import { NextRequest, NextResponse } from 'next/server'
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 
 export async function authRedirectMiddleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient<Database>({ req, res });
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
 
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getSession()
 
-  const url = req.nextUrl.clone();
-  if (session && ["/register", "/login"].includes(url.pathname)) {
-    url.pathname = "/";
-    return NextResponse.redirect(url);
+  const url = req.nextUrl.clone()
+  if (session && ['/register', '/login'].includes(url.pathname)) {
+    url.pathname = '/'
+    return NextResponse.redirect(url)
   }
 
-  return res;
+  return res
 }
-
-
-

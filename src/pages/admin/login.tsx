@@ -1,19 +1,11 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import Image from 'next/image'
 import Head from 'next/head'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
-
-// สร้าง schema สำหรับการตรวจสอบข้อมูล
-const adminLoginSchema = z.object({
-  email: z.string().email('กรุณากรอกอีเมลให้ถูกต้อง'),
-  password: z.string().min(1, 'กรุณากรอกรหัสผ่าน'),
-})
-
-type AdminLoginInputs = z.infer<typeof adminLoginSchema>
+import { loginSchema, LoginFormInputs } from '../../schemas/auth'
 
 export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -24,11 +16,11 @@ export default function AdminLoginPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<AdminLoginInputs>({
-    resolver: zodResolver(adminLoginSchema),
+  } = useForm<LoginFormInputs>({
+    resolver: zodResolver(loginSchema),
   })
 
-  const onSubmit = async (data: AdminLoginInputs) => {
+  const onSubmit = async (data: LoginFormInputs) => {
     setIsLoading(true)
     setError(null)
 

@@ -1,104 +1,79 @@
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import { Prompt } from "next/font/google";
-import Image from "next/image";
-import axios from "axios";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
-import Sidebar from "@/components/shared/AdminSidebar";
-
-const prompt = Prompt({
-  subsets: ["latin", "thai"],
-  weight: ["300", "400", "500", "600"],
-});
-
-interface SubService {
-  id?: number;
-  title: string;
-  price: string;
-  service_unit: string;
-}
-
-interface ServiceFormValues {
-  title: string;
-  category: string;
-  image: string;
-  subervices: SubService[];
-  created_at: string;
-  updated_at: string;
-}
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
+import Image from 'next/image'
+import axios from 'axios'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { ArrowLeft } from 'lucide-react'
+import Sidebar from '@/components/shared/AdminSidebar'
+import { ServiceFormValues } from '../../types/index'
 
 function EditServicePage() {
-  const router = useRouter();
-  const [serviceData, setServiceData] = useState<ServiceFormValues | null>(
-    null
-  );
-  const serviceId = router.query.serviceId;
+  const router = useRouter()
+  const [serviceData, setServiceData] = useState<ServiceFormValues | null>(null)
+  const serviceId = router.query.serviceId
 
   useEffect(() => {
     const fetchServiceData = async (serviceId: string) => {
       try {
-        if (!serviceId) return; // ถ้าไม่มี serviceId ให้หยุดการทำงาน
+        if (!serviceId) return // ถ้าไม่มี serviceId ให้หยุดการทำงาน
 
         const result = await axios.get(
           `/api/admin/getServiceById?serviceId=${serviceId}`
-        );
+        )
         if (result.status === 200) {
           console.log(
-            "DetailServicePage: Response from backend (getServiceById) : ",
+            'DetailServicePage: Response from backend (getServiceById) : ',
             result.data
-          );
+          )
 
           // เช็คว่า image_url มีค่าที่ถูกต้องหรือไม่
           if (result.data.image_url) {
-            console.log("Image URL:", result.data.image_url);
+            console.log('Image URL:', result.data.image_url)
           } else {
             // ถ้าไม่มี https:// ให้เพิ่ม
-            result.data.image_url = `https://${result.data.image_url}`;
-            console.log("Updated Image URL:", result.data.image_url);
+            result.data.image_url = `https://${result.data.image_url}`
+            console.log('Updated Image URL:', result.data.image_url)
           }
 
           setServiceData({
-            title: result.data.title || "",
-            category: result.data.category?.name || "",
-            image: result.data.image_url || "",
-            created_at: result.data.created_at || "",
-            updated_at: result.data.updated_at || "",
+            title: result.data.title || '',
+            category: result.data.category?.name || '',
+            image: result.data.image_url || '',
+            created_at: result.data.created_at || '',
+            updated_at: result.data.updated_at || '',
             subervices: result.data.sub_services || [],
-          });
+          })
         }
       } catch (error) {
-        console.error("Error fetching service data:", error);
-        return;
+        console.error('Error fetching service data:', error)
+        return
       }
-    };
+    }
     if (serviceId) {
-      fetchServiceData(serviceId as string);
+      fetchServiceData(serviceId as string)
     }
 
-    console.log("DetailServicePage: serviceId:", serviceId);
-  }, [serviceId]);
+    console.log('DetailServicePage: serviceId:', serviceId)
+  }, [serviceId])
 
   const setDateTimeFormat = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const amPm = date.getHours() >= 12 ? "PM" : "AM";
-    return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`;
-  };
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const amPm = date.getHours() >= 12 ? 'PM' : 'AM'
+    return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`
+  }
 
   const handleEdit = () =>
-    router.push("/admin/edit-service?serviceId=" + serviceId);
+    router.push('/admin/edit-service?serviceId=' + serviceId)
 
-  const handleGoBack = () => router.back();
+  const handleGoBack = () => router.back()
 
   return (
-    <div
-      className={`${prompt.className} flex w-screen min-h-screen bg-[var(--bg)]`}
-    >
+    <div className={`flex w-screen min-h-screen bg-[var(--bg)]`}>
       <Sidebar className="sticky top-0" />
       <div className="w-full flex flex-col space-y-6">
         {/* Header */}
@@ -158,17 +133,15 @@ function EditServicePage() {
                   height={300}
                   className="object-contain rounded"
                 />
-              ) : (
-                // อาจจะแสดง Placeholder อื่นๆ หรือไม่แสดงอะไรเลย
-                null
-              )}
+              ) : // อาจจะแสดง Placeholder อื่นๆ หรือไม่แสดงอะไรเลย
+              null}
             </div>
           </div>
           <div className="mt-4 border-t-1 border-[var(--gray-200)]"></div>
           {/* Sub-services */}
           <div className="flex flex-col justify-start gap-10 space-y-2">
             <Label className="text-heading-5">รายการบริการย่อย</Label>
-            {serviceData?.subervices?.map((subService) => (
+            {serviceData?.subervices?.map(subService => (
               <div
                 key={subService.id} // ตรวจสอบให้แน่ใจว่า subService มี id ที่ไม่ซ้ำกัน
                 className="grid grid-cols-8 justify-between items-center gap-4"
@@ -197,7 +170,7 @@ function EditServicePage() {
               <span>
                 {serviceData?.created_at
                   ? setDateTimeFormat(new Date(serviceData.created_at))
-                  : "N/A"}
+                  : 'N/A'}
               </span>
             </div>
             <div className="flex flex-row justify-start gap-10 space-y-2">
@@ -205,14 +178,14 @@ function EditServicePage() {
               <span>
                 {serviceData?.updated_at
                   ? setDateTimeFormat(new Date(serviceData.updated_at))
-                  : "N/A"}
+                  : 'N/A'}
               </span>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default EditServicePage;
+export default EditServicePage
