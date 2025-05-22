@@ -7,7 +7,7 @@ import Link from 'next/link'
 import axios, { AxiosError } from 'axios'
 import { loginSchema, LoginFormInputs } from '../schemas/auth'
 import toast, { Toaster } from 'react-hot-toast' // เพิ่ม import สำหรับ toast
-
+import { useUser } from '@/contexts/UserContext'
 // สร้าง interface สำหรับ error response
 interface ErrorResponse {
   error?: string
@@ -18,7 +18,7 @@ export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
+  const { refetchUser } = useUser()
   const {
     register,
     handleSubmit,
@@ -43,7 +43,7 @@ export default function LoginPage() {
         toast.success('เข้าสู่ระบบสำเร็จ! กำลังนำทางไปหน้าหลัก...', {
           duration: 2000,
         })
-
+        await refetchUser()
         // รอให้ toast แสดงแล้วค่อย redirect
         setTimeout(() => {
           router.push('/')
