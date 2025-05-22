@@ -4,9 +4,10 @@ import { useRouter } from 'next/router'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { termsContent, privacyContent } from '../data/legal'
 import Link from 'next/link'
-import axios, { AxiosError } from 'axios' // เพิ่ม import AxiosError
+import axios, { AxiosError } from 'axios'
 import { registerSchema, RegisterFormInputs } from '../schemas/auth'
 import LegalModal from '@/components/shared/LegalModal'
+import toast, { Toaster } from 'react-hot-toast' // เพิ่ม import Toaster ด้วย
 
 // สร้าง interface สำหรับ error response
 interface ErrorResponse {
@@ -44,27 +45,47 @@ export default function RegisterPage() {
         tel: data.phone,
       })
 
-      // ถ้าสำเร็จ นำทางไปยังหน้า login
+      // ถ้าสำเร็จ แสดง toast และนำทางไปยังหน้า login
       if (res.status === 201) {
-        router.push('/login')
+        // แสดง toast notification เมื่อลงทะเบียนสำเร็จ (แบบง่าย)
+        toast.success('ลงทะเบียนสำเร็จ! กำลังนำทางไปหน้าเข้าสู่ระบบ...', {
+          duration: 2000,
+        })
+
+        // รอให้ toast แสดงประมาณ 1.5 วินาที แล้วค่อย redirect
+        setTimeout(() => {
+          router.push('/login')
+        }, 1500)
+
         return
       }
     } catch (error: unknown) {
       // ใช้ axios.isAxiosError เพื่อตรวจสอบว่าเป็น AxiosError
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>
-        // เข้าถึง message จาก response data อย่างปลอดภัย
-        setError(
+        const errorMessage =
           axiosError.response?.data?.message ||
-            axiosError.response?.data?.error ||
-            'เกิดข้อผิดพลาดในการลงทะเบียน กรุณาลองใหม่อีกครั้ง'
-        )
+          axiosError.response?.data?.error ||
+          'เกิดข้อผิดพลาดในการลงทะเบียน กรุณาลองใหม่อีกครั้ง'
+
+        // แสดง error toast (แบบง่าย)
+        toast.error(errorMessage)
+
+        setError(errorMessage)
       } else if (error instanceof Error) {
         // กรณีเป็น Error ทั่วไป
-        setError(error.message || 'เกิดข้อผิดพลาดในการลงทะเบียน')
+        const errorMessage = error.message || 'เกิดข้อผิดพลาดในการลงทะเบียน'
+
+        toast.error(errorMessage)
+
+        setError(errorMessage)
       } else {
         // กรณีเป็น error ที่ไม่รู้จัก
-        setError('เกิดข้อผิดพลาดในการลงทะเบียน กรุณาลองใหม่อีกครั้ง')
+        const errorMessage = 'เกิดข้อผิดพลาดในการลงทะเบียน กรุณาลองใหม่อีกครั้ง'
+
+        toast.error(errorMessage)
+
+        setError(errorMessage)
       }
     } finally {
       setIsLoading(false)
@@ -264,6 +285,32 @@ export default function RegisterPage() {
           content={privacyContent}
         />
       </div>
+
+      {/* เพิ่ม Toaster component ที่นี่เพื่อให้ toast สามารถแสดงผลได้ */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 2000,
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </>
   )
 }
