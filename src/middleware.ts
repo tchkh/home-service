@@ -1,18 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { authRedirectMiddleware } from '@/lib/middleware/authRedirect'
+// src/middlware.ts
+import { NextRequest, NextResponse } from "next/server";
+import { authRedirectMiddleware } from "@/lib/middleware/authRedirect";
+import { protectApiMiddleware } from "./lib/middleware/protectApi";
 
-const AUTH_ROUTES = ['/register', '/login']
+const AUTH_ROUTES = ["/register", "/login"];
 
 export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl
+  const { pathname } = req.nextUrl;
 
   if (AUTH_ROUTES.includes(pathname)) {
-    return await authRedirectMiddleware(req)
+    return await authRedirectMiddleware(req);
   }
 
-  return NextResponse.next()
+  if (pathname.startsWith("/api/profile")) {
+    return await protectApiMiddleware(req);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/register', '/login'],
-}
+  matcher: ["/register", "/login", "/api/profile"],
+};

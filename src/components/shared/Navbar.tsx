@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import axios from 'axios'
 import type { User } from '@/types'
 import Link from 'next/link'
+import supabase from '@/lib/supabase'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,16 +36,25 @@ function Navbar() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+          setUser(null)
+          setLoading(false)
+          return
+        }
+
         const res = await axios.get('/api/profile')
         if (res.status === 200) {
           setUser(res.data.user)
         }
+
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 401) {
           setUser(null)
         } else {
           console.error('Unexpected error while fetching user:', error)
         }
+        
       } finally {
         setLoading(false)
       }
