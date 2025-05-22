@@ -10,10 +10,10 @@ export async function authRedirectMiddleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) {
-    return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-    });
+  const url = req.nextUrl.clone()
+  if (session && ['/register', '/login'].includes(url.pathname)) {
+    url.pathname = '/'
+    return NextResponse.redirect(url)
   }
 
   return res;
