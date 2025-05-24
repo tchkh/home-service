@@ -1,5 +1,4 @@
 import "@/styles/globals.css";
-import { useRouter } from "next/router";
 import type { AppProps } from "next/app";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
@@ -10,46 +9,43 @@ import Promo_code from "../../public/asset/svgs/promo-code.svg";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { Prompt } from "next/font/google";
 import { UserProvider } from "@/contexts/UserContext";
-import { AppContentProps, SidebarItem } from "@/types";
+import { AppContentProps, AppProvidersProps, SidebarItem } from "@/types";
 
 const prompt = Prompt({
   subsets: ["latin", "thai"],
   weight: ["300", "400", "500", "600"],
 });
 
+const navbarPages = ["/login", "/register", "/serviceList"];
+const footerPages = ["/", "/serviceList"];
+
+const adminSidebarItems: SidebarItem[] = [
+  {
+    label: "หมวดหมู่",
+    icon: Category,
+    href: "/admin/categories",
+  },
+  {
+    label: "บริการ",
+    icon: Files,
+    href: "/admin/services",
+  },
+  {
+    label: "Promotion Code",
+    icon: Promo_code,
+    href: "/admin/promo-codes",
+  },
+];
+
 // Component ย่อยที่ใช้ Context
 function AppContent({ Component, pageProps, router }: AppContentProps) {
   const { isSidebarOpen } = useSidebar();
-  const localRouter = useRouter();
 
-  const navbarPages = ["/login", "/register", "/serviceList"];
-  const footerPages = ["/", "/serviceList"];
-
-  const showAdminSidebar =
-    localRouter.pathname.startsWith("/admin") &&
-    localRouter.pathname !== "/admin/login";
+  const showAdminSidebar = router.pathname.startsWith("/admin") && router.pathname !== "/admin/login";
 
   const contentMarginClass =
-    showAdminSidebar && isSidebarOpen ? "ml-60" : "ml-0";
-
-  const adminSidebarItems: SidebarItem[] = [
-    {
-      label: "หมวดหมู่",
-      icon: Category,
-      href: "/admin/categories",
-    },
-    {
-      label: "บริการ",
-      icon: Files,
-      href: "/admin/services",
-    },
-    {
-      label: "Promotion Code",
-      icon: Promo_code,
-      href: "/admin/promo-codes",
-    },
-  ];
-
+  showAdminSidebar && isSidebarOpen ? "ml-60" : "ml-0";
+  
   const showNavbar = navbarPages.includes(router.pathname);
   const showFooter = footerPages.includes(router.pathname);
 
@@ -69,16 +65,20 @@ function AppContent({ Component, pageProps, router }: AppContentProps) {
   );
 }
 
-export default function App({ Component, pageProps, router }: AppProps) {
+function AppProviders({ children }: AppProvidersProps) {
   return (
     <UserProvider>
       <SidebarProvider>
-        <AppContent
-          Component={Component}
-          pageProps={pageProps}
-          router={router}
-        />
+        {children}
       </SidebarProvider>
     </UserProvider>
+  );
+}
+
+export default function App({ Component, pageProps, router }: AppProps) {
+  return (
+    <AppProviders>
+      <AppContent Component={Component} pageProps={pageProps} router={router} />
+    </AppProviders>
   );
 }

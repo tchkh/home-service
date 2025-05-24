@@ -8,6 +8,10 @@ export interface AppContentProps {
   router: NextRouter;
 }
 
+export interface AppProvidersProps {
+  children: React.ReactNode;
+}
+
 // User interfaces
 export interface User {
   id: number
