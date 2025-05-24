@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
-import { useForm, useFieldArray } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import axios from 'axios'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useEffect, useState } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,59 +15,65 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+} from "@/components/ui/alert-dialog";
 
-import { ArrowLeft, Trash, AlertTriangle } from 'lucide-react'
-import { useRouter } from 'next/router' // เพิ่ม import useRouter
-import Image from 'next/image'
-import Sidebar from '@/components/shared/AdminSidebar'
-import { serviceSchema, ServiceFormValues } from '../../schemas/edit-service'
+import { ArrowLeft, Trash, AlertTriangle } from "lucide-react";
+import { useRouter } from "next/router"; // เพิ่ม import useRouter
+import { useSidebar } from "@/contexts/SidebarContext";
+import Image from "next/image";
+import {
+  serviceSchema,
+  ServiceFormValues,
+} from "../../../schemas/edit-service";
 
 function EditServicePage() {
-  const router = useRouter() // สร้าง router instance
+  const router = useRouter(); // สร้าง router instance
+  const { isSidebarOpen, toggleSidebar } = useSidebar();
   // เพิ่ม state เก็บไฟล์จริงๆ (File) แยกจาก URL preview
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [serviceData, setServiceData] = useState<ServiceFormValues | null>(null)
-  const serviceId = router.query.serviceId
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [serviceData, setServiceData] = useState<ServiceFormValues | null>(
+    null
+  );
+  const serviceId = router.query.serviceId;
 
   // ฟังก์ชันสําหรับดึงข้อมูล Service จาก API
   useEffect(() => {
     const fetchServiceData = async (serviceId: string) => {
       try {
-        if (!serviceId) return // ถ้าไม่มี serviceId ให้หยุดการทำงาน
+        if (!serviceId) return; // ถ้าไม่มี serviceId ให้หยุดการทำงาน
 
         const result = await axios.get(
           `/api/admin/getServiceById?serviceId=${serviceId}`
-        )
+        );
         if (result.status === 200) {
           setServiceData({
-            title: result.data.title || '',
-            category: result.data.category?.name || '',
-            image: result.data.image_url || '',
+            title: result.data.title || "",
+            category: result.data.category?.name || "",
+            image: result.data.image_url || "",
             sub_services: result.data.sub_services || [],
-            created_at: result.data.created_at || '',
-            updated_at: result.data.updated_at || '',
-          })
-          setSelectedImage(result.data.image_url)
-          setSelectedFile(null)
+            created_at: result.data.created_at || "",
+            updated_at: result.data.updated_at || "",
+          });
+          setSelectedImage(result.data.image_url);
+          setSelectedFile(null);
           console.log(
-            'EditServicePage: Response from backend (getServiceById) : ',
+            "EditServicePage: Response from backend (getServiceById) : ",
             result.data
-          )
+          );
         }
       } catch (error) {
-        console.error('Error fetching service data:', error)
-        return
+        console.error("Error fetching service data:", error);
+        return;
       }
-    }
+    };
 
     if (serviceId) {
-      fetchServiceData(serviceId as string)
+      fetchServiceData(serviceId as string);
     }
 
-    console.log('EditServicePage: serviceId for (getServiceById)', serviceId)
-  }, [serviceId])
+    console.log("EditServicePage: serviceId for (getServiceById)", serviceId);
+  }, [serviceId]);
 
   // react-hook-form + zod
   const {
@@ -80,163 +86,199 @@ function EditServicePage() {
   } = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {},
-    mode: 'onChange',
-  })
+    mode: "onChange",
+  });
 
   // **ใช้ useEffect เพื่ออัปเดต Form ด้วยข้อมูลที่ดึงมา**
   useEffect(() => {
     if (serviceData) {
-      reset(serviceData)
+      reset(serviceData);
       console.log(
-        'EditServicePage: serviceData for (putServiceById)',
+        "EditServicePage: serviceData for (putServiceById)",
         serviceData
-      )
+      );
     }
-  }, [serviceData, reset])
+  }, [serviceData, reset]);
 
   // ใช้ name: "sub_services" ให้ตรงกับ schema
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'sub_services',
-  })
+    name: "sub_services",
+  });
 
   const setDateTimeFormat = (date: Date) => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-    const amPm = date.getHours() >= 12 ? 'PM' : 'AM'
-    return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`
-  }
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const amPm = date.getHours() >= 12 ? "PM" : "AM";
+    return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`;
+  };
 
   // ฟังก์ชันที่ถูกเรียกเมื่อมีการ submit ฟอร์ม
   const onSubmit = async (data: ServiceFormValues) => {
     try {
-      const formData = new FormData()
-      formData.append('title', data.title) // ใช้ serviceName ตาม schema
-      formData.append('category', data.category)
+      const formData = new FormData();
+      formData.append("title", data.title); // ใช้ serviceName ตาม schema
+      formData.append("category", data.category);
 
       // จัดการรูปภาพ
       if (selectedFile) {
-        formData.append('image', selectedFile) // ส่ง File
+        formData.append("image", selectedFile); // ส่ง File
       } else if (selectedImage) {
-        formData.append('image', selectedImage) // ส่ง URL ในรูป string
+        formData.append("image", selectedImage); // ส่ง URL ในรูป string
       }
 
       // sub_services เป็น JSON string
-      formData.append('sub_services', JSON.stringify(data.sub_services)) // ใช้ sub_services ตาม schema
+      formData.append("sub_services", JSON.stringify(data.sub_services)); // ใช้ sub_services ตาม schema
 
       // ดึง serviceId จาก URL query parameter
-      const serviceId = router.query.serviceId as string
+      const serviceId = router.query.serviceId as string;
 
       if (!serviceId) {
-        console.error('No serviceId provided')
-        return
+        console.error("No serviceId provided");
+        return;
       } // ถ้าไม่มี serviceId ให้หยุดการทำงาน
 
       // เรียก API ด้วย PUT method ไปที่ Endpoint สำหรับแก้ไข
       const result = await axios.put(
         `/api/admin/putServiceById?serviceId=${serviceId}`,
         formData
-      )
+      );
 
       if (result.status === 200) {
         console.log(
-          'EditServicePage: Response from backend (putServiceById) :',
+          "EditServicePage: Response from backend (putServiceById) :",
           result.data
-        )
+        );
       }
 
       // ถ้าแก้ไขสำเร็จ ไปหน้า detail-service
-      router.push(`/admin/detail-service?serviceId=${serviceId}`)
+      router.push(`/admin/services/detail-service?serviceId=${serviceId}`);
     } catch (err) {
-      console.error('Error updating service:', err)
+      console.error("Error updating service:", err);
       // จัดการ Error (เช่น แสดงข้อความผิดพลาดให้ผู้ใช้)
     }
-  }
+  };
 
   const handleCancel = () =>
-    router.push('/admin/detail-service?serviceId=' + serviceId)
+    router.push("/admin/services/detail-service?serviceId=" + serviceId);
 
   // ฟังก์ชันสำหรับจัดการเมื่อมีการเปลี่ยนแปลงไฟล์รูปภาพ
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null
+    const file = e.target.files?.[0] ?? null;
     if (file) {
       // เก็บ URL preview
-      setSelectedImage(URL.createObjectURL(file))
+      setSelectedImage(URL.createObjectURL(file));
       // เก็บไฟล์จริงๆ ไว้ใน state
-      setSelectedFile(file)
-      setValue('image', file, { shouldValidate: true })
-      setValue('image', file as File, { shouldValidate: true })
+      setSelectedFile(file);
+      setValue("image", file, { shouldValidate: true });
+      setValue("image", file as File, { shouldValidate: true });
     }
     console.log(
-      'Selected image (preview URL):',
+      "Selected image (preview URL):",
       file ? URL.createObjectURL(file) : null
-    )
-    console.log('Selected file:', file)
-  }
+    );
+    console.log("Selected file:", file);
+  };
 
   const handleRemoveImage = () => {
-    setSelectedImage(null)
-    setSelectedFile(null)
-    setValue('image', null, { shouldValidate: true })
-  }
+    setSelectedImage(null);
+    setSelectedFile(null);
+    setValue("image", null, { shouldValidate: true });
+  };
 
   const handlePriceChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     index: number
   ) => {
-    const value = event.target.value
+    const value = event.target.value;
     setValue(`sub_services.${index}.price`, Number(value), {
       shouldValidate: true,
-    })
-  }
+    });
+  };
 
   const handleDeleteService = async () => {
     try {
       // ดึง serviceId จาก URL query parameter
-      const serviceId = router.query.serviceId as string
+      const serviceId = router.query.serviceId as string;
 
       if (!serviceId) {
-        console.error('No serviceId provided')
-        return
+        console.error("No serviceId provided");
+        return;
       } // ถ้าไม่มี serviceId ให้หยุดการทำงาน
 
       const result = await axios.delete(
         `/api/admin/deleteServiceById?serviceId=${serviceId}`
-      )
+      );
       if (result.status === 200) {
         console.log(
-          'EditServicePage: Response from backend (deleteServiceById) :',
+          "EditServicePage: Response from backend (deleteServiceById) :",
           result.data
-        )
+        );
       }
-      router.push('/admin/services')
+      router.push("/admin/services");
     } catch (err) {
-      console.error('Error deleting service:', err)
+      console.error("Error deleting service:", err);
     }
-  }
+  };
 
   const handleRemoveSubService = (index: number) => {
     if (index > 0) {
-      remove(index)
+      remove(index);
     } else {
-      remove(index)
+      remove(index);
       append({
-        title: '',
+        title: "",
         price: 0,
-        service_unit: '',
-      })
+        service_unit: "",
+      });
     }
-  }
+  };
 
   return (
-    <div className={` flex w-screen min-h-screen bg-[var(--bg)]`}>
-      <Sidebar className="sticky top-0" />
+    <div className={` flex min-h-screen bg-[var(--bg)]`}>
       <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col">
         {/* Header */}
-        <div className="flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
+        <div className="relative flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
+          <Button
+            type="button"
+            onClick={toggleSidebar}
+            className="absolute top-7 -left-3 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--gray-200)] cursor-pointer"
+          >
+            {isSidebarOpen ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-chevron-left-icon lucide-chevron-left"
+              >
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-chevron-right-icon lucide-chevron-right"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            )}
+          </Button>
           <div className="flex items-center space-x-4">
             <Button
               type="button"
@@ -279,7 +321,7 @@ function EditServicePage() {
               id="title"
               autoComplete="off"
               className="w-80 border-1 border-[var(--gray-300)] text-body-1"
-              {...register('title', { required: true })}
+              {...register("title", { required: true })}
               defaultValue={serviceData?.title}
             />
             {errors.title && (
@@ -296,7 +338,7 @@ function EditServicePage() {
             <select
               id="category"
               className="w-80 border-1 border-[var(--gray-300)] rounded-sm text-body-1"
-              {...register('category', { required: true })}
+              {...register("category", { required: true })}
               defaultValue={serviceData?.category}
             >
               <option value="">เลือกหมวดหมู่</option>
@@ -346,7 +388,7 @@ function EditServicePage() {
                   <p>
                     <span className="text-[var(--blue-600)]">
                       อัปโหลดรูปภาพ
-                    </span>{' '}
+                    </span>{" "}
                     หรือ ลากและวางที่นี่
                   </p>
                   <p className="text-xs">PNG, JPG ไม่เกิน 5MB</p>
@@ -355,7 +397,7 @@ function EditServicePage() {
               <Input
                 type="file"
                 accept="image/*"
-                {...register('image')}
+                {...register("image")}
                 onChange={handleImageChange}
                 autoComplete="off"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -402,7 +444,7 @@ function EditServicePage() {
                   </div>
                   <div className="flex flex-col col-span-2">
                     <span>
-                      ค่าบริการ / 1 หน่วย{' '}
+                      ค่าบริการ / 1 หน่วย{" "}
                       <span className="text-[var(--red)]">*</span>
                     </span>
                     <Input
@@ -414,7 +456,7 @@ function EditServicePage() {
                       defaultValue={Number(
                         serviceData?.sub_services[idx]?.price
                       )}
-                      onChange={e => handlePriceChange(e, idx)}
+                      onChange={(e) => handlePriceChange(e, idx)}
                     />
                     {errors.sub_services?.[idx]?.price && (
                       <p className="text-xs text-[var(--red)]">
@@ -424,7 +466,7 @@ function EditServicePage() {
                   </div>
                   <div className="flex flex-col col-span-2">
                     <span>
-                      หน่วยการบริการ{' '}
+                      หน่วยการบริการ{" "}
                       <span className="text-[var(--red)]">*</span>
                     </span>
                     <Input
@@ -450,7 +492,7 @@ function EditServicePage() {
                     type="button"
                     className="justify-self-end w-[72px] pt-6 btn btn--ghost text-[var(--gray-400)]"
                     onClick={() => {
-                      handleRemoveSubService(idx)
+                      handleRemoveSubService(idx);
                     }}
                   >
                     ลบรายการ
@@ -461,7 +503,7 @@ function EditServicePage() {
             <Button
               type="button"
               className="btn btn--secondary w-[185px] px-[24px] py-[10px]"
-              onClick={() => append({ title: '', price: 0, service_unit: '' })}
+              onClick={() => append({ title: "", price: 0, service_unit: "" })}
             >
               เพิ่มรายการ +
             </Button>
@@ -475,7 +517,7 @@ function EditServicePage() {
               <span>
                 {serviceData?.created_at
                   ? setDateTimeFormat(new Date(serviceData.created_at))
-                  : 'N/A'}
+                  : "N/A"}
               </span>
             </div>
             <div className="flex flex-row justify-start gap-10 space-y-2">
@@ -483,7 +525,7 @@ function EditServicePage() {
               <span>
                 {serviceData?.updated_at
                   ? setDateTimeFormat(new Date(serviceData.updated_at))
-                  : 'N/A'}
+                  : "N/A"}
               </span>
             </div>
           </div>
@@ -532,7 +574,7 @@ function EditServicePage() {
         </div>
       </form>
     </div>
-  )
+  );
 }
 
-export default EditServicePage
+export default EditServicePage;

@@ -1,21 +1,23 @@
-import { useState } from 'react' // Hook สำหรับจัดการ state ใน Component
-import { useForm, useFieldArray } from 'react-hook-form' // Hook สำหรับจัดการฟอร์มและอาร์เรย์ของฟิลด์
-import { zodResolver } from '@hookform/resolvers/zod'
-import axios from 'axios'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input' // Component Input จาก Shadcn UI
-import { Label } from '@/components/ui/label' // Component Label จาก Shadcn UI
-import { Trash } from 'lucide-react'
-import { useRouter } from 'next/router' // Hook สำหรับจัดการการเปลี่ยนเส้นทางใน Next.js
-import Image from 'next/image'
-import Sidebar from '@/components/shared/AdminSidebar'
-import { serviceSchema, ServiceFormValues } from '../../schemas/add-service'
+import { useState } from "react"; // Hook สำหรับจัดการ state ใน Component
+import { useForm, useFieldArray } from "react-hook-form"; // Hook สำหรับจัดการฟอร์มและอาร์เรย์ของฟิลด์
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"; // Component Input จาก Shadcn UI
+import { Label } from "@/components/ui/label"; // Component Label จาก Shadcn UI
+import { Trash } from "lucide-react";
+import { useRouter } from "next/router"; // Hook
+import { useSidebar } from "@/contexts/SidebarContext";
+// สำหรับจัดการการเปลี่ยนเส้นทางใน Next.js
+import Image from "next/image";
+import { serviceSchema, ServiceFormValues } from "../../../schemas/add-service";
 
 function AddServicePage() {
-  const router = useRouter()
+  const router = useRouter();
+  const { isSidebarOpen, toggleSidebar } = useSidebar();
   // เพิ่ม state เก็บไฟล์จริงๆ (File) แยกจาก URL preview
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // ตัดการ register ฟิลด์ "image" ออกไป เพราะเราจะควบคุมด้วย state แทน
   const {
@@ -27,110 +29,148 @@ function AddServicePage() {
   } = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
-      sub_services: [{ title: '', price: 0, service_unit: '' }],
+      sub_services: [{ title: "", price: 0, service_unit: "" }],
     },
-  })
+  });
 
   const {
     // ดึงฟังก์ชันและ fields ที่จำเป็นจาก useFieldArray hook สำหรับจัดการอาร์เรย์ของบริการย่อย
     fields, // อาร์เรย์ของฟิลด์ที่ถูกจัดการ
     append, // ฟังก์ชันสำหรับเพิ่มฟิลด์ใหม่
     remove, // ฟังก์ชันสำหรับลบฟิลด์
-  } = useFieldArray({ control, name: 'sub_services' }) // เชื่อมต่อกับ control ของ useForm และระบุชื่อของอาร์เรย์
+  } = useFieldArray({ control, name: "sub_services" }); // เชื่อมต่อกับ control ของ useForm และระบุชื่อของอาร์เรย์
 
   // ฟังก์ชันที่ถูกเรียกเมื่อมีการ submit ฟอร์ม
   const onSubmit = async (data: ServiceFormValues) => {
     try {
       // สร้าง FormData สำหรับ multipart/form-data
-      const formData = new FormData()
-      formData.append('title', data.title)
-      formData.append('category', data.category)
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("category", data.category);
       // เอาไฟล์จาก state ไป append
       if (selectedFile) {
-        formData.append('image', selectedFile)
+        formData.append("image", selectedFile);
       } else {
-        throw new Error('No image file selected')
+        throw new Error("No image file selected");
       }
       // sub_services เป็น JSON string ให้ formidable มา parse
-      formData.append('sub_services', JSON.stringify(data.sub_services))
+      formData.append("sub_services", JSON.stringify(data.sub_services));
 
       // เรียก API ด้วย multipart/form-data
-      const result = await axios.post('/api/admin/postService', formData)
+      const result = await axios.post("/api/admin/postService", formData);
 
       if (result.status === 200) {
         console.log(
-          'AddServicePage: Response from backend (postService) :',
+          "AddServicePage: Response from backend (postService) :",
           result.data
-        )
+        );
       }
 
       // ถ้าสร้างสำเร็จ ไปหน้า detail-service
-      const newId = result.data.id as string
-      router.push(`/admin/detail-service?serviceId=${newId}`)
+      const newId = result.data.id as string;
+      router.push(`/admin/services/detail-service?serviceId=${newId}`);
     } catch (err) {
-      console.error('Error creating service:', err)
+      console.error("Error creating service:", err);
     }
-  }
+  };
 
   // ฟังก์ชันสำหรับจัดการการยกเลิกและกลับไปยังหน้าก่อนหน้า
-  const handleCancel = () => router.back()
+  const handleCancel = () => router.back();
 
   // ฟังก์ชันสำหรับจัดการเมื่อมีการเปลี่ยนแปลงไฟล์รูปภาพ
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null
+    const file = e.target.files?.[0] ?? null;
     if (file) {
       // เก็บ URL preview
-      setSelectedImage(URL.createObjectURL(file))
+      setSelectedImage(URL.createObjectURL(file));
       // เก็บไฟล์จริงๆ ไว้ใน state
-      setSelectedFile(file)
-      setValue('image', file, { shouldValidate: true })
-      setValue('image', file as File, { shouldValidate: true })
+      setSelectedFile(file);
+      setValue("image", file, { shouldValidate: true });
+      setValue("image", file as File, { shouldValidate: true });
     }
     console.log(
-      'Selected image (preview URL):',
+      "Selected image (preview URL):",
       file ? URL.createObjectURL(file) : null
-    )
-    console.log('Selected file:', file)
-  }
+    );
+    console.log("Selected file:", file);
+  };
 
   const handleRemoveImage = () => {
-    setSelectedImage(null)
-    setSelectedFile(null)
-    setValue('image', null, { shouldValidate: true })
-  }
+    setSelectedImage(null);
+    setSelectedFile(null);
+    setValue("image", null, { shouldValidate: true });
+  };
 
   const handlePriceChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     index: number
   ) => {
-    const value = event.target.value
+    const value = event.target.value;
     setValue(`sub_services.${index}.price`, Number(value), {
       shouldValidate: true,
-    })
-  }
+    });
+  };
 
   const handleRemoveSubService = (index: number) => {
     if (index > 0) {
-      remove(index)
+      remove(index);
     } else {
-      remove(index)
+      remove(index);
       append({
-        title: '',
+        title: "",
         price: 0,
-        service_unit: '',
-      })
+        service_unit: "",
+      });
     }
-  }
+  };
 
   return (
-    <div className={`flex w-screen min-h-screen bg-[var(--bg)]`}>
-      <Sidebar className="sticky top-0" />
+    <div className={`flex min-h-screen bg-[var(--bg)]`}>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-full flex flex-col space-y-6"
       >
         {/* Header */}
-        <div className="flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
+        <div className="relative flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
+          {/* Hide & Show sidebar */}
+          <Button
+            type="button"
+            onClick={toggleSidebar}
+            className="absolute top-7 -left-3 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--gray-200)] cursor-pointer"
+          >
+            {isSidebarOpen ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-chevron-left-icon lucide-chevron-left"
+              >
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-chevron-right-icon lucide-chevron-right"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            )}
+          </Button>
+
           <h1 className="text-heading-2 text-2xl font-semibold">เพิ่มบริการ</h1>
           {/* ปุ่ม */}
           <div className="flex justify-end space-x-3">
@@ -158,7 +198,7 @@ function AddServicePage() {
               id="title"
               autoComplete="off"
               className="w-80 border-1 border-[var(--gray-300)]"
-              {...register('title', { required: true })}
+              {...register("title", { required: true })}
             />
             {errors.title && (
               <p className="text-sm text-[var(--red)]">
@@ -174,7 +214,7 @@ function AddServicePage() {
             <select
               id="category"
               className="w-80 border-1 border-[var(--gray-300)] rounded-sm"
-              {...register('category', { required: true })}
+              {...register("category", { required: true })}
             >
               <option value="">เลือกหมวดหมู่</option>
               <option value="บริการทั่วไป">บริการทั่วไป</option>
@@ -223,7 +263,7 @@ function AddServicePage() {
                   <p>
                     <span className="text-[var(--blue-600)]">
                       อัปโหลดรูปภาพ
-                    </span>{' '}
+                    </span>{" "}
                     หรือ ลากและวางที่นี่
                   </p>
                   <p className="text-xs">PNG, JPG ไม่เกิน 5MB</p>
@@ -282,7 +322,7 @@ function AddServicePage() {
                         required: true,
                         valueAsNumber: true,
                       })}
-                      onChange={e => handlePriceChange(e, idx)}
+                      onChange={(e) => handlePriceChange(e, idx)}
                     />
                     {errors.sub_services?.[idx]?.price && (
                       <p className="text-xs text-[var(--red)]">
@@ -311,7 +351,7 @@ function AddServicePage() {
                     type="button"
                     className="justify-self-end w-[72px] pt-6 btn text-[var(--gray-400)] underline cursor-hover"
                     onClick={() => {
-                      handleRemoveSubService(idx)
+                      handleRemoveSubService(idx);
                     }}
                   >
                     ลบรายการ
@@ -322,7 +362,7 @@ function AddServicePage() {
             <Button
               type="button"
               className="btn btn--secondary w-[185px] px-[24px] py-[10px]"
-              onClick={() => append({ title: '', price: 0, service_unit: '' })}
+              onClick={() => append({ title: "", price: 0, service_unit: "" })}
             >
               เพิ่มรายการ +
             </Button>
@@ -330,7 +370,7 @@ function AddServicePage() {
         </div>
       </form>
     </div>
-  )
+  );
 }
 
-export default AddServicePage
+export default AddServicePage;

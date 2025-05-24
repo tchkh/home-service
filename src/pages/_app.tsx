@@ -1,31 +1,84 @@
 import "@/styles/globals.css";
+import { useRouter } from "next/router";
 import type { AppProps } from "next/app";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
-import { useRouter } from "next/router";
+import Sidebar from "@/components/shared/Sidebar";
+import Category from "../../public/asset/svgs/category.svg";
+import Files from "../../public/asset/svgs/files.svg";
+import Promo_code from "../../public/asset/svgs/promo-code.svg";
+import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { Prompt } from "next/font/google";
 import { UserProvider } from "@/contexts/UserContext";
+import { AppContentProps, SidebarItem } from "@/types";
 
 const prompt = Prompt({
   subsets: ["latin", "thai"],
   weight: ["300", "400", "500", "600"],
 });
 
-export default function App({ Component, pageProps }: AppProps) {
-  const router = useRouter();
+// Component ย่อยที่ใช้ Context
+function AppContent({ Component, pageProps, router }: AppContentProps) {
+  const { isSidebarOpen } = useSidebar();
+  const localRouter = useRouter();
+
   const navbarPages = ["/login", "/register", "/serviceList"];
   const footerPages = ["/", "/serviceList"];
+
+  const showAdminSidebar =
+    localRouter.pathname.startsWith("/admin") &&
+    localRouter.pathname !== "/admin/login";
+
+  const contentMarginClass =
+    showAdminSidebar && isSidebarOpen ? "ml-60" : "ml-0";
+
+  const adminSidebarItems: SidebarItem[] = [
+    {
+      label: "หมวดหมู่",
+      icon: Category,
+      href: "/admin/categories",
+    },
+    {
+      label: "บริการ",
+      icon: Files,
+      href: "/admin/services",
+    },
+    {
+      label: "Promotion Code",
+      icon: Promo_code,
+      href: "/admin/promo-codes",
+    },
+  ];
 
   const showNavbar = navbarPages.includes(router.pathname);
   const showFooter = footerPages.includes(router.pathname);
 
   return (
-    <UserProvider>
-      <main className={`${prompt.className}`}>
-        {showNavbar && <Navbar />}
+    <main
+      className={`${prompt.className} min-h-screen w-full max-w-[100%] overflow-x-hidden`}
+    >
+      {showNavbar && <Navbar />}
+      {showAdminSidebar && <Sidebar items={adminSidebarItems} />}
+      <div
+        className={`flex-1 transition-all duration-300 ease-in-out ${contentMarginClass}`}
+      >
         <Component {...pageProps} />
-        {showFooter && <Footer />}
-      </main>
+      </div>
+      {showFooter && <Footer />}
+    </main>
+  );
+}
+
+export default function App({ Component, pageProps, router }: AppProps) {
+  return (
+    <UserProvider>
+      <SidebarProvider>
+        <AppContent
+          Component={Component}
+          pageProps={pageProps}
+          router={router}
+        />
+      </SidebarProvider>
     </UserProvider>
   );
 }
