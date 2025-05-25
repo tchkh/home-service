@@ -1,7 +1,7 @@
 import { Prompt } from "next/font/google";
 import ServiceCard from "@/components/ServiceCard";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import axios, { AxiosError } from "axios";
+import { useEffect, useState, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
    faMagnifyingGlass,
@@ -23,8 +23,13 @@ import {
    PopoverContent,
    PopoverTrigger,
 } from "@/components/ui/popover";
+// import { string } from "zod";
+// import { string } from "zod";
 // import { number } from 'zod';
 // import { boolean } from 'zod';
+
+// import debounce from "debounce-async";
+// const debounced = debounce(f, 100);
 
 const prompt = Prompt({
    subsets: ["latin", "thai"],
@@ -87,8 +92,7 @@ export default function Home() {
    // ส่วน rang slider ราคา
    const [serviceMaxPrice, setServiceMaxPrice] = useState<number>(0);
    const [range, setRange] = useState<number[]>([]); // กำหนดค่าเริ่มต้น min/max
-   // const [isDragging, setIsDragging] = useState<number | null>(null); // 0 หรือ 1
-
+   // ค่า query ก่อนการ fetch
    const [dataQuery, setDataQuery] = useState<SearchType>({
       search: "",
       category: "บริการทั้งหมด",
@@ -98,8 +102,28 @@ export default function Home() {
       onLimit: null,
    });
 
+   // เก็บ category ทีไม่ซ้ำกัน
    const [uniqueDataCard, setUniqueDataCard] = useState<string[]>([]);
 
+   // เก็บค่า auto complete
+   const [showBox, setShowBox] = useState(false);
+   console.log("showBox: ", showBox);
+   const [autocompleteData, setAutocompleteData] = useState<string[]>([]);
+
+   // console.log("autocompleteData: ", autocompleteData);
+
+   const boxRef = useRef<HTMLDivElement>(null); // สำหรับตรวจว่าคลิกนอกกล่องไหม
+   /* 
+   useRef เป็น React Hook ที่ใช้เพื่อเก็บ “reference” ไปยัง DOM element หรือ “ค่า” อะไรก็ได้โดย ไม่ trigger re-render
+   เมื่อใช้กับ DOM → มันช่วยให้เราเข้าถึง องค์ประกอบ HTML จริง ๆ (เช่น <div>, <input>) ได้โดยตรงใน React
+   
+   มันคือ TypeScript type ที่ระบุว่า element นี้คือ div จาก HTML
+
+   ใช้เพื่อให้ TypeScript รู้ว่า boxRef.current จะเป็น HTMLDivElement (หรือ null)
+   → แบบนี้ TypeScript จะช่วยแนะนำ method ต่าง ๆ ได้ เช่น .contains(), .classList, .focus() ฯลฯ
+   */
+
+   // ค่าการเรียง order
    const typeSortBy: { [key: string]: string } = {
       title: "บริการแนะนำ",
       poppular: "บริการยอดนิยม",
@@ -154,7 +178,7 @@ export default function Home() {
          maxPrice: value[1],
       }));
    };
-
+   //  fetch ครั้งแรก
    useEffect(() => {
       // เปลี่ยนค่า rang ราคา
       const setMaxPrice = (data: ServiceCardProps[]) => {
@@ -174,7 +198,6 @@ export default function Home() {
       //    );
       // });
       const allCategory = (data: ServiceCardProps[]) => {
-         console.log("run allCategory");
          const dataTagCategory = data
             .map((item) => item.category_name)
             .filter((name, index, arr) => {
@@ -197,7 +220,7 @@ export default function Home() {
       firstGetDataService();
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
-
+   //  เมื่อมีการ query ให้ fetch
    useEffect(() => {
       const getDataService = async () => {
          try {
@@ -211,6 +234,53 @@ export default function Home() {
 
       getDataService();
    }, [fetchDataQuery, queryString]);
+
+   // auto complete เมื่อ มีการ search ให้ fetch
+
+   useEffect(() => {
+      // เมื่อ search มีการเปลี่ยนแปลงให้ ให้ดึงข้อมูล title แล้วไปเก็บค่าที่ usestate ไป .map
+      const timer = setTimeout(() => {
+         const getDataService = async () => {
+            if (dataQuery.search) {
+               try {
+                  const res = await axios.get(
+                     `/api/searchService?searchTitle=${dataQuery.search}`
+                  );
+                  // console.log("res.data: ", res.data);
+                  const dataTitle = res.data.map((data: string[]) => {
+                     return Object.values(data);
+                  });
+                  // console.log("dataTitle: ", dataTitle);
+                  setAutocompleteData(dataTitle);
+               } catch (error) {
+                  const massageError = error as AxiosError;
+                  // console.log("error: ", massageError);
+                  const massageShow: string = (
+                     massageError.response?.data as { massage: string }
+                  ).massage;
+                  // console.log("massageShow: ", massageShow);
+                  setAutocompleteData([massageShow]);
+               }
+            } else {
+               setAutocompleteData(["Please enter a search term."]);
+            }
+         };
+         getDataService();
+      }, 600);
+      return () => clearTimeout(timer); // ล้าง timer ถ้า query เปลี่ยนก่อน 3 วิ
+   }, [dataQuery.search]);
+
+   //  2. ตรวจจับการคลิกนอกกล่อง
+   useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+         if (boxRef.current && !boxRef.current.contains(event.target as Node)) {
+            setShowBox(false); // ถ้าคลิกนอกกล่อง input + box ให้ซ่อน
+         }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+         document.removeEventListener("mousedown", handleClickOutside);
+   }, []);
 
    return (
       <div
@@ -232,25 +302,45 @@ export default function Home() {
             <div className="container flex flex-col md:justify-between items-center px-[5%] py-4 gap-y-4 md:flex-row     ">
                {/* ส่วนค้นหา */}
 
-               <section className={`flex gap-x-4 w-full md:max-w-[350px] `}>
-                  <label htmlFor="inputSearch" className="relative w-full ">
-                     <span className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                        {iconSearch}
-                     </span>
-                     <input
-                        id="inputSearch"
-                        type="text"
-                        placeholder="ค้นหารายการ..."
-                        className=" text-body-2 pl-10 border-2 border-[var(--gray-300)] min-w-[240px] w-full h-[45px] rounded-lg  placeholder:text-[16px] placeholder:text-[var(--gray-700)] " // เพิ่ม padding ด้านซ้ายเพื่อให้มีพื้นที่สำหรับ icon
-                        value={dataQuery.search}
-                        onChange={(e) => {
-                           setDataQuery((prevState) => ({
-                              ...prevState,
-                              search: e.target.value,
-                           }));
-                        }}
-                     />
-                  </label>
+               <section
+                  className={`flex gap-x-4 w-full md:max-w-[350px] relative`}
+               >
+                  <div ref={boxRef}>
+                     <label htmlFor="inputSearch" className="relative w-full ">
+                        <span className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                           {iconSearch}
+                        </span>
+                        <input
+                           id="inputSearch"
+                           type="text"
+                           placeholder="ค้นหารายการ..."
+                           className=" text-body-2 pl-10 border-2 border-[var(--gray-300)] min-w-[240px] w-full h-[45px] rounded-lg  placeholder:text-[16px] placeholder:text-[var(--gray-700)] " // เพิ่ม padding ด้านซ้ายเพื่อให้มีพื้นที่สำหรับ icon
+                           value={dataQuery.search}
+                           onChange={(e) => {
+                              setDataQuery((prevState) => ({
+                                 ...prevState,
+                                 search: e.target.value,
+                              }));
+                           }}
+                           onFocus={() => setShowBox(true)}
+                        />
+                     </label>
+                     {
+                        // showBox &&
+                        showBox && dataQuery.search && (
+                           <ul className="absolute left-[5px] mt-1 rounded  bg-white w-[95%]  shadow-[0px_1px_10px_1px_rgba(0,0,0,0.25)]">
+                              {autocompleteData?.map((dataAuto) => (
+                                 <li
+                                    key={dataAuto}
+                                    className="py-1 px-2 hover:bg-gray-100 cursor-pointer"
+                                 >
+                                    {dataAuto}
+                                 </li>
+                              ))}
+                           </ul>
+                        )
+                     }
+                  </div>
                   <button
                      type="button"
                      onClick={inputDataQuery}

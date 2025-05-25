@@ -20,13 +20,13 @@ export default async function handler(
          // console.log("data: ", services);
          if (error) {
             // console.log("error: ", error);
-            return res.status(500).json({ error: "Error fetching services" });
+            return res.status(500).json({ massage: "Error fetching services" });
          }
          if (services[0]) {
             return res.status(200).json(services);
          } else {
             // หาไม่มีข้มูลให้ return
-            return res.status(404).json("No suggestions found.");
+            return res.status(404).json({ massage: "No suggestions found." });
          }
       } else {
          //หากไม่มีการใส้คำค้นหาให้ return
@@ -34,6 +34,8 @@ export default async function handler(
       }
    } catch (error) {
       // console.log("error: ", error);
-      return res.status(500).json({ error: `Error fetching services${error}` });
+      return res
+         .status(500)
+         .json({ massage: `Error fetching services${error}` });
    }
 }
