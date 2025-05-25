@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState} from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
-import type { User } from '@/types'
 import Link from 'next/link'
+import { useUser } from '@/contexts/UserContext'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,42 +16,23 @@ import Image from 'next/image'
 function Navbar() {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
   const [isActivate, setIsActivate] = useState(false)
-  const [loading, setLoading] = useState<boolean>(true)
+  const { user, loading, refetchUser } = useUser()
+
 
   const handleLogin = () => router.push('/login')
   const handleRegister = () => router.push('/register')
-
   const handleLogout = async () => {
     const res = await axios('/api/auth/logout', {
       method: 'POST',
     })
     if (res.status === 200) {
+      await refetchUser()
       window.location.href = '/'
     }
   }
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get('/api/profile')
-        if (res.status === 200) {
-          setUser(res.data.user)
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 401) {
-          setUser(null)
-        } else {
-          console.error('Unexpected error while fetching user:', error)
-        }
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUser()
-  }, [])
+  if (loading) return null // หรือ Skeleton loader
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[color:var(--white)] shadow-sm">
@@ -79,7 +60,7 @@ function Navbar() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-3">
-          {loading ? null : user ? (
+          {user ? (
             <div className="flex items-center gap-3">
               <span className="hidden md:inline text-body-3 text-[color:var(--gray-700)]">
                 {user?.first_name} {user?.last_name}
@@ -197,7 +178,7 @@ function Navbar() {
 
         {/* Mobile Menu button */}
         <div className="md:hidden flex items-center">
-          {loading ? null : user ? (
+          {user ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger>
                 {user?.image_url ? (

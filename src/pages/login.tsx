@@ -2,30 +2,23 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import supabase from '../lib/supabase'
 import Link from 'next/link'
-import axios, { AxiosError } from 'axios' // เพิ่ม import AxiosError
-
-// สร้าง schema สำหรับการตรวจสอบข้อมูล
-const loginSchema = z.object({
-  email: z.string().email('กรุณากรอกอีเมลให้ถูกต้อง'),
-  password: z.string().min(1, 'กรุณากรอกรหัสผ่าน'),
-})
-
+import axios, { AxiosError } from 'axios'
+import { loginSchema, LoginFormInputs } from '../schemas/auth'
+import toast, { Toaster } from 'react-hot-toast' // เพิ่ม import สำหรับ toast
+import { useUser } from '@/contexts/UserContext'
 // สร้าง interface สำหรับ error response
 interface ErrorResponse {
   error?: string
   message?: string
 }
 
-type LoginFormInputs = z.infer<typeof loginSchema>
-
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
+  const { refetchUser } = useUser()
   const {
     register,
     handleSubmit,
@@ -46,8 +39,15 @@ export default function LoginPage() {
       })
 
       if (res.status === 200) {
-        // เข้าสู่ระบบสำเร็จ นำทางไปยังหน้าหลัก
-        router.push('/')
+        // แสดง toast เมื่อเข้าสู่ระบบสำเร็จ
+        toast.success('เข้าสู่ระบบสำเร็จ! กำลังนำทางไปหน้าหลัก...', {
+          duration: 2000,
+        })
+        await refetchUser()
+        // รอให้ toast แสดงแล้วค่อย redirect
+        setTimeout(() => {
+          router.push('/')
+        }, 1500)
         return
       }
     } catch (error: unknown) {
@@ -68,27 +68,42 @@ export default function LoginPage() {
           document.cookie = `fallback_token=${fallbackResult.token}; path=/; max-age=86400; samesite=strict${secure}`
           document.cookie = `user_id=${fallbackResult.user.id}; path=/; max-age=86400; samesite=strict${secure}`
 
-          // นำทางไปยังหน้าหลัก
-          router.push('/')
+          // แสดง toast เมื่อเข้าสู่ระบบสำเร็จ (ระบบสำรอง)
+          toast.success('เข้าสู่ระบบสำเร็จ! กำลังนำทางไปหน้าหลัก...', {
+            duration: 2000,
+          })
+
+          // รอให้ toast แสดงแล้วค่อย redirect
+          setTimeout(() => {
+            router.push('/').catch(() => {
+              window.location.href = '/'
+            })
+          }, 1500)
           return
         } else {
-          // แสดงข้อความข้อผิดพลาดจาก API
-          setError(
+          // แสดง error toast
+          const errorMessage =
             fallbackResult.error || 'การเข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง'
-          )
+          toast.error(errorMessage)
+          setError(errorMessage)
         }
       } catch (fallbackError: unknown) {
         // จัดการกรณีที่ API fallback-login มีปัญหา
         if (axios.isAxiosError(fallbackError)) {
           // Type guard เพื่อตรวจสอบว่าเป็น AxiosError
           const axiosError = fallbackError as AxiosError<ErrorResponse>
-          setError(
+          const errorMessage =
             axiosError.response?.data?.error ||
-              'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง'
-          )
+            'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง'
+
+          toast.error(errorMessage)
+          setError(errorMessage)
         } else {
           // กรณีที่เป็น error ชนิดอื่น
-          setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง')
+          const errorMessage =
+            'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง'
+          toast.error(errorMessage)
+          setError(errorMessage)
         }
       }
     } finally {
@@ -107,12 +122,19 @@ export default function LoginPage() {
       })
 
       if (error) {
+        toast.error(error.message)
         setError(error.message)
+      } else {
+        // แสดง toast เมื่อเริ่มกระบวนการ login ด้วย Facebook
+        toast.loading('กำลังเข้าสู่ระบบด้วย Facebook...', {
+          duration: 3000,
+        })
       }
     } catch {
-      setError(
+      const errorMessage =
         'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Facebook กรุณาลองใหม่อีกครั้ง'
-      )
+      toast.error(errorMessage)
+      setError(errorMessage)
     }
   }
 
@@ -220,6 +242,38 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+
+        {/* เพิ่ม Toaster component ที่นี่เพื่อให้ toast สามารถแสดงผลได้ */}
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 2000,
+              iconTheme: {
+                primary: '#4ade80',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              duration: 4000,
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
+            },
+            loading: {
+              iconTheme: {
+                primary: '#3b82f6',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
       </div>
     </>
   )

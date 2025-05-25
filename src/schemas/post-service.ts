@@ -1,0 +1,20 @@
+import { z } from 'zod'
+
+export const CreateServiceSchema = z.object({
+  id: z.number().optional(),
+  title: z.string().min(1, 'กรุณากรอกชื่อเซอร์วิส'),
+  category: z.string().min(1, 'กรุณาระบุชื่อประเภท'),
+  // image_url จะถูกแทนที่ภายหลังจากอัปโหลดไฟล์ขึ้น Storage
+  sub_services: z
+    .array(
+      z.object({
+        id: z.number().optional(),
+        title: z.string().min(1, 'กรุณาระบุชื่อรายการ'),
+        price: z.number().min(0, 'ราคาต้องไม่น้อยกว่า 0'),
+        service_unit: z.string().min(1, 'กรุณาระบุหน่วย'),
+      })
+    )
+    .optional(),
+})
+
+export type CreateServicePayload = z.infer<typeof CreateServiceSchema>
