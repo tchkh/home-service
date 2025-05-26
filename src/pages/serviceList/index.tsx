@@ -23,13 +23,11 @@ import {
    PopoverContent,
    PopoverTrigger,
 } from "@/components/ui/popover";
+import { string } from "zod";
 // import { string } from "zod";
 // import { string } from "zod";
 // import { number } from 'zod';
 // import { boolean } from 'zod';
-
-// import debounce from "debounce-async";
-// const debounced = debounce(f, 100);
 
 const prompt = Prompt({
    subsets: ["latin", "thai"],
@@ -107,7 +105,6 @@ export default function Home() {
 
    // เก็บค่า auto complete
    const [showBox, setShowBox] = useState(false);
-   console.log("showBox: ", showBox);
    const [autocompleteData, setAutocompleteData] = useState<string[]>([]);
 
    // console.log("autocompleteData: ", autocompleteData);
@@ -148,6 +145,20 @@ export default function Home() {
       setFetchDataQuery((prevState) => ({
          ...prevState,
          ...dataQuery,
+      }));
+   };
+
+   //
+   const inputSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setDataQuery((prevState) => ({
+         ...prevState,
+         search: e.target.value,
+      }));
+   };
+   const inputSearchAuto = (searchCompltet: string) => {
+      setDataQuery((prevState) => ({
+         ...prevState,
+         search: searchCompltet,
       }));
    };
 
@@ -316,30 +327,23 @@ export default function Home() {
                            placeholder="ค้นหารายการ..."
                            className=" text-body-2 pl-10 border-2 border-[var(--gray-300)] min-w-[240px] w-full h-[45px] rounded-lg  placeholder:text-[16px] placeholder:text-[var(--gray-700)] " // เพิ่ม padding ด้านซ้ายเพื่อให้มีพื้นที่สำหรับ icon
                            value={dataQuery.search}
-                           onChange={(e) => {
-                              setDataQuery((prevState) => ({
-                                 ...prevState,
-                                 search: e.target.value,
-                              }));
-                           }}
+                           onChange={inputSearch}
                            onFocus={() => setShowBox(true)}
                         />
                      </label>
-                     {
-                        // showBox &&
-                        showBox && dataQuery.search && (
-                           <ul className="absolute left-[5px] mt-1 rounded  bg-white w-[95%]  shadow-[0px_1px_10px_1px_rgba(0,0,0,0.25)]">
-                              {autocompleteData?.map((dataAuto) => (
-                                 <li
-                                    key={dataAuto}
-                                    className="py-1 px-2 hover:bg-gray-100 cursor-pointer"
-                                 >
-                                    {dataAuto}
-                                 </li>
-                              ))}
-                           </ul>
-                        )
-                     }
+                     {showBox && dataQuery.search && (
+                        <ul className="absolute left-[5px] mt-1 rounded  bg-white w-[95%]  shadow-[0px_1px_10px_1px_rgba(0,0,0,0.25)]">
+                           {autocompleteData?.map((dataAuto) => (
+                              <li
+                                 key={dataAuto}
+                                 className="py-1 px-2 hover:bg-gray-100 cursor-pointer"
+                                 onClick={() => inputSearchAuto(dataAuto)}
+                              >
+                                 {dataAuto}
+                              </li>
+                           ))}
+                        </ul>
+                     )}
                   </div>
                   <button
                      type="button"
