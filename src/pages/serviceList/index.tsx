@@ -168,6 +168,7 @@ export default function Home() {
       }));
    };
    const inputSearchAuto = (searchCompltet: string) => {
+      setShowBox(false);
       setDataQuery((prevState) => ({
          ...prevState,
          search: searchCompltet,
@@ -368,7 +369,7 @@ export default function Home() {
                <section
                   className={`flex gap-x-4 w-full md:max-w-[350px] relative`}
                >
-                  <div ref={boxRef}>
+                  <div ref={boxRef} className="w-full">
                      <label htmlFor="inputSearch" className="relative w-full ">
                         <span className="absolute left-4 top-1/2 transform -translate-y-1/2">
                            {iconSearch}
@@ -384,7 +385,7 @@ export default function Home() {
                         />
                      </label>
                      {showBox && dataQuery.search && (
-                        <ul className="absolute left-[5px] mt-1 rounded  bg-white w-[95%]  shadow-[0px_1px_10px_1px_rgba(0,0,0,0.25)]">
+                        <ul className="absolute left-[5px] mt-1 rounded  bg-white w-[95%] md:max-w-[350px] shadow-[0px_1px_10px_1px_rgba(0,0,0,0.25)]">
                            {autocompleteData?.map((dataAuto) => (
                               <li
                                  key={dataAuto}
@@ -569,7 +570,7 @@ export default function Home() {
                ))}
             {!dataCard[0] && !loading && (
                <h1 className="absolute text-heading-1 ">
-                  Sory! No found service
+                  Sorry! No found service
                </h1>
             )}
             {loadCard && !loading && (
