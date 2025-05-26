@@ -1,5 +1,6 @@
 import { Prompt } from "next/font/google";
 import ServiceCard from "@/components/ServiceCard";
+import LoadingServiceCard from "@/components/LoadingServiceCard";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,7 +24,8 @@ import {
    PopoverContent,
    PopoverTrigger,
 } from "@/components/ui/popover";
-import { string } from "zod";
+
+// import { string } from "zod";
 // import { string } from "zod";
 // import { string } from "zod";
 // import { number } from 'zod';
@@ -120,6 +122,8 @@ export default function Home() {
    → แบบนี้ TypeScript จะช่วยแนะนำ method ต่าง ๆ ได้ เช่น .contains(), .classList, .focus() ฯลฯ
    */
 
+   //  เก็บค่าหน้า londing
+   const [loading, setLoading] = useState<boolean>(false);
    // ค่าการเรียง order
    const typeSortBy: { [key: string]: string } = {
       title: "บริการแนะนำ",
@@ -140,7 +144,7 @@ export default function Home() {
       onLimit: (fetchDataQuery.onLimit ?? "").toString(),
    }).toString();
 
-   //  คำสั่งเปลี่ยนค่า dataCard ตาม qeury
+   // เมื่อคลิก "ค้นหา" คำสั่งเปลี่ยนค่า dataCard ตาม qeury
    const inputDataQuery = () => {
       setFetchDataQuery((prevState) => ({
          ...prevState,
@@ -148,7 +152,7 @@ export default function Home() {
       }));
    };
 
-   //
+   //เปลี่ยนค่าเมื่อมีการ search
    const inputSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
       setDataQuery((prevState) => ({
          ...prevState,
@@ -170,16 +174,7 @@ export default function Home() {
       }));
    };
 
-   // เปลี่ยนค่า sortBy
-   const changeSortBy = (value: string) => {
-      setDataQuery((prevState) => ({
-         ...prevState,
-         sortBy: value,
-      }));
-   };
-
    // เปลี่ยนค่า rang ราคา
-
    const handleChange = (value: number[]) => {
       setRange(value);
       setDataQuery((prevState) => ({
@@ -189,6 +184,15 @@ export default function Home() {
          maxPrice: value[1],
       }));
    };
+
+   // เปลี่ยนค่า sortBy
+   const changeSortBy = (value: string) => {
+      setDataQuery((prevState) => ({
+         ...prevState,
+         sortBy: value,
+      }));
+   };
+
    //  fetch ครั้งแรก
    useEffect(() => {
       // เปลี่ยนค่า rang ราคา
@@ -220,10 +224,13 @@ export default function Home() {
       //  first Fetch
       const firstGetDataService = async () => {
          try {
+            setLoading(true);
             const res = await axios.get(`/api/service?${queryString}`);
+
             setDataCard(res.data);
             allCategory(res.data);
             setMaxPrice(res.data);
+            setLoading(false);
          } catch (error) {
             console.log("error: ", error);
          }
@@ -231,13 +238,16 @@ export default function Home() {
       firstGetDataService();
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
+
    //  เมื่อมีการ query ให้ fetch
    useEffect(() => {
       const getDataService = async () => {
          try {
             // search=${searchTest}&category=${categoryTest}&
+            setLoading(true);
             const res = await axios.get(`/api/service?${queryString}`);
             setDataCard(res.data);
+            setLoading(false);
          } catch (error) {
             console.log("error: ", error);
          }
@@ -247,7 +257,6 @@ export default function Home() {
    }, [fetchDataQuery, queryString]);
 
    // auto complete เมื่อ มีการ search ให้ fetch
-
    useEffect(() => {
       // เมื่อ search มีการเปลี่ยนแปลงให้ ให้ดึงข้อมูล title แล้วไปเก็บค่าที่ usestate ไป .map
       const timer = setTimeout(() => {
@@ -281,7 +290,7 @@ export default function Home() {
       return () => clearTimeout(timer); // ล้าง timer ถ้า query เปลี่ยนก่อน 3 วิ
    }, [dataQuery.search]);
 
-   //  2. ตรวจจับการคลิกนอกกล่อง
+   // ตรวจจับการคลิกนอกกล่อง
    useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
          if (boxRef.current && !boxRef.current.contains(event.target as Node)) {
@@ -312,7 +321,6 @@ export default function Home() {
          <section className="sticky top-[49px] md:top-[59px] z-50 bg-[var(--white)] w-full h-[134px] md:h-[84px] flex justify-center ">
             <div className="container flex flex-col md:justify-between items-center px-[5%] py-4 gap-y-4 md:flex-row     ">
                {/* ส่วนค้นหา */}
-
                <section
                   className={`flex gap-x-4 w-full md:max-w-[350px] relative`}
                >
@@ -498,18 +506,23 @@ export default function Home() {
             </div>
          </section>
          {/* ส่วน card */}
-         <section className="max-w-[1440px] grid grid-cols-1 justify-items-center px-3 pt-6 pb-14 md:pt-[60px] md:px-[160px] md:pb-[133px] gap-y-6 gap-x-4 md:grid-cols-3 md:gap-y-[48px]  md:gap-x-[37px] ">
-            {dataCard.map((service) => (
-               <ServiceCard
-                  key={service.id}
-                  id={service.id}
-                  title={service.service_title}
-                  image={service.image_url}
-                  category={service.category_name}
-                  minPrice={service.min_price}
-                  maxPrice={service.max_price}
-               />
-            ))}
+         <section className="max-w-[1440px] grid grid-cols-1 justify-items-center mx-3 mt-6 mb-14 md:mt-[60px] md:mx-[160px] md:mb-[133px] gap-y-6 gap-x-4 md:grid-cols-3 md:gap-y-[48px]  md:gap-x-[37px]">
+            {loading &&
+               Array.from({ length: 3 }).map((_, index) => {
+                  return <LoadingServiceCard key={index} />;
+               })}
+            {!loading &&
+               dataCard.map((service) => (
+                  <ServiceCard
+                     key={service.id}
+                     id={service.id}
+                     title={service.service_title}
+                     image={service.image_url}
+                     category={service.category_name}
+                     minPrice={service.min_price}
+                     maxPrice={service.max_price}
+                  />
+               ))}
          </section>
          <section className="relative overflow-hidden w-full h-[284px]  flex items-center bg-[var(--blue-600)]">
             <Image
