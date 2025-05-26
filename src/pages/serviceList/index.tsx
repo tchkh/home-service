@@ -506,7 +506,7 @@ export default function Home() {
             </div>
          </section>
          {/* ส่วน card */}
-         <section className="max-w-[1440px] grid grid-cols-1 justify-items-center mx-3 mt-6 mb-14 md:mt-[60px] md:mx-[160px] md:mb-[133px] gap-y-6 gap-x-4 md:grid-cols-3 md:gap-y-[48px]  md:gap-x-[37px]">
+         <section className="max-w-[1440px] grid grid-cols-1 justify-items-center mx-3 mt-6 mb-14 md:mt-[60px] md:mx-[160px] md:mb-[133px] gap-y-6 gap-x-4 md:grid-cols-3 md:gap-y-[48px]  md:gap-x-[37px] ">
             {loading &&
                Array.from({ length: 3 }).map((_, index) => {
                   return <LoadingServiceCard key={index} />;
@@ -523,6 +523,11 @@ export default function Home() {
                      maxPrice={service.max_price}
                   />
                ))}
+            {!dataCard[0] && !loading && (
+               <h1 className="absolute text-heading-1 ">
+                  Sory! No found service
+               </h1>
+            )}
          </section>
          <section className="relative overflow-hidden w-full h-[284px]  flex items-center bg-[var(--blue-600)]">
             <Image

@@ -39,7 +39,7 @@ export default function ServiceCard({
          key={id}
       >
          <div
-            className={`object-fill object-center w-full max-h-[200px] overflow-hidden mb-2`}
+            className={`object-fill object-center w-full max-h-[200px] overflow-hidden mb-2 rounded-t-[8px]`}
          >
             <Image
                src={image}
