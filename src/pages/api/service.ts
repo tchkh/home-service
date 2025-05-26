@@ -16,16 +16,42 @@ export default async function handler(
                sortBy?: string;
                onLimit?: string;
             };
-         // เช็คว่าส่ง limit มาไหม
+
+         // เช็คว่าส่ง limit มาไหม และเกินจำนวนไหม
          let limit;
          if (onLimit) {
-            limit = Number(onLimit);
+            try {
+               const { count, error } = await supabase
+                  .from("services_with_card")
+                  .select("*", { count: "exact", head: true });
+               if (error) {
+                  return res
+                     .status(500)
+                     .json({ error: "Error fetching count" });
+               }
+               if (count === null) {
+                  return res.status(500).json({ error: "Count is null" });
+               }
+
+               const parsedLimit = Number(onLimit);
+               console.log("parsedLimit: ", parsedLimit);
+               console.log("count: ", count);
+               if (parsedLimit > count) {
+                  return res.status(400).json({ error: "over limit data" });
+               }
+               limit = parsedLimit;
+            } catch (err) {
+               console.log("error: ", err);
+               return res
+                  .status(500)
+                  .json({ error: "Unexpected server error" });
+            }
          } else {
             limit = 8;
          }
          let query = supabase
             .from("services_with_card")
-            .select("*")
+            .select("*", { count: "exact", head: false })
             .range(0, limit);
 
          if (search) {
@@ -56,13 +82,12 @@ export default async function handler(
             query = query.order("id", { ascending: true });
          }
 
-         const { data: services, error } = await query;
-
+         const { count, data: service, error } = await query;
          if (error) {
             console.log("error: ", error);
             return res.status(500).json({ error: "Error fetching services" });
          }
-         return res.status(200).json(services);
+         return res.status(200).json({ count, service });
       } catch (error) {
          console.log("error at get methor", error);
       }

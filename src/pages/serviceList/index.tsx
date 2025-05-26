@@ -109,8 +109,6 @@ export default function Home() {
    const [showBox, setShowBox] = useState(false);
    const [autocompleteData, setAutocompleteData] = useState<string[]>([]);
 
-   // console.log("autocompleteData: ", autocompleteData);
-
    const boxRef = useRef<HTMLDivElement>(null); // สำหรับตรวจว่าคลิกนอกกล่องไหม
    /* 
    useRef เป็น React Hook ที่ใช้เพื่อเก็บ “reference” ไปยัง DOM element หรือ “ค่า” อะไรก็ได้โดย ไม่ trigger re-render
@@ -124,6 +122,16 @@ export default function Home() {
 
    //  เก็บค่าหน้า londing
    const [loading, setLoading] = useState<boolean>(false);
+
+   // เก็บคาส linmit
+   const [currentLimit, setCurrentLimit] = useState<number>(0);
+   // console.log("currentLimit: ", currentLimit);
+   const [maxLimit, setMaxLimit] = useState<number>(0);
+   // console.log("maxLimit: ", maxLimit);
+   const [loadCard, setLoadCard] = useState<boolean>(true);
+   // console.log("loadCard: ", loadCard);
+   const [isTriggeredByUser, setIsTriggeredByUser] = useState(false); // เพิ่มมาบอกว่า use เรียก
+
    // ค่าการเรียง order
    const typeSortBy: { [key: string]: string } = {
       title: "บริการแนะนำ",
@@ -179,7 +187,6 @@ export default function Home() {
       setRange(value);
       setDataQuery((prevState) => ({
          ...prevState,
-         ...prevState,
          minPrice: value[0],
          maxPrice: value[1],
       }));
@@ -193,6 +200,37 @@ export default function Home() {
       }));
    };
 
+   //  เช็คค่า limit มีเกินจำนวน
+   const handleLoadCard = () => {
+      setIsTriggeredByUser(true);
+      const newLimit = currentLimit + 9;
+
+      if (newLimit >= maxLimit) {
+         setCurrentLimit(maxLimit); // ส่งค่า maxLimit จริง ๆ
+         setLoadCard(false); // หยุดโหลด
+      } else {
+         // setLoadCard(true);
+         setCurrentLimit(newLimit);
+      }
+   };
+   // useEffect รอให้ currentLimit assign ค่าเสร็จก่อน
+   useEffect(() => {
+      if (!isTriggeredByUser) return; //ป้องกันการ rerender ซ้ำ
+
+      const conditionLimit = () => {
+         if (currentLimit >= 0 && currentLimit < maxLimit) {
+            // console.log("limit low");
+            setLoadCard(true);
+         }
+         setFetchDataQuery((prevState) => ({
+            ...prevState,
+            onLimit: currentLimit,
+         }));
+      };
+
+      conditionLimit();
+      setIsTriggeredByUser(false);
+   }, [currentLimit, isTriggeredByUser, maxLimit]);
    //  fetch ครั้งแรก
    useEffect(() => {
       // เปลี่ยนค่า rang ราคา
@@ -226,10 +264,12 @@ export default function Home() {
          try {
             setLoading(true);
             const res = await axios.get(`/api/service?${queryString}`);
+            setDataCard(res.data.service);
+            allCategory(res.data.service);
+            setMaxPrice(res.data.service);
+            setMaxLimit(res.data.count - 1);
+            setCurrentLimit(() => res.data.service.length - 1);
 
-            setDataCard(res.data);
-            allCategory(res.data);
-            setMaxPrice(res.data);
             setLoading(false);
          } catch (error) {
             console.log("error: ", error);
@@ -245,8 +285,11 @@ export default function Home() {
          try {
             // search=${searchTest}&category=${categoryTest}&
             setLoading(true);
+
             const res = await axios.get(`/api/service?${queryString}`);
-            setDataCard(res.data);
+            setDataCard(res.data.service);
+            setMaxLimit(res.data.count - 1);
+            setCurrentLimit(res.data.service.length - 1);
             setLoading(false);
          } catch (error) {
             console.log("error: ", error);
@@ -254,6 +297,7 @@ export default function Home() {
       };
 
       getDataService();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [fetchDataQuery, queryString]);
 
    // auto complete เมื่อ มีการ search ให้ fetch
@@ -527,6 +571,15 @@ export default function Home() {
                <h1 className="absolute text-heading-1 ">
                   Sory! No found service
                </h1>
+            )}
+            {loadCard && !loading && (
+               <button
+                  type="button"
+                  className="btn btn--primary col-start-2 text-body-1 text-[var(--white)]"
+                  onClick={handleLoadCard}
+               >
+                  ดู Service เพิ่มเติม
+               </button>
             )}
          </section>
          <section className="relative overflow-hidden w-full h-[284px]  flex items-center bg-[var(--blue-600)]">
