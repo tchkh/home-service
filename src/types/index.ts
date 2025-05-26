@@ -1,15 +1,16 @@
-import { ReactNode } from 'react';
-import { NextRouter } from 'next/router';
+import { ReactNode } from 'react'
+import { NextRouter } from 'next/router'
+import { type LucideIcon } from 'lucide-react'
 
 // App
 export interface AppContentProps {
-  Component: React.ComponentType<unknown>;
-  pageProps: Record<string, unknown>;
-  router: NextRouter;
+  Component: React.ComponentType<unknown>
+  pageProps: Record<string, unknown>
+  router: NextRouter
 }
 
 export interface AppProvidersProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 // User interfaces
@@ -82,22 +83,42 @@ export interface SidebarContextValue {
 }
 
 export interface SidebarProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export interface SidebarItemProps {
-  icon: React.ElementType;
-  label: string;
-  href: string; // กำหนดให้ href เป็น required
-  onClick?: () => void;
+  icon: React.ElementType
+  label: string
+  href: string // กำหนดให้ href เป็น required
+  onClick?: () => void
   className?: string
   count?: number;
 }
 
 export interface SidebarProps {
-  className?: string;
-  items: SidebarItemProps[]; // รับ array ของ SidebarItemProps
+  className?: string
+  items: SidebarItemProps[] // รับ array ของ SidebarItemProps
 }
+
+export interface ServiceItem {
+  id: number
+  title: string
+  price: number
+  unit: string
+  service_id: number
+  service_title?: string
+}
+
+export interface CartItem extends ServiceItem {
+  quantity: number
+}
+
+export interface Step {
+  id: string
+  name: string
+  icon: LucideIcon
+}
+
 
 // service-request
 export interface ServiceRequest {
