@@ -125,9 +125,9 @@ export default function Home() {
 
    // เก็บคาส linmit
    const [currentLimit, setCurrentLimit] = useState<number>(0);
-   console.log("currentLimit: ", currentLimit);
+   // console.log("currentLimit: ", currentLimit);
    const [maxLimit, setMaxLimit] = useState<number>(0);
-   console.log("maxLimit: ", maxLimit);
+   // console.log("maxLimit: ", maxLimit);
    const [loadCard, setLoadCard] = useState<boolean>(true);
    // console.log("loadCard: ", loadCard);
    const [isTriggeredByUser, setIsTriggeredByUser] = useState(false); // เพิ่มมาบอกว่า use เรียก
@@ -291,6 +291,7 @@ export default function Home() {
             setLoading(true);
 
             const res = await axios.get(`/api/service?${queryString}`);
+            console.log("execute getDataService");
             setDataCard(res.data.service);
             setMaxLimit(res.data.count - 1);
             setCurrentLimit(res.data.service.length - 1);
@@ -301,6 +302,11 @@ export default function Home() {
       };
 
       getDataService();
+      if (currentLimit >= maxLimit) {
+         setLoadCard(false);
+      } else if (currentLimit < maxLimit) {
+         setLoadCard(true); // เมื่อ limit สูงสุดแล้วให้ hide button
+      }
    }, [currentLimit, fetchDataQuery, maxLimit, queryString]);
 
    // auto complete เมื่อ มีการ search ให้ fetch
