@@ -1,83 +1,123 @@
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
-import Image from 'next/image'
-import axios from 'axios'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { ArrowLeft } from 'lucide-react'
-import Sidebar from '@/components/shared/AdminSidebar'
-import { ServiceFormValues } from '../../types/index'
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useSidebar } from "@/contexts/SidebarContext";
+import Image from "next/image";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft } from "lucide-react";
+import { ServiceFormValues } from "../../../types/index";
 
 function EditServicePage() {
-  const router = useRouter()
-  const [serviceData, setServiceData] = useState<ServiceFormValues | null>(null)
-  const serviceId = router.query.serviceId
+  const router = useRouter();
+  const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const [serviceData, setServiceData] = useState<ServiceFormValues | null>(
+    null
+  );
+  const serviceId = router.query.serviceId;
 
   useEffect(() => {
     const fetchServiceData = async (serviceId: string) => {
       try {
-        if (!serviceId) return // ถ้าไม่มี serviceId ให้หยุดการทำงาน
+        if (!serviceId) return; // ถ้าไม่มี serviceId ให้หยุดการทำงาน
 
         const result = await axios.get(
           `/api/admin/getServiceById?serviceId=${serviceId}`
-        )
+        );
         if (result.status === 200) {
           console.log(
-            'DetailServicePage: Response from backend (getServiceById) : ',
+            "DetailServicePage: Response from backend (getServiceById) : ",
             result.data
-          )
+          );
 
           // เช็คว่า image_url มีค่าที่ถูกต้องหรือไม่
           if (result.data.image_url) {
-            console.log('Image URL:', result.data.image_url)
+            console.log("Image URL:", result.data.image_url);
           } else {
             // ถ้าไม่มี https:// ให้เพิ่ม
-            result.data.image_url = `https://${result.data.image_url}`
-            console.log('Updated Image URL:', result.data.image_url)
+            result.data.image_url = `https://${result.data.image_url}`;
+            console.log("Updated Image URL:", result.data.image_url);
           }
 
           setServiceData({
-            title: result.data.title || '',
-            category: result.data.category?.name || '',
-            image: result.data.image_url || '',
-            created_at: result.data.created_at || '',
-            updated_at: result.data.updated_at || '',
+            title: result.data.title || "",
+            category: result.data.category?.name || "",
+            image: result.data.image_url || "",
+            created_at: result.data.created_at || "",
+            updated_at: result.data.updated_at || "",
             subervices: result.data.sub_services || [],
-          })
+          });
         }
       } catch (error) {
-        console.error('Error fetching service data:', error)
-        return
+        console.error("Error fetching service data:", error);
+        return;
       }
-    }
+    };
     if (serviceId) {
-      fetchServiceData(serviceId as string)
+      fetchServiceData(serviceId as string);
     }
 
-    console.log('DetailServicePage: serviceId:', serviceId)
-  }, [serviceId])
+    console.log("DetailServicePage: serviceId:", serviceId);
+  }, [serviceId]);
 
   const setDateTimeFormat = (date: Date) => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-    const amPm = date.getHours() >= 12 ? 'PM' : 'AM'
-    return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`
-  }
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const amPm = date.getHours() >= 12 ? "PM" : "AM";
+    return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`;
+  };
 
   const handleEdit = () =>
-    router.push('/admin/edit-service?serviceId=' + serviceId)
+    router.push("/admin/services/edit-service?serviceId=" + serviceId);
 
-  const handleGoBack = () => router.back()
+  const handleGoBack = () => router.back();
 
   return (
-    <div className={`flex w-screen min-h-screen bg-[var(--bg)]`}>
-      <Sidebar className="sticky top-0" />
+    <div className={`flex min-h-screen bg-[var(--bg)]`}>
       <div className="w-full flex flex-col space-y-6">
         {/* Header */}
-        <div className="flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
+        <div className="relative flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
+          {/* Hide & Show sidebar */}
+          <Button
+            type="button"
+            onClick={toggleSidebar}
+            className="absolute top-7 -left-3 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--gray-200)] cursor-pointer"
+          >
+            {isSidebarOpen ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-chevron-left-icon lucide-chevron-left"
+              >
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-chevron-right-icon lucide-chevron-right"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            )}
+          </Button>
           <div className="flex items-center space-x-4">
             <Button
               type="button"
@@ -141,7 +181,7 @@ function EditServicePage() {
           {/* Sub-services */}
           <div className="flex flex-col justify-start gap-10 space-y-2">
             <Label className="text-heading-5">รายการบริการย่อย</Label>
-            {serviceData?.subervices?.map(subService => (
+            {serviceData?.subervices?.map((subService) => (
               <div
                 key={subService.id} // ตรวจสอบให้แน่ใจว่า subService มี id ที่ไม่ซ้ำกัน
                 className="grid grid-cols-8 justify-between items-center gap-4"
@@ -170,7 +210,7 @@ function EditServicePage() {
               <span>
                 {serviceData?.created_at
                   ? setDateTimeFormat(new Date(serviceData.created_at))
-                  : 'N/A'}
+                  : "N/A"}
               </span>
             </div>
             <div className="flex flex-row justify-start gap-10 space-y-2">
@@ -178,14 +218,14 @@ function EditServicePage() {
               <span>
                 {serviceData?.updated_at
                   ? setDateTimeFormat(new Date(serviceData.updated_at))
-                  : 'N/A'}
+                  : "N/A"}
               </span>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default EditServicePage
+export default EditServicePage;

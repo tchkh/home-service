@@ -1,3 +1,17 @@
+import { ReactNode } from 'react';
+import { NextRouter } from 'next/router';
+
+// App
+export interface AppContentProps {
+  Component: React.ComponentType<unknown>;
+  pageProps: Record<string, unknown>;
+  router: NextRouter;
+}
+
+export interface AppProvidersProps {
+  children: React.ReactNode;
+}
+
 // User interfaces
 export interface User {
   id: number
@@ -33,4 +47,35 @@ export interface ServiceFormValues {
   subervices: SubService[]
   created_at: string
   updated_at: string
+}
+
+// sidebar
+export interface SidebarItem {
+  label: string
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  href: string
+}
+
+export interface SidebarContextValue {
+  isSidebarOpen: boolean;
+  toggleSidebar: () => void;
+  openSidebar: () => void;
+  closeSidebar: () => void;
+}
+
+export interface SidebarProviderProps {
+  children: ReactNode;
+}
+
+export interface SidebarItemProps {
+  icon: React.ElementType;
+  label: string;
+  href: string; // กำหนดให้ href เป็น required
+  onClick?: () => void;
+  className?: string
+}
+
+export interface SidebarProps {
+  className?: string;
+  items: SidebarItemProps[]; // รับ array ของ SidebarItemProps
 }
