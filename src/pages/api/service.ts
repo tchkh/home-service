@@ -21,6 +21,7 @@ export default async function handler(
          let limit;
          if (onLimit) {
             try {
+               // ดึงจำนวนมาเช็คก่อนว่า เกินไหม
                const { count, error } = await supabase
                   .from("services_with_card")
                   .select("*", { count: "exact", head: true });
@@ -34,8 +35,8 @@ export default async function handler(
                }
 
                const parsedLimit = Number(onLimit);
-               console.log("parsedLimit: ", parsedLimit);
-               console.log("count: ", count);
+               // console.log("parsedLimit: ", parsedLimit);
+               // console.log("count: ", count);
                if (parsedLimit > count) {
                   return res.status(400).json({ error: "over limit data" });
                }

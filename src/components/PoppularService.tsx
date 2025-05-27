@@ -47,13 +47,14 @@ function PoppularService() {
             const res = await axios.get(
                `http://localhost:3000/api/service?${queryString}`
             );
-            setServiceCard(res.data);
+            setServiceCard(res.data.service);
          } catch (error) {
             console.log("error: ", error);
          }
       };
       getDataService();
-   }, [queryString]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, []);
 
    return (
       <>

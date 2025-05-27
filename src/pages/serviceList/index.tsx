@@ -125,9 +125,9 @@ export default function Home() {
 
    // เก็บคาส linmit
    const [currentLimit, setCurrentLimit] = useState<number>(0);
-   // console.log("currentLimit: ", currentLimit);
+   console.log("currentLimit: ", currentLimit);
    const [maxLimit, setMaxLimit] = useState<number>(0);
-   // console.log("maxLimit: ", maxLimit);
+   console.log("maxLimit: ", maxLimit);
    const [loadCard, setLoadCard] = useState<boolean>(true);
    // console.log("loadCard: ", loadCard);
    const [isTriggeredByUser, setIsTriggeredByUser] = useState(false); // เพิ่มมาบอกว่า use เรียก
@@ -208,7 +208,7 @@ export default function Home() {
 
       if (newLimit >= maxLimit) {
          setCurrentLimit(maxLimit); // ส่งค่า maxLimit จริง ๆ
-         setLoadCard(false); // หยุดโหลด
+         // setLoadCard(false); // เมื่อ limit สูงสุดแล้วให้ hide button
       } else {
          // setLoadCard(true);
          setCurrentLimit(newLimit);
@@ -218,20 +218,24 @@ export default function Home() {
    useEffect(() => {
       if (!isTriggeredByUser) return; //ป้องกันการ rerender ซ้ำ
 
+      console.log("useEffect limit");
       const conditionLimit = () => {
-         if (currentLimit >= 0 && currentLimit < maxLimit) {
-            // console.log("limit low");
+         if (currentLimit < maxLimit) {
             setLoadCard(true);
+         } else {
+            setLoadCard(false); // เมื่อ limit สูงสุดแล้วให้ hide button
          }
+
          setFetchDataQuery((prevState) => ({
             ...prevState,
             onLimit: currentLimit,
          }));
       };
-
       conditionLimit();
       setIsTriggeredByUser(false);
    }, [currentLimit, isTriggeredByUser, maxLimit]);
+   // condition show hide button loand card
+
    //  fetch ครั้งแรก
    useEffect(() => {
       // เปลี่ยนค่า rang ราคา
@@ -269,8 +273,7 @@ export default function Home() {
             allCategory(res.data.service);
             setMaxPrice(res.data.service);
             setMaxLimit(res.data.count - 1);
-            setCurrentLimit(() => res.data.service.length - 1);
-
+            setCurrentLimit(res.data.service.length - 1);
             setLoading(false);
          } catch (error) {
             console.log("error: ", error);
@@ -298,7 +301,7 @@ export default function Home() {
       };
 
       getDataService();
-   }, [fetchDataQuery, queryString]);
+   }, [currentLimit, fetchDataQuery, maxLimit, queryString]);
 
    // auto complete เมื่อ มีการ search ให้ fetch
    useEffect(() => {
@@ -550,7 +553,7 @@ export default function Home() {
             </div>
          </section>
          {/* ส่วน card */}
-         <section className="max-w-[1440px] grid grid-cols-1 justify-items-center mx-3 mt-6 mb-14 md:mt-[60px] md:mx-[160px] md:mb-[133px] gap-y-6 gap-x-4 md:grid-cols-3 md:gap-y-[48px]  md:gap-x-[37px] ">
+         <section className="max-w-[1440px] flex flex-col items-center md:grid justify-items-center mx-3 mt-6 mb-14 md:mt-[60px] md:mx-[160px] md:mb-[133px] gap-y-6 gap-x-4 md:grid-cols-2 md:gap-y-[48px]  md:gap-x-[37px] lg:grid-cols-3 ">
             {loading &&
                Array.from({ length: 3 }).map((_, index) => {
                   return <LoadingServiceCard key={index} />;
@@ -575,7 +578,7 @@ export default function Home() {
             {loadCard && !loading && (
                <button
                   type="button"
-                  className="btn btn--primary col-start-2 text-body-1 text-[var(--white)]"
+                  className="btn btn--primary col-start-2 text-body-1 text-[var(--white)] max-h-[60px] max-w-[300px] py-2 px-[30px]  "
                   onClick={handleLoadCard}
                >
                   ดู Service เพิ่มเติม
