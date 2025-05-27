@@ -298,7 +298,6 @@ export default function Home() {
       };
 
       getDataService();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [fetchDataQuery, queryString]);
 
    // auto complete เมื่อ มีการ search ให้ fetch
