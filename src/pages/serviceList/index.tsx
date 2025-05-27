@@ -291,7 +291,7 @@ export default function Home() {
             setLoading(true);
 
             const res = await axios.get(`/api/service?${queryString}`);
-            console.log("execute getDataService");
+            // console.log("execute getDataService");
             setDataCard(res.data.service);
             setMaxLimit(res.data.count - 1);
             setCurrentLimit(res.data.service.length - 1);
