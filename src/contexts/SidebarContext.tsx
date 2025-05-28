@@ -27,6 +27,7 @@ export const SidebarProvider: React.FC<SidebarProviderProps> = ({
   children,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  const [serviceRequestCount, setServiceRequestCount] = useState(0);
     
   useEffect(() => {
     const storedValue = localStorage.getItem(SIDEBAR_OPEN_KEY);
@@ -59,6 +60,8 @@ export const SidebarProvider: React.FC<SidebarProviderProps> = ({
     toggleSidebar,
     openSidebar,
     closeSidebar,
+    serviceRequestCount,
+    setServiceRequestCount
   };
 
   return (

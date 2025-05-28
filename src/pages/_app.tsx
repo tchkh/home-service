@@ -5,10 +5,15 @@ import Footer from "@/components/shared/Footer";
 import Sidebar from "@/components/shared/Sidebar";
 import Category from "../../public/asset/svgs/category.svg";
 import Files from "../../public/asset/svgs/files.svg";
-import Promo_code from "../../public/asset/svgs/promo-code.svg";
+import Promo_code from "../../public/asset/svgs/promo-code.svg"
+import Notification_regular from "../../public/asset/svgs/notification-regular.svg"
+import List from "../../public/asset/svgs/list.svg";
+import History from "../../public/asset/svgs/history.svg";
+import Account from "../../public/asset/svgs/account.svg";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { Prompt } from "next/font/google";
 import { UserProvider } from "@/contexts/UserContext";
+import 'leaflet/dist/leaflet.css';
 import { AppContentProps, AppProvidersProps, SidebarItem } from "@/types";
 
 const prompt = Prompt({
@@ -37,14 +42,38 @@ const adminSidebarItems: SidebarItem[] = [
   },
 ];
 
+const technicianSidebarItems: SidebarItem[] = [
+  {
+    label: "คำขอบริการซ่อม",
+    icon: Notification_regular,
+    href: "/technician/service-request",
+  },
+  {
+    label: "รายการที่รอดำเนินการ",
+    icon: List,
+    href: "/technician/pending",
+  },
+  {
+    label: "ประวัติการซ่อม",
+    icon: History,
+    href: "/technician/history",
+  },
+  {
+    label: "ตั้งค่าบัญชีผู้ใช้",
+    icon: Account,
+    href: "/technician/account-settings",
+  },
+];
+
 // Component ย่อยที่ใช้ Context
 function AppContent({ Component, pageProps, router }: AppContentProps) {
   const { isSidebarOpen } = useSidebar();
 
   const showAdminSidebar = router.pathname.startsWith("/admin") && router.pathname !== "/admin/login";
+  const showTechnicianSidebar = router.pathname.startsWith("/technician") && router.pathname !== "/technician/login";
 
   const contentMarginClass =
-  showAdminSidebar && isSidebarOpen ? "ml-60" : "ml-0";
+  (showAdminSidebar || showTechnicianSidebar) && isSidebarOpen ? "md:ml-60" : "ml-0";
   
   const showNavbar = navbarPages.includes(router.pathname);
   const showFooter = footerPages.includes(router.pathname);
@@ -55,6 +84,7 @@ function AppContent({ Component, pageProps, router }: AppContentProps) {
     >
       {showNavbar && <Navbar />}
       {showAdminSidebar && <Sidebar items={adminSidebarItems} />}
+      {showTechnicianSidebar && <Sidebar items={technicianSidebarItems} />}
       <div
         className={`flex-1 transition-all duration-300 ease-in-out ${contentMarginClass}`}
       >
