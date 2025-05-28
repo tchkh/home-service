@@ -138,3 +138,23 @@ export interface Technician {
   longitude: number;
   address: string;
 }
+
+export interface CustomerRequest {
+  id: string;
+  user_id: string;
+  full_address: string;
+  address: string;
+  province: string;
+  sub_district: string;
+  additional_info: string;
+  latitude: number;
+  longitude: number;
+  total_price: number;
+  appointment_at: string;
+  service: {
+    name: string;
+    sub_service: string;
+    price: number;
+    unit: string;
+  };
+}
