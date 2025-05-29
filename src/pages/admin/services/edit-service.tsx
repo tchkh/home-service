@@ -44,7 +44,7 @@ function EditServicePage() {
         if (!serviceId) return; // ถ้าไม่มี serviceId ให้หยุดการทำงาน
 
         const result = await axios.get(
-          `/api/admin/getServiceById?serviceId=${serviceId}`
+          `/api/admin/services/getServiceById?serviceId=${serviceId}`
         );
         if (result.status === 200) {
           setServiceData({
@@ -143,7 +143,7 @@ function EditServicePage() {
 
       // เรียก API ด้วย PUT method ไปที่ Endpoint สำหรับแก้ไข
       const result = await axios.put(
-        `/api/admin/putServiceById?serviceId=${serviceId}`,
+        `/api/admin/services/putServiceById?serviceId=${serviceId}`,
         formData
       );
 
@@ -164,6 +164,8 @@ function EditServicePage() {
 
   const handleCancel = () =>
     router.push("/admin/services/detail-service?serviceId=" + serviceId);
+
+  const handleGoBack = () => router.push("/admin/services/service");
 
   // ฟังก์ชันสำหรับจัดการเมื่อมีการเปลี่ยนแปลงไฟล์รูปภาพ
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,7 +212,7 @@ function EditServicePage() {
       } // ถ้าไม่มี serviceId ให้หยุดการทำงาน
 
       const result = await axios.delete(
-        `/api/admin/deleteServiceById?serviceId=${serviceId}`
+        `/api/admin/services/deleteServiceById?serviceId=${serviceId}`
       );
       if (result.status === 200) {
         console.log(
@@ -218,7 +220,7 @@ function EditServicePage() {
           result.data
         );
       }
-      router.push("/admin/services");
+      router.push("/admin/services/service");
     } catch (err) {
       console.error("Error deleting service:", err);
     }
@@ -284,7 +286,7 @@ function EditServicePage() {
               type="button"
               variant="ghost"
               className="p-2 hover:bg-[var(--gray-100)]  active:bg-[var(--gray-200)] cursor-pointer rounded-full"
-              onClick={handleCancel}
+              onClick={handleGoBack}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>

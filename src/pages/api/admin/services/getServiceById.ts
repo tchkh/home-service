@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '@/lib/supabase'
-import { ServiceIdSchema } from '../../../schemas/get-service-by-id'
+import { ServiceIdSchema } from '../../../../schemas/get-service-by-id'
 import { z } from 'zod'
 
 // 2. กำหนด Interface สำหรับโครงสร้างข้อมูลของ Service ที่มีข้อมูลที่เกี่ยวข้อง

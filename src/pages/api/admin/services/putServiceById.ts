@@ -7,7 +7,7 @@ import {
   ServiceIdSchema,
   UpdateServiceSchema,
   UpdateServicePayload,
-} from '../../../schemas/put-service-by-id'
+} from '../../../../schemas/put-service-by-id'
 import { z } from 'zod'
 
 // บอก Next.js ว่าไม่ต้อง parse body เอง (we’ll use formidable)

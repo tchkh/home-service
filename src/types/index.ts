@@ -32,12 +32,26 @@ export interface Admin {
   email: string
 }
 
+export interface Service {
+  id: string;
+  title: string;
+  category_id: number;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
+  order_num: number;
+};
+
 // service P'nut
 export interface SubService {
   id?: number
   title: string
   price: string
   service_unit: string
+}
+
+export interface ServiceWithCategory extends Service {
+  category_name: string;
 }
 
 export interface ServiceFormValues {

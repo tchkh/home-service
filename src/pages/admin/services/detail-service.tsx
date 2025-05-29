@@ -22,7 +22,7 @@ function EditServicePage() {
         if (!serviceId) return; // ถ้าไม่มี serviceId ให้หยุดการทำงาน
 
         const result = await axios.get(
-          `/api/admin/getServiceById?serviceId=${serviceId}`
+          `/api/admin/services/getServiceById?serviceId=${serviceId}`
         );
         if (result.status === 200) {
           console.log(
@@ -73,7 +73,7 @@ function EditServicePage() {
   const handleEdit = () =>
     router.push("/admin/services/edit-service?serviceId=" + serviceId);
 
-  const handleGoBack = () => router.back();
+  const handleGoBack = () => router.push("/admin/services/service");
 
   return (
     <div className={`flex min-h-screen bg-[var(--bg)]`}>

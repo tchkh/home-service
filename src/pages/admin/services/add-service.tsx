@@ -57,7 +57,7 @@ function AddServicePage() {
       formData.append("sub_services", JSON.stringify(data.sub_services));
 
       // เรียก API ด้วย multipart/form-data
-      const result = await axios.post("/api/admin/postService", formData);
+      const result = await axios.post("/api/admin/services/postService", formData);
 
       if (result.status === 200) {
         console.log(
@@ -75,7 +75,7 @@ function AddServicePage() {
   };
 
   // ฟังก์ชันสำหรับจัดการการยกเลิกและกลับไปยังหน้าก่อนหน้า
-  const handleCancel = () => router.back();
+  const handleCancel = () => router.push("/admin/services/service");
 
   // ฟังก์ชันสำหรับจัดการเมื่อมีการเปลี่ยนแปลงไฟล์รูปภาพ
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
