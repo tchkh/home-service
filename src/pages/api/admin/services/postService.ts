@@ -7,7 +7,7 @@ import { z } from 'zod'
 import {
   CreateServiceSchema,
   CreateServicePayload,
-} from '../../../schemas/post-service'
+} from '../../../../schemas/post-service'
 
 // 1. บอก Next.js ว่าอย่าใช้ built-in bodyParser
 export const config = {
@@ -113,6 +113,15 @@ async function createServiceInDB(
         // อาจ rollback service ได้ตามต้องการ
         throw subError
       }
+    }
+
+    // update order_num
+    const { error: updateError } = await supabase
+    .rpc('increment_next_order_num')
+    
+    if (updateError) {
+      console.error('Error updating order_num:', updateError)
+      throw updateError
     }
 
     // ดึงข้อมูลรายละเอียดกลับมา
