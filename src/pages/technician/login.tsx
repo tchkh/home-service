@@ -34,7 +34,7 @@ export default function TechnicianLoginPage() {
 
       // ถ้าสำเร็จ ทำการ redirect
       if (response.data.success) {
-        router.push("/technician/dashboard");
+        router.push("/technician/service-request");
       }
     } catch (error: unknown) {
       // จัดการกับข้อผิดพลาด
