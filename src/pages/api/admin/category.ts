@@ -50,7 +50,9 @@ export default async function handler(
 
          if (dbError) throw dbError;
 
-         return res.status(200).json({ message: "Category created", data });
+         return res
+            .status(200)
+            .json({ message: "Category created commplete", data });
       } catch (error) {
          console.log("error at get methor", error);
          return res.status(500).json({ message: "Server error" });
