@@ -52,6 +52,7 @@ export default async function handler(
          }
          let query = supabase
             .from("services_with_card")
+            // head: false นับจำนวนแล้ว เอาข้อมูลมาด้วย
             .select("*", { count: "exact", head: false })
             .range(0, limit);
 
