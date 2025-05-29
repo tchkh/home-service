@@ -6,7 +6,7 @@ const Index = () => {
   const { id } = router.query
   console.log(typeof id)
 
-  return <ServiceBookingPage id={Number(id)} />
+  return <ServiceBookingPage id={id as string} />
 }
 
 export default Index
