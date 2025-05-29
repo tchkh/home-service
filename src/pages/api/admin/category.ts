@@ -50,13 +50,9 @@ export default async function handler(
 
          if (dbError) throw dbError;
 
-<<<<<<< HEAD
          return res
             .status(200)
             .json({ message: "Category created commplete", data });
-=======
-         return res.status(200).json({ message: "Category created", data });
->>>>>>> 1863514 (feat:add API category get(all ,by id ) ,post to create, put to edit ,delete)
       } catch (error) {
          console.log("error at get methor", error);
          return res.status(500).json({ message: "Server error" });
