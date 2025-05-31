@@ -80,7 +80,7 @@ function AppContent({ Component, pageProps, router }: AppContentProps) {
 
   return (
     <main
-      className={`${prompt.className} min-h-screen w-full max-w-[100%] overflow-x-hidden`}
+      className={`${prompt.className} min-h-screen w-full max-w-[100%]`}
     >
       {showNavbar && <Navbar />}
       {showAdminSidebar && <Sidebar items={adminSidebarItems} />}
