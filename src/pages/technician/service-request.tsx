@@ -6,6 +6,7 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { Button } from "@/components/ui/button";
 import MobileHeader from "@/components/shared/MobileHeader";
 import NotificationIcon from "@/components/icons/NotificationIcon";
+import { calculateStraightDistance } from "@/utils/distance";
 
 export default function TechnicianRequestPage() {
   const [serviceRequestData, setServiceRequestData] = useState<
@@ -54,11 +55,11 @@ export default function TechnicianRequestPage() {
   };
 
   return (
-    <div>
+    <>
       {/* Mobile Header */}
       <MobileHeader serviceRequestCount={serviceRequestData.length} />
       {/* Header */}
-      <header className="relative flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)] shadow-lg overflow-hidden">
+      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center px-8 md:py-5 py-4 bg-[var(--white)] shadow-lg overflow-hidden">
         {/* Hide & Show sidebar */}
         <Button
           type="button"
@@ -106,9 +107,9 @@ export default function TechnicianRequestPage() {
       {technicianInactive ? (
         <section className="w-[90%] max-w-[95%] mx-auto px-5 py-5 bg-[var(--white)] border-1 border-[var(--gray-300)] rounded-[8px] shadow-lg overflow-hidden text-center mt-10 ">
           <div className="flex justify-center items-center mb-4 mt-5">
-             <NotificationIcon className="text-[var(--blue-500)] w-14 h-14"/>
+            <NotificationIcon className="text-[var(--blue-500)] w-14 h-14" />
           </div>
-         
+
           <h2 className="text-heading-2">
             ต้องการรับแจ้งเตือนคำขอบริการสั่งซ่อม?
           </h2>
@@ -182,22 +183,12 @@ export default function TechnicianRequestPage() {
             <div className="space-y-4 mb-20">
               {technician &&
                 serviceRequestData.map((request) => {
-                  // Calculate straight-line distance (Haversine formula)
-                  const toRad = (value: number) => (value * Math.PI) / 180;
-                  const R = 6371; // Earth's radius in km
-                  const dLat = toRad(request.latitude - technician.latitude);
-                  const dLon = toRad(request.longitude - technician.longitude);
-                  const lat1 = toRad(technician.latitude);
-                  const lat2 = toRad(request.latitude);
-
-                  const a =
-                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                    Math.sin(dLon / 2) *
-                      Math.sin(dLon / 2) *
-                      Math.cos(lat1) *
-                      Math.cos(lat2);
-                  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                  const straightDistance = R * c;
+                  const straightDistance = calculateStraightDistance(
+                    technician.latitude,
+                    technician.longitude,
+                    request.latitude,
+                    request.longitude
+                  );
 
                   return (
                     <ServiceRequestCard
@@ -216,6 +207,6 @@ export default function TechnicianRequestPage() {
           </main>
         </>
       )}
-    </div>
+    </>
   );
 }
