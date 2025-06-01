@@ -162,6 +162,39 @@ export interface Technician {
   address: string;
 }
 
+export interface TechnicianServiceSettings {
+  id: string;
+  is_active: boolean;
+  services: {
+    id: number;
+    title: string;
+  };
+}
+
+export interface AllServices {
+  id: string;
+  title: string;
+}
+
+export interface TechnicianData {
+  id: string;
+  first_name: string;
+  last_name: string;
+  tel: string;
+  address: string;
+  status: string;
+  services_active: {
+    service_id: number;
+    is_active: boolean;
+  }[];
+  technician_services: TechnicianService[];
+}
+
+export interface ExtendedTechnicianData extends TechnicianData {
+  techData: TechnicianData[];
+  techServicesData: TechnicianServiceSettings[];
+}
+
 export interface CustomerRequest {
   id: string;
   user_id: string;
