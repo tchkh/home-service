@@ -162,7 +162,7 @@ export interface Technician {
   address: string;
 }
 
-export interface TechnicianService {
+export interface TechnicianServiceSettings {
   id: string;
   is_active: boolean;
   services: {
@@ -192,7 +192,7 @@ export interface TechnicianData {
 
 export interface ExtendedTechnicianData extends TechnicianData {
   techData: TechnicianData[];
-  techServicesData: TechnicianService[];
+  techServicesData: TechnicianServiceSettings[];
 }
 
 export interface CustomerRequest {

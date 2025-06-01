@@ -14,7 +14,7 @@ import {
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { Service, TechnicianService } from "@/types";
+import { Service, TechnicianServiceSettings } from "@/types";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import MobileHeader from "@/components/shared/MobileHeader";
 
@@ -62,8 +62,8 @@ const TechnicianAccountSettingsPage: React.FC = () => {
         "servicesActive",
         Array.isArray(data.technician_services)
           ? data.technician_services
-              .filter((service: TechnicianService) => service.is_active)
-              .map((service: TechnicianService) => ({
+              .filter((service: TechnicianServiceSettings) => service.is_active)
+              .map((service: TechnicianServiceSettings) => ({
                 service_id: service.services.id || "",
                 is_active: service.is_active === true ? true : false,
               }))
