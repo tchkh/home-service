@@ -203,6 +203,30 @@ export interface JobsTableProps {
   onActionClick?: (jobId: string) => void;
 }
 
+export interface JobDetail {
+  id: string;
+  user_id: string;
+  category: string;
+  category_color: string;
+  service: string;
+  sub_service: string;
+  appointment_at: string;
+  full_address: string;
+  latitude: number;
+  longitude: number;
+  total_price: number;
+  first_name: string;
+  last_name: string;
+  tel: string;
+  accepted_at: string;
+  service_id: number;
+  status?: string;
+  notes?: string;
+  created_at?: string;
+  technician_latitude: number;
+  technician_longitude: number;
+}
+
 export interface TechnicianPendingProps {
   initialData: {
     services: Array<{ service_id: number; service_title: string }>;
@@ -226,4 +250,87 @@ export interface TechnicianPendingProps {
     message?: string;
     hasJobs: boolean;
   };
+}
+
+export interface TechnicianHistoryProps {
+  initialData: {
+    services: Array<{ service_id: number; service_title: string }>;
+    jobs: Array<{
+      id: string;
+      category: string;
+      service: string;
+      sub_service: string;
+      appointment_at: string;
+      address: string;
+      total_price: number;
+      first_name: string;
+      last_name: string;
+      tel: string;
+      // review
+      // comment
+    }>;
+    technician: {
+      id: string;
+      name: string;
+      email: string;
+    };
+    message?: string;
+    hasJobs: boolean;
+  };
+}
+
+export interface JobHistoryDetailResponse {
+  id: string;
+  user_id: string;
+  category: string;
+  category_color: string;
+  service: string;
+  sub_service: string;
+  appointment_at: string;
+  full_address: string;
+  latitude: number;
+  longitude: number;
+  total_price: number;
+  first_name: string;
+  last_name: string;
+  tel: string;
+  accepted_at: string;
+  service_id: number;
+  technician_latitude: number;
+  technician_longitude: number;
+  // เพิ่ม review and comment
+}
+
+export interface CompletedJob {
+  id: string;
+  user_id: string;
+  category: string;
+  service: string;
+  sub_service: string;
+  appointment_at: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  total_price: number;
+  first_name: string;
+  last_name: string;
+  tel: string;
+  service_id: number;
+}
+
+export interface TechnicianService {
+  service_id: number;
+  service_title: string;
+}
+
+export interface CompletedJobsResponse {
+  services: TechnicianService[];
+  jobs: CompletedJob[];
+  technician: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  message?: string;
+  hasJobs: boolean;
 }
