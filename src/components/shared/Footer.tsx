@@ -1,6 +1,12 @@
+import { useState } from 'react'
 import Image from 'next/image'
+import { termsContent, privacyContent } from '@/data/legal'
+import LegalModal from './LegalModal'
 
 function Footer() {
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
+
   return (
     <footer className="bg-[color:var(--white)] pt-10">
       <div className="container mx-auto px-4">
@@ -56,21 +62,45 @@ function Footer() {
       {/* Bottom Section */}
       <div className="bg-[color:var(--gray-100)] p-3 mt-6 md:px-20">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-          {/* Copyright - left on desktop */}
+          {/* Copyright */}
           <p className="text-body-4 text-[color:var(--gray-500)] order-3 md:order-1">
             copyright © 2021 HomeServices.com All rights reserved
           </p>
 
-          {/* Spacer on mobile */}
+          {/* Spacer */}
           <div className="h-2 md:hidden" />
 
-          {/* Links - right on desktop */}
-          <div className="text-body-3 text-[color:var(--gray-700)] flex flex-col md:flex-row md:gap-5 order-1 md:order-3">
-            <a href="#">เงื่อนไขและข้อตกลงการใช้งานเว็บไซต์</a>
-            <a href="#">นโยบายความเป็นส่วนตัว</a>
+          {/* Links */}
+          <div className="text-body-3 flex flex-col md:flex-row md:gap-5 order-1 md:order-3">
+            <button
+              onClick={() => setShowTermsModal(true)}
+              className=" text-[color:var(--gray-700)] hover:text-(--blue-600) hover:underline text-left cursor-pointer"
+            >
+              ข้อตกลงและเงื่อนไข
+            </button>
+            <button
+              onClick={() => setShowPrivacyModal(true)}
+              className=" text-[color:var(--gray-700)] hover:text-(--blue-600) hover:underline text-left cursor-pointer"
+            >
+              นโยบายความเป็นส่วนตัว
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <LegalModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        title="ข้อตกลงและเงื่อนไข"
+        content={termsContent}
+      />
+      <LegalModal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+        title="นโยบายความเป็นส่วนตัว"
+        content={privacyContent}
+      />
     </footer>
   )
 }

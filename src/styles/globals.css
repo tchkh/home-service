@@ -247,4 +247,27 @@
       display: inline-flex;
    }
 }
-/* charlee */
+
+/* Switch */
+[data-slot="switch"] {
+   width: 44px !important;
+   height: 24px !important;
+   background-color: #e5e7eb !important;
+ }
+ 
+ [data-slot="switch"][data-state="checked"] {
+   background-color: #2563eb !important;
+ }
+ 
+ [data-slot="switch-thumb"] {
+   display: block !important;
+   width: 20px !important;
+   height: 20px !important;
+   background-color: white !important;
+   border-radius: 9999px !important;
+   transition: transform 200ms !important;
+ }
+ 
+ [data-slot="switch"][data-state="checked"] [data-slot="switch-thumb"] {
+   transform: translateX(4px) !important;
+ }

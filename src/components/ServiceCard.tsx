@@ -1,5 +1,6 @@
-import Image from 'next/image';
-// import Vector from '../../public/asset/svgs/Vector.svg';
+import Image from "next/image";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTag } from "@fortawesome/free-solid-svg-icons";
 
 interface ServiceCardProps {
    id: number;
@@ -12,14 +13,14 @@ interface ServiceCardProps {
 
 const getCategoryTagStyle = (category: string) => {
    switch (category) {
-      case 'บริการทั่วไป':
-         return 'text-[var(--blue-800)] bg-[var(--blue-100)]';
-      case 'บริการห้องครัว':
-         return 'text-[var(--purple-900)] bg-[var(--purple-100)]';
-      case 'บริการห้องน้ำ':
-         return 'text-[var(--green-900)] bg-[var(--green-100)]';
+      case "บริการทั่วไป":
+         return "text-[var(--blue-800)] bg-[var(--blue-100)]";
+      case "บริการห้องครัว":
+         return "text-[var(--purple-900)] bg-[var(--purple-100)]";
+      case "บริการห้องน้ำ":
+         return "text-[var(--green-900)] bg-[var(--green-100)]";
       default:
-         return 'text-[var(--blue-800)] bg-[var(--blue-100)]';
+         return "text-[var(--blue-800)] bg-[var(--blue-100)]";
    }
 };
 
@@ -38,7 +39,7 @@ export default function ServiceCard({
          key={id}
       >
          <div
-            className={`object-fill object-center w-full max-h-[200px] overflow-hidden mb-2`}
+            className={`object-fill object-center w-full max-h-[200px] overflow-hidden mb-2 rounded-t-[8px]`}
          >
             <Image
                src={image}
@@ -64,12 +65,9 @@ export default function ServiceCard({
                className={`flex items-center text-[var(--gray-700)] text-body-3 mb-2 `}
             >
                <span className="mr-2">
-                  <Image
-                     alt="price"
-                     src="/asset/svgs/Vector.svg"
-                     width={15}
-                     height={15}
-                     className=""
+                  <FontAwesomeIcon
+                     icon={faTag}
+                     className="w-[15px] h-[15px] text-[var(--gray-700)] "
                   />
                </span>
                ค่าบริการประมาณ {minPrice} - {maxPrice} ฿
