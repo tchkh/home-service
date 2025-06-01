@@ -1,5 +1,6 @@
 import EditIcon from "../icons/EditIcon";
 import { JobsTableProps } from "@/types";
+import { formatThaiDatetime } from "@/utils/datetime";
 
 export default function JobsTable({
   jobs,
@@ -52,7 +53,7 @@ export default function JobsTable({
                 className="hover:bg-gray-50 transition-colors text-body-2"
               >
                 <td className="px-4 py-3 md:py-7">{job.service}</td>
-                <td className="px-4 py-3 md:py-7">{job.appointment_at}</td>
+                <td className="px-4 py-3 md:py-7">{formatThaiDatetime(job.appointment_at)}</td>
                 <td className="px-4 py-3 md:py-7">AD04071205</td>
                 <td className="px-4 py-3 md:py-7">{job.total_price} ฿</td>
                 <td className="px-4 py-3 md:py-7 text-center">

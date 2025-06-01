@@ -1,29 +1,29 @@
+import MobileHeader from "@/components/shared/MobileHeader";
+import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import MobileHeader from "@/components/shared/MobileHeader";
-import { useSidebar } from "@/contexts/SidebarContext";
-import axios from "axios";
-import { formatThaiDatetime } from "@/utils/datetime";
-import { MapPopup } from "@/components/MapPopup";
-import { calculateStraightDistance } from "@/utils/distance";
 import { JobDetail } from "@/types";
+import { calculateStraightDistance } from "@/utils/distance";
+import axios from "axios";
+import { MapPopup } from "@/components/MapPopup";
+import { formatThaiDatetime } from "@/utils/datetime";
 
-export default function JobDetailPage() {
-  const router = useRouter();
-  const { id } = router.query;
+export default function JobHistoryDetailPage() {
+  const { isSidebarOpen, toggleSidebar } = useSidebar();
   const [jobData, setJobData] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
   const [showMap, setShowMap] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const router = useRouter();
+  const { id } = router.query;
 
-  const fetchJobDetail = async (jobId: string) => {
+  const fetchHistoryJobDetail = async (jobId: string) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`/api/technician/pending/${jobId}`);
+      const response = await axios.get(`/api/technician/history/${jobId}`);
       setJobData(response.data);
     } catch (error) {
       console.error("Error fetching job detail:", error);
@@ -39,13 +39,13 @@ export default function JobDetailPage() {
 
   useEffect(() => {
     if (id && typeof id === "string") {
-      fetchJobDetail(id);
+      fetchHistoryJobDetail(id);
     }
     setIsClient(true);
   }, [id]);
 
   const handleBack = () => {
-    router.push("/technician/pending"); // กลับไปหน้าตาราง
+    router.push("/technician/history"); // กลับไปหน้าตาราง
   };
 
   const formatPhoneNumber = (phone: string) => {
@@ -156,7 +156,7 @@ export default function JobDetailPage() {
             </button>
             <div>
               <p className="text-body-4 text-[var(--gray-700)]">
-                รายการที่รอดำเนินการ
+                ประวัติการซ่อม
               </p>
               <h1 className="text-heading-2 text-2xl font-semibold">
                 {jobData.service}
@@ -166,7 +166,7 @@ export default function JobDetailPage() {
         </div>
       </header>
       {/* Content */}
-      <main className="w-[90%] max-w-[95%] mx-auto px-5 py-5 bg-[var(--white)] border-1 border-[var(--gray-300)] rounded-[8px] shadow-lg overflow-hidden my-8">
+      <main className="w-[90%] max-w-[95%] mx-auto px-5 pt-5 pb-10 bg-[var(--white)] border-1 border-[var(--gray-300)] rounded-[8px] shadow-lg overflow-hidden my-8">
         <h1 className="text-heading-2 mt-4">{jobData.service}</h1>
         <div className="grid [grid-template-columns:minmax(130px,auto)_1fr] md:gap-y-12 md:gap-x-20 gap-y-5 gap-x-2 mt-10">
           <p className="text-[var(--gray-700)] text-heading-5">หมวดหมู่</p>
@@ -234,21 +234,62 @@ export default function JobDetailPage() {
 
           <p className="text-[var(--gray-700)] text-heading-5">เบอร์ติดต่อ</p>
           <p>{formatPhoneNumber(jobData.tel)}</p>
+
+          <hr className="w-full" />
+          <br />
+
+          <p className="text-[var(--gray-700)] text-heading-5">
+            คะแนนความพึงพอใจ
+          </p>
+          <div className="flex">
+            <svg
+              className="w-6 h-6 text-gray-800"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+            </svg>
+                        <svg
+              className="w-6 h-6 text-gray-800"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                stroke-width="2"
+                d="M11.083 5.104c.35-.8 1.485-.8 1.834 0l1.752 4.022a1 1 0 0 0 .84.597l4.463.342c.9.069 1.255 1.2.556 1.771l-3.33 2.723a1 1 0 0 0-.337 1.016l1.03 4.119c.214.858-.71 1.552-1.474 1.106l-3.913-2.281a1 1 0 0 0-1.008 0L7.583 20.8c-.764.446-1.688-.248-1.474-1.106l1.03-4.119A1 1 0 0 0 6.8 14.56l-3.33-2.723c-.698-.571-.342-1.702.557-1.771l4.462-.342a1 1 0 0 0 .84-.597l1.753-4.022Z"
+              />
+            </svg>
+
+          </div>
+
+          <p className="text-[var(--gray-700)] text-heading-5">
+            ความคิดเห็นจากผู้รับบริการ
+          </p>
+          <p>เก็บงานเรียบร้อยมาก เสร็จไว มาตรงตามเวลานัดเลยค่ะ</p>
         </div>
 
         {/* Map Popup Modal - แสดงเมื่ออยู่ใน client-side เท่านั้น */}
-              {isClient && (
-                <MapPopup
-                  isOpen={showMap}
-                  onClose={() => setShowMap(false)}
-                  data={jobData}
-                  technicianLocation={{
-                    latitude: jobData.technician_latitude,
-                    longitude: jobData.technician_longitude,
-                  }}
-                  straightDistance={straightDistance}
-                />
-              )}
+        {isClient && (
+          <MapPopup
+            isOpen={showMap}
+            onClose={() => setShowMap(false)}
+            data={jobData}
+            technicianLocation={{
+              latitude: jobData.technician_latitude,
+              longitude: jobData.technician_longitude,
+            }}
+            straightDistance={straightDistance}
+          />
+        )}
       </main>
     </>
   );
