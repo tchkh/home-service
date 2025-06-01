@@ -144,6 +144,15 @@ export interface MapProps {
   straightDistance: number;
 }
 
+export interface MapPopupProps {
+  isOpen: boolean;
+  onClose: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  technicianLocation: any;
+  straightDistance: number;
+}
 export interface Technician {
   id: string;
   name: string;
@@ -170,5 +179,51 @@ export interface CustomerRequest {
     sub_service: string;
     price: number;
     unit: string;
+  };
+}
+
+export interface Job {
+  id: string;
+  category: string;
+  service: string;
+  sub_service: string;
+  appointment_at: string;
+  address: string;
+  total_price: number;
+  first_name: string;
+  last_name: string;
+  tel: string;
+}
+
+export interface JobsTableProps {
+  jobs: Job[];
+  loading: boolean;
+  hasJobs: boolean;
+  message?: string;
+  onActionClick?: (jobId: string) => void;
+}
+
+export interface TechnicianPendingProps {
+  initialData: {
+    services: Array<{ service_id: number; service_title: string }>;
+    jobs: Array<{
+      id: string;
+      category: string;
+      service: string;
+      sub_service: string;
+      appointment_at: string;
+      address: string;
+      total_price: number;
+      first_name: string;
+      last_name: string;
+      tel: string;
+    }>;
+    technician: {
+      id: string;
+      name: string;
+      email: string;
+    };
+    message?: string;
+    hasJobs: boolean;
   };
 }
