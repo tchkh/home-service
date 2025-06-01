@@ -13,7 +13,7 @@ export default function Home() {
 
       <section className="bg-[color:var(--blue-100)] py-[5%]  overflow-hidden h-[704px] md:h-auto relative flex justify-center">
         <div className="max-w-[1400px]  w-full md:mx-20">
-          <div className="container  px-4 relative z-10 ">
+          <div className="container  px-4 md:px-30 relative z-10 ">
             <div className="items-center">
               <div className="md:text-left flex flex-col z-10 relative">
                 <h1 className="text-[40px] md:text-[64px] font-bold text-[color:var(--blue-700)] mb-4">
@@ -70,7 +70,7 @@ export default function Home() {
       </section>
 
       {/* Join Us Section */}
-      <section className="">
+      <section className="mt-30">
         <div className="relative overflow-hidden md:flex bg-[color:var(--blue-600)]">
           <div className="md:w-1/3 ">
             <Image
@@ -83,14 +83,14 @@ export default function Home() {
           </div>
           <div className="z-2 md:w-2/3 p-[5%] h-[100%] pb-20">
             <div className="text-[color:var(--white)]">
-              <h1 className="text-heading-1">
+              <h1 className="md:text-[40px] md:font-medium text-[32px]">
                 มาร่วมเป็นพนักงานซ่อมกับ HomeServices
               </h1>
-              <p className="md:text-heading-3 pt-[3%]">
+              <p className="md:text-[20px] text-[16px] pt-[3%]">
                 เข้ารับการฝึกอบรมที่ได้มาตรฐาน ฟรี! <br />{' '}
                 และยังได้รับค่าตอบแทนที่มากขึ้นกว่าเดิม
               </p>
-              <h3 className="text-heading-2 md:text-heading-1 pt-[3%]">
+              <h3 className="md:text-[32px] text-[20px] pt-[3%]">
                 ติดต่อมาที่อีเมล: job@homeservices.co
               </h3>
             </div>
