@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 :root {
    /* Color System */
@@ -231,6 +231,7 @@
 }
 
 /* charlee */
+/* service list */
 #btn-search-mobile {
    display: inline-flex;
 }
@@ -247,4 +248,26 @@
       display: inline-flex;
    }
 }
+/* service list */
+/* admin category */
+#changeColor {
+   margin-right: 8px;
+   /* -webkit-appearance: none; */
+   border: none;
+   width: auto;
+   height: auto;
+   cursor: pointer;
+   background: none;
+   &::-webkit-color-swatch-wrapper {
+      padding: 0;
+      width: 60px;
+      height: 30px;
+   }
+   &::-webkit-color-swatch {
+      border: 1px solid #bfc9d9;
+      border-radius: 4px;
+      padding: 0;
+   }
+}
+/* admin category */
 /* charlee */
