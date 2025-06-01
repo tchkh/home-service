@@ -45,7 +45,7 @@ function PoppularService() {
          try {
             // search=${searchTest}&category=${categoryTest}&
             const res = await axios.get(
-               `http://localhost:3000/api/service?${queryString}`
+               `/api/service?${queryString}`
             );
             setServiceCard(res.data.service);
          } catch (error) {
