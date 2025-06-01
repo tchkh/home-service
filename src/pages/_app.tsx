@@ -61,7 +61,7 @@ const technicianSidebarItems: SidebarItem[] = [
   {
     label: "ตั้งค่าบัญชีผู้ใช้",
     icon: Account,
-    href: "/technician/account-settings",
+    href: "/technician/account-setting",
   },
 ];
 
