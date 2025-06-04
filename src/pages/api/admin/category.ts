@@ -12,14 +12,15 @@ export default async function handler(
    // get ข้อมูลทั้งหมด และ get ด้วย id
 
    if (req.method === "GET") {
-      const { id } = req.body as {
-         id: number;
+      const { id } = req.query as {
+         id?: string;
       };
+      console.log("id: ", id);
       let query = supabase.from("categories").select("*");
 
       // เมื่อมี id ให้ query เฉพาะ id หาก
       if (id) {
-         query = query.eq("id", id);
+         query = query.eq("id", Number(id));
       }
 
       // ดึงข้อมูลแล้วเก็บใน data

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
+import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
 
 interface CategoryData {
    name: string;
@@ -42,8 +43,7 @@ export default function CategoryForm() {
       if (checkData === "error") {
          return null;
       }
-      const data = await axios.post(`/api/admin/category`, categoryData);
-      console.log("created complete  ", data);
+      await axios.post(`/api/admin/category`, categoryData);
       // router.push("/admin/categories"); //หรือ router.back();
    };
 
@@ -55,7 +55,8 @@ export default function CategoryForm() {
    return (
       <div className="min-h-screen bg-[var(--gray-100)]">
          {/* Header */}
-         <section className="bg-[var(--white)] px-10 py-6 mb-14 h-auto box-border ">
+         <header className="relative bg-[var(--white)] px-10 py-6 mb-14 h-auto box-border ">
+            <ToggleSidebarComponent />
             <div className="flex items-center justify-between max-w-[1440px]">
                <h1 className="text-heading-2 ">เพิ่มหมวดหมู่</h1>
                <div className="flex items-center gap-x-6 ">
@@ -73,7 +74,7 @@ export default function CategoryForm() {
                   </button>
                </div>
             </div>
-         </section>
+         </header>
 
          {/* Main Content */}
          <section className="max-w-[1440px] h-fit mx-10 my-14 py-10 px-6 box-border bg-[var(--white)] flex flex-col items-start gap-y-5  shadow-sm">

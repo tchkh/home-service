@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, Trash2 } from "lucide-react";
+import ToggleSidebarComponent from "@/components/toggleSidebarComponent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,8 +48,9 @@ export default function CategoryForm() {
    return (
       <div className="min-h-screen bg-gray-50">
          {/* Header */}
-         <section className="bg-white border-b border-gray-200 px-4 py-3">
-            <div className="flex items-center justify-between max-w-4xl mx-auto">
+         <header className="relative bg-white border-b border-gray-200 px-4 py-3">
+            <ToggleSidebarComponent />
+            <section className="flex items-center justify-between max-w-4xl mx-auto">
                <div className="flex items-center space-x-4">
                   <Button
                      variant="ghost"
@@ -80,8 +82,8 @@ export default function CategoryForm() {
                      ยืนยัน
                   </Button>
                </div>
-            </div>
-         </section>
+            </section>
+         </header>
 
          {/* Main Content */}
          <section className="max-w-4xl mx-auto p-6">
