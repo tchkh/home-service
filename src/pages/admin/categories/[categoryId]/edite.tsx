@@ -17,10 +17,10 @@ interface CategoryData {
 }
 
 export default function CategoryForm() {
-   interface CategoryData {
-      name: string;
-      color: string;
-   }
+   // interface CategoryData {
+   //    name: string;
+   //    color: string;
+   // }
    const router = useRouter();
    const categoryId = router.query.categoryId;
 
@@ -35,44 +35,44 @@ export default function CategoryForm() {
       order_num: 0,
    });
    console.log("dataCatag: ", dataCatag);
-   const [categoryName, setCategoryName] = useState("");
-   const [validateName, setValidateName] = useState(false);
-   const [categoryColor, setCategoryColor] = useState("");
-   const [validateColor, setValidateColor] = useState(false);
+   // const [categoryName, setCategoryName] = useState("");
+   // const [validateName, setValidateName] = useState(false);
+   // const [categoryColor, setCategoryColor] = useState("");
+   // const [validateColor, setValidateColor] = useState(false);
 
-   const categoryData: CategoryData = {
-      name: categoryName,
-      color: categoryColor,
-   };
+   // const categoryData: CategoryData = {
+   //    name: categoryName,
+   //    color: categoryColor,
+   // };
 
-   const handleColor = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setValidateColor(false);
-      setCategoryColor(e.target.value);
-   };
+   // const handleColor = (e: React.ChangeEvent<HTMLInputElement>) => {
+   //    setValidateColor(false);
+   //    setCategoryColor(e.target.value);
+   // };
 
    // เมื่อกดสร้าง
-   const handleSave = async () => {
-      // validate
-      const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
-      const validateCreateData = () => {
-         let resultVlidate = null;
-         if (!categoryName) {
-            resultVlidate = "error";
-            setValidateName(true);
-         }
-         if (!categoryColor || !hexColorRegex.test(categoryColor)) {
-            resultVlidate = "error";
-            setValidateColor(true);
-         }
-         return resultVlidate;
-      };
-      const checkData = validateCreateData();
-      if (checkData === "error") {
-         return null;
-      }
-      await axios.post(`/api/admin/category`, categoryData);
-      // router.push("/admin/categories"); //หรือ router.back();
-   };
+   // const handleSave = async () => {
+   //    // validate
+   //    const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
+   //    const validateCreateData = () => {
+   //       let resultVlidate = null;
+   //       if (!categoryName) {
+   //          resultVlidate = "error";
+   //          setValidateName(true);
+   //       }
+   //       if (!categoryColor || !hexColorRegex.test(categoryColor)) {
+   //          resultVlidate = "error";
+   //          setValidateColor(true);
+   //       }
+   //       return resultVlidate;
+   //    };
+   //    const checkData = validateCreateData();
+   //    if (checkData === "error") {
+   //       return null;
+   //    }
+   //    await axios.post(`/api/admin/category`, categoryData);
+   //    // router.push("/admin/categories"); //หรือ router.back();
+   // };
 
    // set เวลาเพื่อแสดง
    const setDateTimeFormat = (date: Date) => {
@@ -125,7 +125,7 @@ export default function CategoryForm() {
                      ยกเลิก
                   </button>
                   <button
-                     onClick={handleSave}
+                     // onClick={handleSave}
                      className="btn btn--primary text-heading-5  px-9 py-2 text-[var(--white)] w-[112px] h-[45px]"
                   >
                      ยืนยัน
