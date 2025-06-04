@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, Trash2 } from "lucide-react";
-import ToggleSidebarComponent from "@/components/toggleSidebarComponent";
+import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
