@@ -44,9 +44,7 @@ function PoppularService() {
       const getDataService = async () => {
          try {
             // search=${searchTest}&category=${categoryTest}&
-            const res = await axios.get(
-               `/api/service?${queryString}`
-            );
+            const res = await axios.get(`/api/service?${queryString}`);
             setServiceCard(res.data.service);
          } catch (error) {
             console.log("error: ", error);
