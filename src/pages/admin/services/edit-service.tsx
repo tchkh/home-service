@@ -348,7 +348,7 @@ function EditServicePage() {
               <option value="">เลือกหมวดหมู่</option>
               <option value="บริการทั่วไป">บริการทั่วไป</option>
               <option value="บริการห้องครัว">บริการห้องครัว</option>
-              <option value="บริการห้องน้ํา">บริการห้องน้ํา</option>
+              <option value="บริการห้องน้ำ">บริการห้องน้ำ</option>
             </select>
             {errors.category && (
               <p className="text-sm text-[var(--red)]">
