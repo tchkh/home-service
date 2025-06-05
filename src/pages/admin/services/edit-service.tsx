@@ -35,6 +35,7 @@ function EditServicePage() {
    const [serviceData, setServiceData] = useState<ServiceFormValues | null>(
       null
    );
+  const [isSubmitting, setIsSubmitting] = useState(false);
    const serviceId = router.query.serviceId;
 
    // ฟังก์ชันสําหรับดึงข้อมูล Service จาก API
@@ -119,6 +120,7 @@ function EditServicePage() {
    // ฟังก์ชันที่ถูกเรียกเมื่อมีการ submit ฟอร์ม
    const onSubmit = async (data: ServiceFormValues) => {
       try {
+      setIsSubmitting(true);
          const formData = new FormData();
          formData.append("title", data.title); // ใช้ serviceName ตาม schema
          formData.append("category", data.category);
@@ -240,19 +242,22 @@ function EditServicePage() {
    };
 
    return (
-      <div className={` flex min-h-screen bg-[var(--bg)]`}>
+      <main className={` flex min-h-screen bg-[var(--bg)]`}>
          <form
+       
             onSubmit={handleSubmit(onSubmit)}
-            className="w-full flex flex-col"
+       
+            className="relative flex flex-col w-full mb-16 space-y-6"
+      
          >
             {/* Header */}
-            <div className="relative flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
+            <header className="relative flex flex-row justify-between items-center h-24 pl-12 pr-15 py-5 bg-[var(--white)]">
                <ToggleSidebarComponent />
                <div className="flex items-center space-x-4">
                   <Button
                      type="button"
                      variant="ghost"
-                     className="p-2 hover:bg-[var(--gray-100)]  active:bg-[var(--gray-200)] cursor-pointer rounded-full"
+                     className="p-2 hover:bg-[var(--gray-100)] active:bg-[var(--gray-200)] cursor-pointer rounded-full"
                      onClick={handleGoBack}
                   >
                      <ArrowLeft className="h-5 w-5" />
@@ -275,23 +280,27 @@ function EditServicePage() {
                   >
                      ยกเลิก
                   </Button>
-                  <Button type="submit" className="btn btn--primary px-6 py-3">
+                  <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn btn--primary px-6 py-3"
+            >
                      บันทึก
                   </Button>
                </div>
-            </div>
+            </header>
 
             {/* Basic Info */}
-            <div className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto px-5 py-10 mt-6 bg-[var(--white)] border-1 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
-               {/* ชื่อบริการ */}
-               <div className="flex flex-row gap-10 space-y-1">
-                  <Label htmlFor="title" className="w-40 text-heading-5">
-                     ชื่อบริการ <span className="text-[var(--red)]">*</span>
+            <section className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto px-5 py-10 bg-[var(--white)] border-1 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
+               {/* Service Name */}
+               <section className="flex flex-row gap-10 space-y-1">
+                  <Label htmlFor="title" className="w-40 text-heading-5 text-[var(--gray-700)]">
+                     ชื่อบริการ<span className="text-[var(--red)]">*</span>
                   </Label>
                   <Input
                      id="title"
                      autoComplete="off"
-                     className="w-80 border-1 border-[var(--gray-300)] text-body-1"
+                     className="w-80 border-1 border-[var(--gray-300)] text-sm"
                      {...register("title", { required: true })}
                      defaultValue={serviceData?.title}
                   />
@@ -300,15 +309,15 @@ function EditServicePage() {
                         {errors.title.message}
                      </p>
                   )}
-               </div>
-               {/* หมวดหมู่ */}
-               <div className="flex flex-row gap-10 space-y-1">
-                  <Label htmlFor="category" className="w-40 text-heading-5">
-                     หมวดหมู่ <span className="text-[var(--red)]">*</span>
+               </section>
+               {/* Category */}
+               <section className="flex flex-row gap-10 space-y-1">
+                  <Label htmlFor="category" className="w-40 text-heading-5 text-[var(--gray-700)]">
+                     หมวดหมู่<span className="text-[var(--red)]">*</span>
                   </Label>
                   <select
                      id="category"
-                     className="w-80 border-1 border-[var(--gray-300)] rounded-sm text-body-1"
+                     className="w-80 pl-2 border-1 border-[var(--gray-300)] rounded-sm text-sm"
                      {...register("category", { required: true })}
                      defaultValue={serviceData?.category}
                   >
@@ -322,13 +331,13 @@ function EditServicePage() {
                         {errors.category.message}
                      </p>
                   )}
-               </div>
+               </section>
                {/* Image Upload */}
-               <div className="flex flex-row items-start gap-10 space-y-1">
-                  <Label htmlFor="image-upload" className="w-40 text-heading-5">
-                     รูปภาพ <span className="text-[var(--red)]">*</span>
+               <section className="flex flex-row items-start gap-10 space-y-1">
+                  <Label htmlFor="image-upload" className="w-40 text-heading-5 text-[var(--gray-700)]">
+                     รูปภาพ<span className="text-[var(--red)]">*</span>
                   </Label>
-                  <div className="relative w-80 rounded-md border-1 border-dashed border-[var(--gray-300)] p-6 flex items-center justify-center">
+                  <div className="relative flex items-center justify-center w-80 min-h-40 p-6 rounded-md border-1 border-dashed border-[var(--gray-300)]">
                      {selectedImage ? (
                         <div className="w-full">
                            <Image
@@ -348,7 +357,7 @@ function EditServicePage() {
                            </Button>
                         </div>
                      ) : (
-                        <div className="flex flex-col items-center text-center text-[var(--gray-700)]">
+                        <div className="flex flex-col items-center text-center text-xs text-[var(--gray-700)]">
                            <Image
                               src="/asset/svgs/add-image.svg"
                               alt="Add Image Icon"
@@ -382,11 +391,11 @@ function EditServicePage() {
                         {errors.image.message as string}
                      </p>
                   )}
-               </div>
-               <div className="mt-4 border-t-1 border-[var(--gray-200)]"></div>
+               </section>
+               <div className="mt-4 border-t-2 border-[var(--gray-200)]"></div>
                {/* Sub-services */}
-               <div className="flex flex-col justify-start gap-10 space-y-2">
-                  <Label>รายการบริการย่อย</Label>
+               <section className="flex flex-col justify-start gap-10 space-y-2">
+                  <Label className="text-heading-5 text-[var(--gray-700)]">รายการบริการย่อย</Label>
                   {fields.map(
                      (
                         field,
@@ -397,9 +406,9 @@ function EditServicePage() {
                            className="grid grid-cols-9 justify-between gap-4"
                         >
                            <div className="flex flex-col col-span-4">
-                              <span>
+                              <span className="text-body-3 text-[var(--gray-700)]">
                                  ชื่อรายการ{" "}
-                                 <span className="text-[var(--red)]">*</span>
+                                <span className="text-[var(--red)]">*</span>
                               </span>
                               <Input
                                  autoComplete="off"
@@ -420,8 +429,8 @@ function EditServicePage() {
                               )}
                            </div>
                            <div className="flex flex-col col-span-2">
-                              <span>
-                                 ค่าบริการ / 1 หน่วย{" "}
+                              <span className="text-body-3 text-[var(--gray-700)]">
+                                 ค่าบริการ / 1 หน่วย
                                  <span className="text-[var(--red)]">*</span>
                               </span>
                               <Input
@@ -445,8 +454,8 @@ function EditServicePage() {
                               )}
                            </div>
                            <div className="flex flex-col col-span-2">
-                              <span>
-                                 หน่วยการบริการ{" "}
+                              <span className="text-body-3 text-[var(--gray-700)]">
+                                 หน่วยการบริการ
                                  <span className="text-[var(--red)]">*</span>
                               </span>
                               <Input
@@ -473,7 +482,7 @@ function EditServicePage() {
                            <Button
                               variant="default"
                               type="button"
-                              className="justify-self-end w-[72px] pt-6 btn btn--ghost text-[var(--gray-400)]"
+                              className="w-[72px] pt-8 ml-2 btn btn--ghost text-[var(--gray-400)] cursor-pointer"
                               onClick={() => {
                                  handleRemoveSubService(idx);
                               }}
@@ -492,37 +501,37 @@ function EditServicePage() {
                   >
                      เพิ่มรายการ +
                   </Button>
-               </div>
+               </section>
                {/* เส้นใต้ */}
-               <div className="mt-4 border-t-1 border-[var(--gray-200)]"></div>
+               <div className="mt-4 border-t-2 border-[var(--gray-200)]"></div>
                {/* Create Time & Update Time */}
-               <div className="flex flex-col justify-start gap-10 space-y-2">
-                  <div className="flex flex-row justify-start gap-10 space-y-2">
-                     <span className="w-40">สร้างเมื่อ</span>
-                     <span>
+               <section className="flex flex-col justify-start gap-10 space-y-2">
+                  <div className="flex flex-row justify-start items-center gap-10 space-y-2">
+                     <span className="w-40 text-heading-5 text-[var(--gray-700)]">สร้างเมื่อ</span>
+                     <span className="text-body-3 text-[var(--gray-900)]">
                         {serviceData?.created_at
                            ? setDateTimeFormat(new Date(serviceData.created_at))
-                           : "N/A"}
+                           : "ไม่ระบุ"}
                      </span>
                   </div>
-                  <div className="flex flex-row justify-start gap-10 space-y-2">
-                     <span className="w-40">แก้ไขล่าสุด</span>
-                     <span>
+                  <div className="flex flex-row justify-start items-center gap-10 space-y-2">
+                     <span className="w-40 text-heading-5 text-[var(--gray-700)]">แก้ไขล่าสุด</span>
+                     <span className="text-body-3 text-[var(--gray-900)]">
                         {serviceData?.updated_at
                            ? setDateTimeFormat(new Date(serviceData.updated_at))
-                           : "N/A"}
+                           : "ไม่ระบุ"}
                      </span>
                   </div>
-               </div>
-            </div>
+               </section>
+            </section>
             {/* ปุ่มลบ service */}
-            <div className="flex justify-end mr-8">
+            <div className="absolute -bottom-4 right-12">
                <AlertDialog>
                   <AlertDialogTrigger asChild>
                      <Button
                         type="button"
                         variant="ghost"
-                        className="underline text-[var(--gray-600)] flex items-center space-x-1"
+                        className="underline text-[var(--gray-600)] flex items-center space-x-1 cursor-pointer"
                      >
                         <Trash />
                         <span>ลบบริการ</span>
@@ -546,11 +555,11 @@ function EditServicePage() {
                      <AlertDialogFooter className="flex flex-row justify-center sm:flex-row sm:justify-center items-center gap-2 mt-2">
                         <AlertDialogAction
                            onClick={handleDeleteService}
-                           className="w-1/3 px-4 py-2 btn btn--primary"
+                           className="w-1/3 px-4 py-2 btn btn--primary cursor-pointer"
                         >
                            ลบรายการ
                         </AlertDialogAction>
-                        <AlertDialogCancel className="w-1/3 px-4 py-2 btn btn--secondary">
+                        <AlertDialogCancel className="w-1/3 px-4 py-2 btn btn--secondary cursor-pointer">
                            ยกเลิก
                         </AlertDialogCancel>
                      </AlertDialogFooter>
@@ -558,7 +567,7 @@ function EditServicePage() {
                </AlertDialog>
             </div>
          </form>
-      </div>
+      </main>
    );
 }
 

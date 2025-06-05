@@ -58,7 +58,7 @@ export interface ServiceFormValues {
   title: string
   category: string
   image: string
-  subervices: SubService[]
+  sub_services: SubService[]
   created_at: string
   updated_at: string
 }
