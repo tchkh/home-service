@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import {
    validateCategory,
    checkIdCategory,
+   checkIdParam,
 } from "@/lib/middleware/validateCategory";
 
 export default async function handler(
@@ -87,26 +88,30 @@ export default async function handler(
    }
    // ลบ category โดย id
    else if (req.method === "DELETE") {
-      const { id } = req.body as {
-         id: number;
+      const { id } = req.query as {
+         id: string;
       };
+      console.log("id: ", id);
 
       // เช็ค ว่ามี id, name, color อะป่าว
-      const { error } = checkIdCategory(req);
+      const { error } = checkIdParam(req);
 
       if (error) {
          return res.status(400).json({ message: error });
       }
 
       // update เข้า supabase
+
+      const numId = Number(id);
       const { data, error: dbError } = await supabase
          .from("categories")
+
          .delete()
-         .eq("id", id);
+         .eq("id", numId);
       if (dbError) throw dbError;
       return res
          .status(200)
-         .json({ message: "Delete category complete", data });
+         .json({ message: `Delete category complete `, data });
    } else {
       return res.status(405).json({ message: "Method not allowed" });
    }

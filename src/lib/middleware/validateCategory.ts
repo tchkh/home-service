@@ -22,3 +22,10 @@ export function checkIdCategory(req: NextApiRequest) {
    }
    return { error: null };
 }
+export function checkIdParam(req: NextApiRequest) {
+   const { id } = req.query;
+   if (!id) {
+      return { error: "Missing or invalid 'id'" };
+   }
+   return { error: null };
+}
