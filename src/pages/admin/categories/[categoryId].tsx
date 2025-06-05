@@ -83,7 +83,7 @@ export default function CategoryForm() {
 
                <button
                   onClick={() =>
-                     router.push(`/admin/categories/${categoryId}/edite`)
+                     router.push(`/admin/categories/${categoryId}/edit`)
                   }
                   className="btn btn--primary text-heading-5 px-9 py-2 text-[var(--blue-600)] w-[112px] h-[45px] rounded-[8px]"
                >
