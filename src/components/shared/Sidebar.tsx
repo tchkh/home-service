@@ -6,13 +6,14 @@ import { useRouter } from "next/router";
 import House from "../../../public/asset/svgs/houseLogo.svg";
 import Logout from "../../../public/asset/svgs/logout.svg";
 import { SidebarItemProps, SidebarProps } from "@/types";
+import { useServiceRequestStore } from "@/utils/useServiceRequestStore";
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
   icon: Icon,
   label,
   href,
   onClick,
-  count
+  count,
 }) => {
   const router = useRouter();
   const isActive = router.pathname.startsWith(href);
@@ -40,8 +41,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ className, items }) => {
-  const { isSidebarOpen, toggleSidebar, serviceRequestCount } = useSidebar();
+  const { isSidebarOpen, toggleSidebar } = useSidebar();
   const router = useRouter();
+  const { serviceRequestCount } = useServiceRequestStore();
 
   const handleLogout = async () => {
     try {
@@ -64,12 +66,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className, items }) => {
   return (
     <div
       className={cn(
-        "fixed top-0 h-screen w-60 max-w-60 flex flex-col transition-transform duration-300 ease-in-out z-50",        
+        "fixed top-0 h-screen w-60 max-w-60 flex flex-col transition-transform duration-300 ease-in-out z-50",
         "right-0 md:left-0",
         "bg-[var(--blue-950)]",
         className,
-        isSidebarOpen ? "translate-x-0" : "translate-x-full md:-translate-x-full", // Control visibility with transform
-
+        isSidebarOpen
+          ? "translate-x-0"
+          : "translate-x-full md:-translate-x-full" // Control visibility with transform
       )}
     >
       <div className="px-6 pt-8 hidden md:inline">
@@ -85,21 +88,20 @@ const Sidebar: React.FC<SidebarProps> = ({ className, items }) => {
         </div>
       </div>
       <button
-          className="text-[var(--blue-600)] text-heading-3 md:hidden justify-start flex mx-3 my-5"
-          onClick={toggleSidebar}
-        >
-          ✕
-        </button>
+        className="text-[var(--blue-600)] text-heading-3 md:hidden justify-start flex mx-3 my-5"
+        onClick={toggleSidebar}
+      >
+        ✕
+      </button>
 
       <div className="flex flex-col md:mt-10 flex-1">
         {items.map((item) => {
-          const itemWithCount = item.href === "/technician/service-request" 
-            ? { ...item, count: serviceRequestCount }
-            : item;
-            
-          return (
-            <SidebarItem key={item.label} {...itemWithCount} />
-          );
+          let itemWithCount = item;
+          if (item.label === "คำขอบริการซ่อม") {
+            itemWithCount = { ...item, count: serviceRequestCount };
+          }
+
+          return <SidebarItem key={item.label} {...itemWithCount} />;
         })}
       </div>
 

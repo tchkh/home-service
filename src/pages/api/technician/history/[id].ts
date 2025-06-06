@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getAuthenticatedClient } from "@/utils/api-helpers";
-import { JobHistoryDetailResponse } from "@/types";
+import { JobDetail } from "@/types";
 
 export default async function JobHistoryDetail(
   req: NextApiRequest,
@@ -46,7 +46,7 @@ export default async function JobHistoryDetail(
     }
 
     // แปลงข้อมูลเป็น format ที่ต้องการ
-    const jobDetail: JobHistoryDetailResponse = {
+    const jobDetail: JobDetail = {
       id: jobData.request_id,
       user_id: jobData.user_id,
       category: jobData.category_name,
@@ -63,6 +63,9 @@ export default async function JobHistoryDetail(
       tel: jobData.customer_tel,
       accepted_at: jobData.accepted_at,
       service_id: jobData.service_id,
+      quantity: jobData.quantity,
+      service_unit: jobData.service_unit,
+      service_request_code: jobData.service_request_code,
       technician_latitude: jobData.technician_latitude,
       technician_longitude: jobData.technician_longitude,
     };

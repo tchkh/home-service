@@ -81,6 +81,8 @@ export default async function customersNearby(
       longitude: req.longitude,
       total_price: req.total_price,
       appointment_at: req.appointment_at,
+      quantity: req.quantity,
+      service_request_code: req.service_request_code,
       service: {
         name: req.service_title || "Unknown Service",
         sub_service: req.sub_service_title || "Unknown Sub-Service",

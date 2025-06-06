@@ -2,12 +2,14 @@ import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import MobileHeader from "@/components/shared/MobileHeader";
-import { useSidebar } from "@/contexts/SidebarContext";
 import axios from "axios";
 import { formatThaiDatetime } from "@/utils/datetime";
 import { MapPopup } from "@/components/MapPopup";
 import { calculateStraightDistance } from "@/utils/distance";
 import { JobDetail } from "@/types";
+import { formatPhoneNumber } from "@/utils/phone";
+import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
+import CategoryStyle from "@/components/serviceComponent/CategoryStyle";
 
 export default function JobDetailPage() {
   const router = useRouter();
@@ -15,7 +17,6 @@ export default function JobDetailPage() {
   const [jobData, setJobData] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
   const [showMap, setShowMap] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
@@ -46,11 +47,6 @@ export default function JobDetailPage() {
 
   const handleBack = () => {
     router.push("/technician/pending"); // กลับไปหน้าตาราง
-  };
-
-  const formatPhoneNumber = (phone: string) => {
-    // Format เบอร์โทรให้แสดงแบบ 080 000 1233
-    return phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3");
   };
 
   // คำนวณระยะทางเมื่อมีข้อมูลครบ
@@ -98,43 +94,7 @@ export default function JobDetailPage() {
       {/* Header */}
       <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center px-8 md:py-5 py-4 bg-[var(--white)] shadow-lg overflow-hidden">
         {/* Hide & Show sidebar */}
-        <Button
-          type="button"
-          onClick={toggleSidebar}
-          className="absolute top-7 -left-3 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--gray-200)] cursor-pointer hidden md:block"
-        >
-          {isSidebarOpen ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-chevron-left-icon lucide-chevron-left"
-            >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-chevron-right-icon lucide-chevron-right"
-            >
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          )}
-        </Button>
+        <ToggleSidebarComponent />
 
         <div className="flex flex-col w-full gap-4">
           <div className="flex items-center gap-1">
@@ -170,15 +130,16 @@ export default function JobDetailPage() {
         <h1 className="text-heading-2 mt-4">{jobData.service}</h1>
         <div className="grid [grid-template-columns:minmax(130px,auto)_1fr] md:gap-y-12 md:gap-x-20 gap-y-5 gap-x-2 mt-10">
           <p className="text-[var(--gray-700)] text-heading-5">หมวดหมู่</p>
-          <p
-            className="py-[4px] px-[10px] rounded-[8px] text-body-4"
-            style={{ color: jobData.category_color }}
-          >
-            {jobData.category}
-          </p>
+          <CategoryStyle
+            text={jobData.category}
+            color={jobData.category_color}
+            className="py-[4px] px-[10px] w-fit rounded-[8px] text-body-4"
+          />
 
           <p className="text-[var(--gray-700)] text-heading-5">รายการ</p>
-          <p>{jobData.sub_service}</p>
+          <p>
+            {jobData.sub_service} {jobData.quantity} {jobData.service_unit}
+          </p>
 
           <p className="text-[var(--gray-700)] text-heading-5">
             วันเวลาดำเนินการ
@@ -222,7 +183,7 @@ export default function JobDetailPage() {
           <p className="text-[var(--gray-700)] text-heading-5">
             รหัสคำสั่งซ่อม
           </p>
-          <p>AD04071205</p>
+          <p>{jobData.service_request_code}</p>
 
           <p className="text-[var(--gray-700)] text-heading-5">ราคารวม</p>
           <p>{jobData.total_price} ฿</p>
@@ -237,18 +198,18 @@ export default function JobDetailPage() {
         </div>
 
         {/* Map Popup Modal - แสดงเมื่ออยู่ใน client-side เท่านั้น */}
-              {isClient && (
-                <MapPopup
-                  isOpen={showMap}
-                  onClose={() => setShowMap(false)}
-                  data={jobData}
-                  technicianLocation={{
-                    latitude: jobData.technician_latitude,
-                    longitude: jobData.technician_longitude,
-                  }}
-                  straightDistance={straightDistance}
-                />
-              )}
+        {isClient && (
+          <MapPopup
+            isOpen={showMap}
+            onClose={() => setShowMap(false)}
+            data={jobData}
+            technicianLocation={{
+              latitude: jobData.technician_latitude,
+              longitude: jobData.technician_longitude,
+            }}
+            straightDistance={straightDistance}
+          />
+        )}
       </main>
     </>
   );

@@ -105,6 +105,8 @@ export interface ServiceRequest {
   latitude: number;
   longitude: number;
   appointment_at: string;
+  quantity: number;
+  service_request_code: string;
   service: {
     name: string;
     sub_service: string;
@@ -125,6 +127,8 @@ export interface ServiceRequestNearby {
   longitude: number;
   total_price: number;
   appointment_at: string;
+  quantity: number;
+  service_request_code: string;
   service_title?: string;
   sub_service_title?: string;
   sub_service_price?: number;
@@ -226,6 +230,7 @@ export interface Job {
   first_name: string;
   last_name: string;
   tel: string;
+  service_request_code: string;
 }
 
 export interface JobsTableProps {
@@ -234,6 +239,8 @@ export interface JobsTableProps {
   hasJobs: boolean;
   message?: string;
   onActionClick?: (jobId: string) => void;
+  showActions?: boolean;
+  onCompleteJob?: (jobId: string) => Promise<void>;
 }
 
 export interface JobDetail {
@@ -258,23 +265,15 @@ export interface JobDetail {
   created_at?: string;
   technician_latitude: number;
   technician_longitude: number;
+  quantity: number;
+  service_unit: string;
+  service_request_code: string;
 }
 
 export interface TechnicianPendingProps {
   initialData: {
     services: Array<{ service_id: number; service_title: string }>;
-    jobs: Array<{
-      id: string;
-      category: string;
-      service: string;
-      sub_service: string;
-      appointment_at: string;
-      address: string;
-      total_price: number;
-      first_name: string;
-      last_name: string;
-      tel: string;
-    }>;
+    jobs: Job[],
     technician: {
       id: string;
       name: string;
@@ -285,42 +284,14 @@ export interface TechnicianPendingProps {
   };
 }
 
-export interface TechnicianHistoryProps {
-  initialData: {
-    services: Array<{ service_id: number; service_title: string }>;
-    jobs: Array<{
-      id: string;
-      category: string;
-      service: string;
-      sub_service: string;
-      appointment_at: string;
-      address: string;
-      total_price: number;
-      first_name: string;
-      last_name: string;
-      tel: string;
-      // review
-      // comment
-    }>;
-    technician: {
-      id: string;
-      name: string;
-      email: string;
-    };
-    message?: string;
-    hasJobs: boolean;
-  };
-}
-
-export interface JobHistoryDetailResponse {
+export interface PendingJob {
   id: string;
   user_id: string;
   category: string;
-  category_color: string;
   service: string;
   sub_service: string;
   appointment_at: string;
-  full_address: string;
+  address: string;
   latitude: number;
   longitude: number;
   total_price: number;
@@ -329,9 +300,34 @@ export interface JobHistoryDetailResponse {
   tel: string;
   accepted_at: string;
   service_id: number;
-  technician_latitude: number;
-  technician_longitude: number;
-  // เพิ่ม review and comment
+  service_request_code: string;
+}
+
+export interface PendingJobsResponse {
+  services: TechnicianService[];
+  jobs: PendingJob[];
+  technician: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  message?: string;
+  hasJobs: boolean;
+}
+
+export interface TechnicianHistoryProps {
+  initialData: {
+    services: Array<{ service_id: number; service_title: string }>;
+    jobs: Job[],
+    technician: {
+      id: string;
+      name: string;
+      email: string;
+    };
+    message?: string;
+    hasJobs: boolean;
+  };
+  // add review and comment
 }
 
 export interface CompletedJob {
@@ -349,6 +345,7 @@ export interface CompletedJob {
   last_name: string;
   tel: string;
   service_id: number;
+  service_request_code: string;
 }
 
 export interface TechnicianService {
