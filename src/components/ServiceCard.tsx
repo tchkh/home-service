@@ -76,7 +76,7 @@ export default function ServiceCard({
       </div>
       <Link href={`/service/${id}`}>
         <button className="btn btn--ghost mx-4 mb-[18px] w-fit ">
-          ดูรายละเอียด
+          เลือกบริการ
         </button>
       </Link>
     </div>
