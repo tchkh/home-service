@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
 } from "react";
+import { useServiceRequestStore } from "@/utils/useServiceRequestStore";
 
 // สร้าง Context Object
 const SidebarContext = createContext<SidebarContextValue | undefined>(
@@ -27,7 +28,8 @@ export const SidebarProvider: React.FC<SidebarProviderProps> = ({
   children,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
-  const [serviceRequestCount, setServiceRequestCount] = useState(0);
+
+  const { serviceRequestCount, setServiceRequestCount} = useServiceRequestStore();
     
   useEffect(() => {
     const storedValue = localStorage.getItem(SIDEBAR_OPEN_KEY);

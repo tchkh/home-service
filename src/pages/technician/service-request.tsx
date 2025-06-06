@@ -2,11 +2,11 @@ import { ServiceRequestCard } from "@/components/ServiceRequestCard";
 import axios from "axios";
 import React, { useState, useEffect, useCallback } from "react";
 import { ServiceRequest, Technician } from "@/types";
-import { useSidebar } from "@/contexts/SidebarContext";
-import { Button } from "@/components/ui/button";
 import MobileHeader from "@/components/shared/MobileHeader";
 import NotificationIcon from "@/components/icons/NotificationIcon";
 import { calculateStraightDistance } from "@/utils/distance";
+import { useServiceRequestStore } from "@/utils/useServiceRequestStore";
+import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
 
 export default function TechnicianRequestPage() {
   const [serviceRequestData, setServiceRequestData] = useState<
@@ -15,8 +15,8 @@ export default function TechnicianRequestPage() {
   const [technician, setTechnician] = useState<Technician>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isSidebarOpen, toggleSidebar, setServiceRequestCount } = useSidebar();
   const [technicianInactive, setTechnicianInactive] = useState(false);
+  const { setServiceRequestCount } = useServiceRequestStore();
 
   const fetchNearbyRequests = useCallback(async () => {
     setLoading(true);
@@ -30,6 +30,7 @@ export default function TechnicianRequestPage() {
         setTechnicianInactive(true);
         setTechnician(response.data.technician);
         setServiceRequestData([]);
+        setServiceRequestCount(0);
       } else {
         setTechnicianInactive(false);
         setTechnician(response.data.technician);
@@ -61,43 +62,7 @@ export default function TechnicianRequestPage() {
       {/* Header */}
       <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center px-8 md:py-5 py-4 bg-[var(--white)] shadow-lg overflow-hidden">
         {/* Hide & Show sidebar */}
-        <Button
-          type="button"
-          onClick={toggleSidebar}
-          className="absolute top-7 -left-3 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--gray-200)] cursor-pointer hidden md:block"
-        >
-          {isSidebarOpen ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-chevron-left-icon lucide-chevron-left"
-            >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-chevron-right-icon lucide-chevron-right"
-            >
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          )}
-        </Button>
+        <ToggleSidebarComponent />
         <h1 className="text-heading-2 text-2xl font-semibold">
           คำขอบริการซ่อม
         </h1>
