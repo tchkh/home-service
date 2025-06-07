@@ -13,7 +13,7 @@ export const useAuth = () => {
         const {
           data: { session: currentSession },
         } = await supabase.auth.getSession()
-        setUserId(currentSession?.user?.id || null)
+        setUserId(currentSession?.user?.id ?? null)
         setLoading(false)
       } catch (error) {
         console.error('Error checking session:', error)
@@ -28,7 +28,7 @@ export const useAuth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserId(session?.user?.id || null)
+      setUserId(session?.user?.id ?? null)
       setLoading(false)
     })
 
