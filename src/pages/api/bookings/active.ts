@@ -90,18 +90,15 @@ export default async function handler(
       .limit(1)
 
     if (error) {
-      console.error('Error fetching active booking:', error)
       return res.status(500).json({ error: 'Failed to fetch active booking' })
     }
 
     if (!serviceRequests || serviceRequests.length === 0) {
-      console.log('No active booking found for user:', userId)
       return res.status(200).json(null)
     }
 
     // Cast to unknown first, then to ServiceRequest[]
     const requests = serviceRequests as unknown as ServiceRequest[]
-    console.log('Fetched serviceRequests:', JSON.stringify(requests, null, 2))
 
     // Map subServices and cart to match frontend store
     const subServices = requests.map(request => ({
@@ -116,9 +113,6 @@ export default async function handler(
       id: request.sub_services.id,
       quantity: request.quantity,
     }))
-
-    console.log('Mapped subServices:', subServices)
-    console.log('Mapped cart:', cart)
 
     const subServicesObj = requests[0]?.sub_services
     const serviceId = subServicesObj ? subServicesObj.service_id : null
@@ -148,13 +142,8 @@ export default async function handler(
       },
     }
 
-    console.log(
-      'Returning activeBooking:',
-      JSON.stringify(activeBooking, null, 2)
-    )
     return res.status(200).json(activeBooking)
   } catch (error) {
-    console.error('API error:', error)
     return res.status(500).json({
       error: 'Internal server error',
       details: (error as Error).message,

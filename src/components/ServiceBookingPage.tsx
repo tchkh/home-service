@@ -37,22 +37,12 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
   // Debug payment handler registration
   const handlePaymentHandlerChange = React.useCallback(
     (handler: (() => Promise<void>) | null) => {
-      console.log('💎 Payment handler updated', {
-        hasHandler: !!handler,
-        handlerType: typeof handler,
-        isFunction: typeof handler === 'function',
-        handlerToString: handler?.toString().substring(0, 100) + '...',
-      })
-
       // Extra validation before setting
       if (handler && typeof handler === 'function') {
-        console.log('✅ Setting valid function handler')
         setPaymentHandler(() => handler)
       } else if (handler === null) {
-        console.log('🔄 Setting handler to null')
         setPaymentHandler(null)
       } else {
-        console.error('❌ Refusing to set invalid handler:', typeof handler)
         // Don't set invalid handlers
       }
     },
@@ -71,7 +61,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
 
   // Fetch service details
   const { data: subServices, isLoading, error } = useServiceDetails(serviceId)
-  console.log('subServices: ', subServices)
 
   // Set service ID from props
   useEffect(() => {
@@ -94,23 +83,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
 
   // Debug logging for payment button state
   useEffect(() => {
-    console.log(
-      '🎯 Payment button state (current step: ' + currentStep + '):',
-      {
-        isPaymentStep: currentStep === 'payment',
-        paymentHandler: !!paymentHandler,
-        isPaymentProcessing,
-        isNavigating,
-        userId: !!userId,
-        canProceed:
-          currentStep === 'payment'
-            ? !!paymentHandler &&
-              !isPaymentProcessing &&
-              !isNavigating &&
-              !!userId
-            : canProceedToNext() && !isNavigating,
-      }
-    )
+    // No need to log payment button state
   }, [
     currentStep,
     paymentHandler,
@@ -122,16 +95,8 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
 
   // Handle navigation
   const handleNext = async () => {
-    console.log('🚀 handleNext called', {
-      currentStep,
-      paymentHandler: !!paymentHandler,
-      isPaymentProcessing,
-      isNavigating,
-    })
-
     // ป้องกันการเรียกหลายครั้งพร้อมกัน
     if (isNavigating || isPaymentProcessing) {
-      console.log('🚫 Already processing, skipping')
       return
     }
 
@@ -150,13 +115,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
       setTimeout(() => setIsNavigating(false), 500) // Reset after short delay
     } else {
       // Process payment
-      console.log('💳 Processing payment...', {
-        paymentHandler: !!paymentHandler,
-        paymentHandlerType: typeof paymentHandler,
-        paymentHandlerValue: paymentHandler,
-        isPaymentProcessing,
-      })
-
       if (
         paymentHandler &&
         typeof paymentHandler === 'function' &&
@@ -164,10 +122,8 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
       ) {
         setIsPaymentProcessing(true)
         try {
-          console.log('✨ Calling payment handler...')
           await paymentHandler()
         } catch (error) {
-          console.error('Payment processing error:', error)
           toast.error('การชำระเงินล้มเหลว กรุณาลองใหม่', {
             duration: 3000,
           })
@@ -175,20 +131,15 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
           setIsPaymentProcessing(false)
         }
       } else if (!paymentHandler) {
-        console.error('❌ No payment handler available')
         toast.error('ระบบการชำระเงินยังไม่พร้อม กรุณาลองใหม่', {
           duration: 3000,
         })
       } else if (typeof paymentHandler !== 'function') {
-        console.error('❌ paymentHandler is not a function:', {
-          type: typeof paymentHandler,
-          value: paymentHandler,
-        })
         toast.error('ระบบการชำระเงินมีปัญหา กรุณาลองใหม่', {
           duration: 3000,
         })
       } else {
-        console.warn('⚠️ Payment already processing')
+        // No need to log payment already processing
       }
     }
   }

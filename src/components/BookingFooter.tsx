@@ -27,11 +27,6 @@ const BookingFooter: React.FC<BookingFooterProps> = ({
   const { userId, loading } = useAuth()
   const { getActiveCartItems } = useBookingStore()
 
-  // Debug auth state
-  useEffect(() => {
-    console.log('🔑 Auth state changed:', { userId, loading })
-  }, [userId, loading])
-
   const handleNext = () => {
     if (!userId && !loading) {
       toast.error('กรุณาเข้าสู่ระบบก่อนดำเนินการต่อ', {

@@ -33,25 +33,11 @@ interface PaymentFormProps {
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
-  console.log('🔥 PaymentForm rendered with props:', {
-    onPaymentReady: !!onPaymentReady,
-  })
-  // เทสการเขียนคอมเม้นแบบผู้ดี
   const router = useRouter()
   const stripe = useStripe()
   const elements = useElements()
   const [isProcessing, setIsProcessing] = useState(false)
   const { userId } = useAuth()
-
-  // Debug Stripe state
-  useEffect(() => {
-    console.log('🎯 Stripe state changed:', {
-      stripe: !!stripe,
-      elements: !!elements,
-      stripeType: typeof stripe,
-      elementsType: typeof elements,
-    })
-  }, [stripe, elements])
 
   // PromptPay QR Code states
   const [showQRModal, setShowQRModal] = useState(false)
@@ -70,7 +56,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     getTotalAmount,
     customerInfo,
     getActiveCartItems,
-    cart,
   } = useBookingStore()
 
   const form = useForm<SimplePaymentForm>({
@@ -84,34 +69,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
 
   const paymentMethod = form.watch('method')
   const totalAmount = getTotalAmount()
-
-  // Debug store values
-  useEffect(() => {
-    const activeCartItemsDirect = cart.filter(item => item.quantity > 0)
-    const totalAmountDirect = cart.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    )
-
-    console.log('🏪 Store values in PaymentForm:', {
-      totalAmount: totalAmount,
-      totalAmountDirect: totalAmountDirect,
-      paymentMethod,
-      cartItemsGetter: getActiveCartItems(),
-      cartItemsDirect: activeCartItemsDirect,
-      rawCart: cart,
-      customerInfo,
-      hasUserId: !!userId,
-      mismatch: totalAmount !== totalAmountDirect,
-    })
-  }, [
-    totalAmount,
-    paymentMethod,
-    getActiveCartItems,
-    cart,
-    customerInfo,
-    userId,
-  ])
 
   // Store refs for latest values (to avoid stale closures)
   const storeRef = useRef({
@@ -264,26 +221,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
 
   // Credit Card Payment with Stripe Elements
   const processCreditCardPayment = useCallback(async () => {
-    console.log('💳 processCreditCardPayment called:', {
-      stripe: !!stripe,
-      elements: !!elements,
-      stripeType: typeof stripe,
-      elementsType: typeof elements,
-    })
-
     if (!stripe || !elements) {
-      console.error('❌ Stripe or Elements not available:', {
-        stripe: !!stripe,
-        elements: !!elements,
-      })
       throw new Error('Stripe has not loaded')
     }
 
     const cardElement = elements.getElement(CardElement)
-    console.log('🎯 CardElement found:', !!cardElement)
 
     if (!cardElement) {
-      console.error('❌ Card element not found')
       throw new Error('Card element not found')
     }
 
@@ -363,46 +307,23 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
 
   // Register payment handler with parent
   useEffect(() => {
-    console.log('📋 Registering payment handler', {
-      onPaymentReady: !!onPaymentReady,
-      stripe: !!stripe,
-      elements: !!elements,
-      userId: !!userId,
-      totalAmount,
-      paymentMethod,
-    })
-
     if (!onPaymentReady) return
 
     // Create a stable reference to the payment handler
     const handleProcessPayment = async () => {
-      console.log('🔵 Payment handler called', {
-        isProcessing,
-        userId,
-        totalAmount,
-        paymentMethod,
-        customerInfo,
-        cartItems: getActiveCartItems(),
-      })
-
       if (isProcessing) {
-        console.log('🟡 Payment already processing, skipping')
         return
       }
 
       setIsProcessing(true)
       try {
         if (!userId) {
-          console.log('❌ No user ID - payment blocked by UI')
           return
         }
 
         if (totalAmount <= 0) {
-          console.error('❌ Total amount is zero or negative:', totalAmount)
           throw new Error('ไม่มียอดที่ต้องชำระ')
         }
-
-        console.log('🟢 Starting payment process:', paymentMethod)
 
         if (paymentMethod === 'creditcard') {
           if (!stripe || !elements) {
@@ -412,10 +333,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
         } else {
           await processPromptPayPayment()
         }
-
-        console.log('✅ Payment process completed')
       } catch (error) {
-        console.error('❌ Payment error:', error)
         toast.error(
           (error as Error).message || 'ไม่สามารถดำเนินการชำระเงินได้',
           {
@@ -427,12 +345,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
       }
     }
 
-    console.log(`🔧 ✅ Registering ${paymentMethod} handler with parent`)
     onPaymentReady(handleProcessPayment)
 
     // Cleanup function to set handler to null when component unmounts or dependencies change
     return () => {
-      console.log('🧹 Cleaning up payment handler')
       onPaymentReady(async () => {})
     }
   }, [
