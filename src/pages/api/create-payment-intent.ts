@@ -1,16 +1,44 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-05-28.basil',
-})
+// Initialize Stripe with error handling
+let stripe: Stripe
+try {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2025-05-28.basil',
+  })
+} catch (error) {
+  console.error('Failed to initialize Stripe:', error)
+}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET,OPTIONS,PATCH,DELETE,POST,PUT'
+  )
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  )
+
+  // Handle preflight request
+  if (req.method === 'OPTIONS') {
+    res.status(200).end()
+    return
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  if (!stripe) {
+    return res.status(500).json({ error: 'Stripe is not initialized' })
   }
 
   try {
@@ -56,7 +84,7 @@ export default async function handler(
 
     console.log('Created payment intent:', paymentIntent.id)
 
-    res.status(200).json({
+    return res.status(200).json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
     })
@@ -65,13 +93,13 @@ export default async function handler(
 
     // ส่ง error message ที่ชัดเจนกว่า
     if (error instanceof Stripe.errors.StripeError) {
-      res.status(400).json({
+      return res.status(400).json({
         error: error.message,
         type: error.type,
         code: error.code,
       })
     } else {
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Failed to create payment intent',
         details: (error as Error).message,
       })

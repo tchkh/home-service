@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
+import { devtools, persist, createJSONStorage } from 'zustand/middleware'
 
 interface SubService {
   id: number
@@ -103,36 +103,30 @@ export const useBookingStore = create<BookingState>()(
 
         // Actions
         setServiceId: id => set({ serviceId: id }),
-
         setServiceName: name => set({ serviceName: name }),
-
         setSubServices: services =>
           set({
             subServices: services,
             cart: services.map(service => ({ ...service, quantity: 0 })),
           }),
-
         updateCartQuantity: (id, quantity) =>
           set(state => ({
+            ...state,
             cart: state.cart.map(item =>
               item.id === id
                 ? { ...item, quantity: Math.max(0, quantity) }
                 : item
             ),
           })),
-
         updateCustomerInfo: info =>
           set(state => ({
             customerInfo: { ...state.customerInfo, ...info },
           })),
-
         updatePaymentInfo: info =>
           set(state => ({
             paymentInfo: { ...state.paymentInfo, ...info },
           })),
-
         setCurrentStep: step => set({ currentStep: step }),
-
         resetBooking: () =>
           set({
             currentStep: 'items',
@@ -143,13 +137,10 @@ export const useBookingStore = create<BookingState>()(
             customerInfo: initialCustomerInfo,
             paymentInfo: initialPaymentInfo,
           }),
-
-        // Computed getters as functions
         getActiveCartItems: () => {
           const state = get()
           return state.cart.filter(item => item.quantity > 0)
         },
-
         getTotalAmount: () => {
           const state = get()
           return state.cart.reduce(
@@ -157,31 +148,22 @@ export const useBookingStore = create<BookingState>()(
             0
           )
         },
-
         canProceedToNext: () => {
           const state = get()
+          const {
+            serviceDate,
+            serviceTime,
+            address,
+            province,
+            district,
+            subDistrict,
+          } = state.customerInfo
+          const { method, cardName } = state.paymentInfo
 
           switch (state.currentStep) {
             case 'items':
-              // แก้ไข: เช็คจาก cart โดยตรง
-              const hasSelectedItems = state.cart.some(
-                item => item.quantity > 0
-              )
-              console.log('canProceedToNext - items step:', {
-                cart: state.cart,
-                hasSelectedItems,
-              })
-              return hasSelectedItems
-
+              return state.cart.some(item => item.quantity > 0)
             case 'details':
-              const {
-                serviceDate,
-                serviceTime,
-                address,
-                province,
-                district,
-                subDistrict,
-              } = state.customerInfo
               return !!(
                 serviceDate &&
                 serviceTime &&
@@ -190,15 +172,11 @@ export const useBookingStore = create<BookingState>()(
                 district &&
                 subDistrict
               )
-
             case 'payment':
-              const { method, cardName } = state.paymentInfo
               if (method === 'creditcard') {
-                // For Stripe Elements, we only validate card name since Stripe handles card validation
                 return !!(cardName && cardName.trim().length > 0)
               }
-              return true // PromptPay doesn't need validation
-
+              return true
             default:
               return false
           }
@@ -206,14 +184,7 @@ export const useBookingStore = create<BookingState>()(
       }),
       {
         name: 'booking-storage',
-        partialize: state => ({
-          // Only persist necessary data
-          serviceId: state.serviceId,
-          serviceName: state.serviceName,
-          cart: state.cart,
-          customerInfo: state.customerInfo,
-          currentStep: state.currentStep,
-        }),
+        storage: createJSONStorage(() => sessionStorage),
       }
     )
   )

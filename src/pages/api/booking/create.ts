@@ -2,6 +2,17 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { geocodeAddress } from '@/utils/location'
 
+interface CartItem {
+  id: number
+  price: number
+  quantity: number
+}
+
+interface Coordinates {
+  lat: number
+  lng: number
+}
+
 // Use custom server client wrapper
 
 // Interface removed since we're using direct object mapping now
@@ -10,6 +21,24 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET,OPTIONS,PATCH,DELETE,POST,PUT'
+  )
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  )
+
+  // Handle preflight request
+  if (req.method === 'OPTIONS') {
+    res.status(200).end()
+    return
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -59,48 +88,33 @@ export default async function handler(
     let longitude = customerInfo.longitude
 
     if (!latitude || !longitude) {
-      console.log('🌍 GPS not provided, trying to geocode address...')
       try {
-        const fullAddress = `${customerInfo.address} ${customerInfo.subDistrict} ${customerInfo.district} ${customerInfo.province} ประเทศไทย`
-        console.log('📍 Geocoding address:', fullAddress)
-
-        const coordinates = await geocodeAddress(fullAddress)
+        const coordinates = (await geocodeAddress(
+          `${customerInfo.address} ${customerInfo.subDistrict} ${customerInfo.district} ${customerInfo.province}`
+        )) as Coordinates
         latitude = coordinates.lat
         longitude = coordinates.lng
-
-        console.log('✅ Geocoding successful:', { latitude, longitude })
-      } catch (geocodeError) {
-        console.warn('⚠️ Geocoding failed:', geocodeError)
-        // Continue without GPS coordinates - not critical for booking
-        latitude = null
-        longitude = null
+      } catch (error) {
+        console.error('Geocoding error:', error)
+        // Continue without coordinates
       }
-    } else {
-      console.log('📍 Using provided GPS coordinates:', { latitude, longitude })
     }
 
-    // Prepare service requests data - one record per unique sub_service_id with quantity
-    const serviceRequests = items.map(
-      (item: { id: number; price: number; quantity: number }) => ({
-        user_id: userId,
-        sub_service_id: item.id,
-        address: customerInfo.address,
-        province: customerInfo.province,
-        district: customerInfo.district,
-        sub_district: customerInfo.subDistrict,
-        additional_info: customerInfo.additionalInfo ?? null,
-        latitude: latitude,
-        longitude: longitude,
-        appointment_at: appointmentDateTime.toISOString(),
-        total_price: item.price * item.quantity, // total price for this service
-        quantity: item.quantity,
-        // Note: ลบ quantity, payment_intent_id, payment_status ออกเพราะอาจไม่มีใน table จริง
-      })
-    )
-
-    // Log prepared data for debugging
-    console.log('📝 Prepared service requests data:')
-    console.log(JSON.stringify(serviceRequests, null, 2))
+    // Prepare service requests
+    const serviceRequests = (items as CartItem[]).map(item => ({
+      user_id: userId,
+      sub_service_id: item.id,
+      address: customerInfo.address,
+      province: customerInfo.province,
+      district: customerInfo.district,
+      sub_district: customerInfo.subDistrict,
+      additional_info: customerInfo.additionalInfo ?? null,
+      latitude: latitude ?? null,
+      longitude: longitude ?? null,
+      appointment_at: appointmentDateTime.toISOString(),
+      total_price: item.price * item.quantity,
+      quantity: item.quantity,
+    }))
 
     // Insert to database
     const { data, error } = await supabase

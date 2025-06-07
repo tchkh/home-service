@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useBookingStore } from '@/stores/bookingStore'
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { CreditCard, QrCode } from 'lucide-react'
 import Image from 'next/image'
+import axios from 'axios'
 import {
   Form,
   FormControl,
@@ -35,7 +36,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
   console.log('🔥 PaymentForm rendered with props:', {
     onPaymentReady: !!onPaymentReady,
   })
-
+  // เทสการเขียนคอมเม้นแบบผู้ดี
   const router = useRouter()
   const stripe = useStripe()
   const elements = useElements()
@@ -43,7 +44,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
   const { userId } = useAuth()
 
   // Debug Stripe state
-  React.useEffect(() => {
+  useEffect(() => {
     console.log('🎯 Stripe state changed:', {
       stripe: !!stripe,
       elements: !!elements,
@@ -85,7 +86,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
   const totalAmount = getTotalAmount()
 
   // Debug store values
-  React.useEffect(() => {
+  useEffect(() => {
     const activeCartItemsDirect = cart.filter(item => item.quantity > 0)
     const totalAmountDirect = cart.reduce(
       (sum, item) => sum + item.price * item.quantity,
@@ -113,14 +114,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
   ])
 
   // Store refs for latest values (to avoid stale closures)
-  const storeRef = React.useRef({
+  const storeRef = useRef({
     customerInfo,
     getActiveCartItems,
     totalAmount,
     userId,
   })
 
-  React.useEffect(() => {
+  useEffect(() => {
     storeRef.current = {
       customerInfo,
       getActiveCartItems,
@@ -129,8 +130,140 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     }
   }, [customerInfo, getActiveCartItems, totalAmount, userId])
 
-  // Credit Card Payment with Stripe Elements (not using useCallback)
-  const processCreditCardPayment = async () => {
+  // จำลองการชำระเงินสำเร็จผ่าน PromptPay
+  const handlePromptPaySuccess = useCallback(
+    async (paymentId: string) => {
+      setShowQRModal(false)
+      setIsProcessing(true)
+
+      try {
+        toast.success(
+          'ชำระเงินผ่านพร้อมเพย์สำเร็จ! กำลังบันทึกข้อมูลการจอง...',
+          {
+            duration: 4000,
+          }
+        )
+
+        // Use refs for latest values
+        const { customerInfo, getActiveCartItems, totalAmount, userId } =
+          storeRef.current
+
+        // บันทึกข้อมูลการจองลง Supabase
+        const { data: bookingData } = await axios.post(
+          '/api/booking/create',
+          {
+            userId: userId,
+            items: getActiveCartItems(),
+            customerInfo: customerInfo,
+            totalAmount: totalAmount,
+            paymentIntentId: paymentId,
+            paymentStatus: 'paid',
+          },
+          {
+            withCredentials: true,
+          }
+        )
+
+        console.log('Booking created successfully:', bookingData.bookingId)
+
+        // Redirect to success page
+        router.push(`/booking-success?payment_intent=${paymentId}`)
+      } catch (error) {
+        console.error('Error processing PromptPay payment:', error)
+        toast.error('เกิดข้อผิดพลาดในการดำเนินการ', {
+          duration: 5000,
+        })
+      } finally {
+        setIsProcessing(false)
+      }
+    },
+    [setShowQRModal, setIsProcessing, router]
+  )
+
+  // PromptPay Payment
+  const processPromptPayPayment = useCallback(async () => {
+    // Use refs for latest values
+    const { customerInfo, getActiveCartItems, totalAmount } = storeRef.current
+
+    const { data: qrData } = await axios.post('/api/create-promptpay-qr', {
+      amount: totalAmount,
+      bookingId: `booking_${Date.now()}`,
+      customerInfo: customerInfo,
+      items: getActiveCartItems(),
+    })
+
+    setQrCodeData(qrData)
+    setQrCountdown(qrData.expiresIn)
+    setShowQRModal(true)
+
+    // เริ่ม countdown timer
+    const timer = setInterval(() => {
+      setQrCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          setShowQRModal(false)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    // จำลองการชำระเงินหลัง 10 วินาที (สำหรับ demo)
+    setTimeout(() => {
+      handlePromptPaySuccess(qrData.paymentId)
+    }, 10000)
+  }, [setQrCodeData, setQrCountdown, setShowQRModal, handlePromptPaySuccess])
+
+  const handleApplyPromoCode = () => {
+    const promoCode = form.getValues('promoCode')
+    if (promoCode?.trim()) {
+      toast.success(`โค้ด "${promoCode}" ถูกใช้แล้ว (จำลอง)`, {
+        duration: 3000,
+      })
+    } else {
+      toast.error('กรุณากรอกโค้ดส่วนลด', {
+        duration: 3000,
+      })
+    }
+  }
+
+  // NOTE: Commented out booking sync logic as it interferes with new booking flow
+  // If you need to restore previous bookings, implement this in a separate component
+  // useEffect(() => {
+  //   if (userId) {
+  //     // Sync booking store with user data
+  //     const syncBookingStore = async () => {
+  //       try {
+  //         const response = await axios.get(
+  //           `/api/bookings/active?userId=${userId}`
+  //         )
+  //         const activeBooking = await response.data
+
+  //         if (activeBooking) {
+  //           useBookingStore.getState().setServiceId(activeBooking.serviceId)
+  //           useBookingStore.getState().setSubServices(activeBooking.subServices)
+  //           // Update each cart item individually
+  //           activeBooking.cart.forEach(
+  //             (item: { id: number; quantity: number }) => {
+  //               useBookingStore
+  //                 .getState()
+  //                 .updateCartQuantity(item.id, item.quantity)
+  //             }
+  //           )
+  //           useBookingStore
+  //             .getState()
+  //             .updateCustomerInfo(activeBooking.customerInfo)
+  //         }
+  //       } catch (error) {
+  //         console.error('Failed to sync booking store:', error)
+  //       }
+  //     }
+  //     syncBookingStore()
+  //   }
+  // }, [userId])
+
+  // Credit Card Payment with Stripe Elements
+  const processCreditCardPayment = useCallback(async () => {
     console.log('💳 processCreditCardPayment called:', {
       stripe: !!stripe,
       elements: !!elements,
@@ -159,10 +292,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
       storeRef.current
 
     // Create payment intent
-    const response = await fetch('/api/create-payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    const { data: paymentData } = await axios.post(
+      '/api/create-payment-intent',
+      {
         amount: totalAmount,
         bookingId: `booking_${Date.now()}`,
         customerId: userId,
@@ -173,15 +305,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
           additionalInfo: customerInfo.additionalInfo,
         },
         items: getActiveCartItems(),
-      }),
-    })
+      }
+    )
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Failed to create payment')
-    }
-
-    const { clientSecret, paymentIntentId } = await response.json()
+    const { clientSecret, paymentIntentId } = paymentData
 
     // Confirm payment with Stripe Elements
     const { error: confirmError } = await stripe.confirmCardPayment(
@@ -190,14 +317,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
         payment_method: {
           card: cardElement,
           billing_details: {
-            name: form.getValues('cardName') || 'Anonymous',
+            name: form.getValues('cardName') ?? 'Anonymous',
           },
         },
       }
     )
 
     if (confirmError) {
-      throw new Error(confirmError.message || 'Payment confirmation failed')
+      throw new Error(confirmError.message ?? 'Payment confirmation failed')
     }
 
     // Payment successful
@@ -207,29 +334,22 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
 
     // บันทึกข้อมูลการจองลง Supabase
     try {
-      const bookingResponse = await fetch('/api/booking/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const { data: bookingData } = await axios.post(
+        '/api/booking/create',
+        {
           userId: userId,
           items: getActiveCartItems(),
           customerInfo: customerInfo,
           totalAmount: totalAmount,
           paymentIntentId: paymentIntentId,
           paymentStatus: 'paid',
-        }),
-      })
+        },
+        {
+          withCredentials: true,
+        }
+      )
 
-      if (!bookingResponse.ok) {
-        const error = await bookingResponse.json()
-        console.error('Booking creation failed:', error)
-        toast.error('บันทึกข้อมูลการจองไม่สมบูรณ์ กรุณาติดต่อเจ้าหน้าที่', {
-          duration: 6000,
-        })
-      } else {
-        const { bookingId } = await bookingResponse.json()
-        console.log('Booking created successfully:', bookingId)
-      }
+      console.log('Booking created successfully:', bookingData.bookingId)
     } catch (error) {
       console.error('Error creating booking:', error)
       toast.error('ระบบบันทึกข้อมูลมีปัญหา กรุณาติดต่อเจ้าหน้าที่', {
@@ -239,106 +359,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
 
     // Redirect to success page
     router.push(`/booking-success?payment_intent=${paymentIntentId}`)
-  }
-
-  // PromptPay Payment (not using useCallback)
-  const processPromptPayPayment = async () => {
-    // Use refs for latest values
-    const { customerInfo, getActiveCartItems, totalAmount } = storeRef.current
-
-    const response = await fetch('/api/create-promptpay-qr', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount: totalAmount,
-        bookingId: `booking_${Date.now()}`,
-        customerInfo: customerInfo,
-        items: getActiveCartItems(),
-      }),
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to generate QR code')
-    }
-
-    const qrData = await response.json()
-    setQrCodeData(qrData)
-    setQrCountdown(qrData.expiresIn)
-    setShowQRModal(true)
-
-    // เริ่ม countdown timer
-    const timer = setInterval(() => {
-      setQrCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timer)
-          setShowQRModal(false)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    // จำลองการชำระเงินหลัง 10 วินาที (สำหรับ demo)
-    setTimeout(() => {
-      handlePromptPaySuccess(qrData.paymentId)
-    }, 10000)
-  }
-
-  // Main payment handler
-  const handleProcessPayment = async () => {
-    console.log('🔵 Payment handler called', {
-      isProcessing,
-      userId: storeRef.current.userId,
-      totalAmount: storeRef.current.totalAmount,
-      paymentMethod,
-      customerInfo: storeRef.current.customerInfo,
-      cartItems: storeRef.current.getActiveCartItems(),
-    })
-
-    if (isProcessing) {
-      console.log('🟡 Payment already processing, skipping')
-      return
-    }
-
-    setIsProcessing(true)
-    try {
-      if (!storeRef.current.userId) {
-        console.log('❌ No user ID - payment blocked by UI')
-        return
-      }
-
-      if (storeRef.current.totalAmount <= 0) {
-        console.error(
-          '❌ Total amount is zero or negative:',
-          storeRef.current.totalAmount
-        )
-        throw new Error('ไม่มียอดที่ต้องชำระ')
-      }
-
-      console.log('🟢 Starting payment process:', paymentMethod)
-
-      if (paymentMethod === 'creditcard') {
-        if (!stripe || !elements) {
-          throw new Error('กรุณารอสักครู่ ระบบกำลังโหลด...')
-        }
-        await processCreditCardPayment()
-      } else {
-        await processPromptPayPayment()
-      }
-
-      console.log('✅ Payment process completed')
-    } catch (error) {
-      console.error('❌ Payment error:', error)
-      toast.error((error as Error).message || 'ไม่สามารถดำเนินการชำระเงินได้', {
-        duration: 5000,
-      })
-    } finally {
-      setIsProcessing(false)
-    }
-  }
+  }, [stripe, elements, form, router])
 
   // Register payment handler with parent
-  React.useEffect(() => {
+  useEffect(() => {
     console.log('📋 Registering payment handler', {
       onPaymentReady: !!onPaymentReady,
       stripe: !!stripe,
@@ -351,23 +375,82 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     if (!onPaymentReady) return
 
     // Create a stable reference to the payment handler
-    const stablePaymentHandler = async () => {
-      console.log('🔵 Stable payment handler called')
-      await handleProcessPayment()
+    const handleProcessPayment = async () => {
+      console.log('🔵 Payment handler called', {
+        isProcessing,
+        userId,
+        totalAmount,
+        paymentMethod,
+        customerInfo,
+        cartItems: getActiveCartItems(),
+      })
+
+      if (isProcessing) {
+        console.log('🟡 Payment already processing, skipping')
+        return
+      }
+
+      setIsProcessing(true)
+      try {
+        if (!userId) {
+          console.log('❌ No user ID - payment blocked by UI')
+          return
+        }
+
+        if (totalAmount <= 0) {
+          console.error('❌ Total amount is zero or negative:', totalAmount)
+          throw new Error('ไม่มียอดที่ต้องชำระ')
+        }
+
+        console.log('🟢 Starting payment process:', paymentMethod)
+
+        if (paymentMethod === 'creditcard') {
+          if (!stripe || !elements) {
+            throw new Error('กรุณารอสักครู่ ระบบกำลังโหลด...')
+          }
+          await processCreditCardPayment()
+        } else {
+          await processPromptPayPayment()
+        }
+
+        console.log('✅ Payment process completed')
+      } catch (error) {
+        console.error('❌ Payment error:', error)
+        toast.error(
+          (error as Error).message || 'ไม่สามารถดำเนินการชำระเงินได้',
+          {
+            duration: 5000,
+          }
+        )
+      } finally {
+        setIsProcessing(false)
+      }
     }
 
     console.log(`🔧 ✅ Registering ${paymentMethod} handler with parent`)
-    onPaymentReady(stablePaymentHandler)
+    onPaymentReady(handleProcessPayment)
 
     // Cleanup function to set handler to null when component unmounts or dependencies change
     return () => {
       console.log('🧹 Cleaning up payment handler')
       onPaymentReady(async () => {})
     }
-  }, [onPaymentReady, paymentMethod, stripe, elements]) // Simplified dependencies
+  }, [
+    onPaymentReady,
+    paymentMethod,
+    stripe,
+    elements,
+    totalAmount,
+    userId,
+    isProcessing,
+    customerInfo,
+    getActiveCartItems,
+    processCreditCardPayment,
+    processPromptPayPayment,
+  ])
 
   // Update store when form values change
-  React.useEffect(() => {
+  useEffect(() => {
     const subscription = form.watch(value => {
       updatePaymentInfo({
         method: value.method ?? 'creditcard',
@@ -380,70 +463,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     })
     return () => subscription.unsubscribe()
   }, [form, updatePaymentInfo])
-
-  // จำลองการชำระเงินสำเร็จผ่าน PromptPay
-  const handlePromptPaySuccess = async (paymentId: string) => {
-    setShowQRModal(false)
-    setIsProcessing(true)
-
-    try {
-      toast.success('ชำระเงินผ่านพร้อมเพย์สำเร็จ! กำลังบันทึกข้อมูลการจอง...', {
-        duration: 4000,
-      })
-
-      // Use refs for latest values
-      const { customerInfo, getActiveCartItems, totalAmount, userId } =
-        storeRef.current
-
-      // บันทึกข้อมูลการจองลง Supabase
-      const bookingResponse = await fetch('/api/booking/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: userId,
-          items: getActiveCartItems(),
-          customerInfo: customerInfo,
-          totalAmount: totalAmount,
-          paymentIntentId: paymentId,
-          paymentStatus: 'paid',
-        }),
-      })
-
-      if (!bookingResponse.ok) {
-        const error = await bookingResponse.json()
-        console.error('Booking creation failed:', error)
-        toast.error('บันทึกข้อมูลการจองไม่สมบูรณ์ กรุณาติดต่อเจ้าหน้าที่', {
-          duration: 6000,
-        })
-      } else {
-        const { bookingId } = await bookingResponse.json()
-        console.log('Booking created successfully:', bookingId)
-      }
-
-      // Redirect to success page
-      router.push(`/booking-success?payment_intent=${paymentId}`)
-    } catch (error) {
-      console.error('Error processing PromptPay payment:', error)
-      toast.error('เกิดข้อผิดพลาดในการดำเนินการ', {
-        duration: 5000,
-      })
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  const handleApplyPromoCode = () => {
-    const promoCode = form.getValues('promoCode')
-    if (promoCode?.trim()) {
-      toast.success(`โค้ด "${promoCode}" ถูกใช้แล้ว (จำลอง)`, {
-        duration: 3000,
-      })
-    } else {
-      toast.error('กรุณากรอกโค้ดส่วนลด', {
-        duration: 3000,
-      })
-    }
-  }
 
   return (
     <Form {...form}>
@@ -659,41 +678,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
                   กรุณารอสักครู่เพื่อให้ระบบเตรียมพร้อม
                 </p>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Login Required Warning */}
-        {!userId && (
-          <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <svg
-                  className="w-5 h-5 text-orange-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-orange-800">
-                  กรุณาเข้าสู่ระบบก่อนทำการชำระเงิน
-                </p>
-                <p className="text-xs text-orange-600 mt-1">
-                  ปุ่มชำระเงินจะใช้งานได้เมื่อคุณเข้าสู่ระบบแล้ว
-                </p>
-              </div>
-              <button
-                onClick={() => router.push('/login')}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              >
-                เข้าสู่ระบบ
-              </button>
             </div>
           </div>
         )}

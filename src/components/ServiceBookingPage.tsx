@@ -86,14 +86,14 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
       // Ensure service_title is always a string
       const validatedSubServices = subServices.map(service => ({
         ...service,
-        service_title: service.service_title || '',
+        service_title: service.service_title ?? '',
       }))
       setSubServices(validatedSubServices)
     }
   }, [subServices, setSubServices])
 
   // Debug logging for payment button state
-  React.useEffect(() => {
+  useEffect(() => {
     console.log(
       '🎯 Payment button state (current step: ' + currentStep + '):',
       {
@@ -111,7 +111,14 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
             : canProceedToNext() && !isNavigating,
       }
     )
-  }, [currentStep, paymentHandler, isPaymentProcessing, isNavigating, userId])
+  }, [
+    currentStep,
+    paymentHandler,
+    isPaymentProcessing,
+    isNavigating,
+    userId,
+    canProceedToNext,
+  ])
 
   // Handle navigation
   const handleNext = async () => {
@@ -257,7 +264,9 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
-            {currentStep === 'items' && <ServiceSelection />}
+            {currentStep === 'items' && (
+              <ServiceSelection onNext={handleNext} onBack={handleBack} />
+            )}
             {currentStep === 'details' && <BookingDetailsForm />}
             {currentStep === 'payment' && (
               <Elements stripe={stripePromise}>
@@ -277,6 +286,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
           isNextDisabled={!canProceed}
           isBackDisabled={isBackDisabled}
           nextButtonText={nextButtonText}
+          currentStep={currentStep}
         />
       </div>
     </div>
