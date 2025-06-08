@@ -71,7 +71,7 @@ function EditServicePage() {
    const handleEdit = () =>
       router.push("/admin/services/edit-service?serviceId=" + serviceId);
 
-   const handleGoBack = () => router.push("/admin/services/service");
+   const handleGoBack = () => router.push("/admin/services");
 
   return (
     <main className={`flex min-h-screen bg-[var(--bg)]`}>

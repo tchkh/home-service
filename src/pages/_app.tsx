@@ -33,7 +33,7 @@ const adminSidebarItems: SidebarItem[] = [
   {
     label: "บริการ",
     icon: Files,
-    href: "/admin/services/service",
+    href: "/admin/services",
   },
   {
     label: "Promotion Code",

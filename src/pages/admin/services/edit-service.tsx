@@ -194,7 +194,7 @@ function EditServicePage() {
   const handleCancel = () =>
     router.push("/admin/services/detail-service?serviceId=" + serviceId);
 
-  const handleGoBack = () => router.push("/admin/services/service");
+  const handleGoBack = () => router.push("/admin/services");
 
   // ฟังก์ชันสำหรับจัดการเมื่อมีการเปลี่ยนแปลงไฟล์รูปภาพ
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -245,7 +245,7 @@ function EditServicePage() {
           result.data
         );
       }
-      router.push("/admin/services/service");
+      router.push("/admin/services");
     } catch (err) {
       console.error("Error deleting service:", err);
     }
