@@ -72,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, items }) => {
 
       )}
     >
-      <div className="px-6 pt-8 hidden md:inline">
+      <div className="px-6 pt-6 hidden md:inline">
         <div className="flex justify-center items-center gap-2 py-2 px-2 bg-[var(--blue-100)] rounded-lg ">
           <div className="rounded bg-[var(--blue-100)]">
             <svg width="24" height="24">

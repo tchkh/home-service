@@ -79,7 +79,7 @@ function AddServicePage() {
    };
 
    // ฟังก์ชันสำหรับจัดการการยกเลิกและกลับไปยังหน้าก่อนหน้า
-   const handleCancel = () => router.push("/admin/services/service");
+   const handleCancel = () => router.push("/admin/services");
 
    // ฟังก์ชันสำหรับจัดการเมื่อมีการเปลี่ยนแปลงไฟล์รูปภาพ
    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
