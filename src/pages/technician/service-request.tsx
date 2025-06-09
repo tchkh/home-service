@@ -18,7 +18,6 @@ export default function TechnicianRequestPage() {
   const [error, setError] = useState<string | null>(null);
   const [technicianInactive, setTechnicianInactive] = useState(false);
   const { setServiceRequestCount } = useServiceRequestStore();
-  const { setServiceRequestCount } = useServiceRequestStore();
 
   const fetchNearbyRequests = useCallback(async () => {
     setLoading(true);
