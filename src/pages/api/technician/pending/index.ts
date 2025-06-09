@@ -1,41 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getAuthenticatedClient } from "@/utils/api-helpers";
-
-// Types
-interface PendingJob {
-  id: string;
-  user_id: string;
-  category: string;
-  service: string;
-  sub_service: string;
-  appointment_at: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  total_price: number;
-  first_name: string;
-  last_name: string;
-  tel: string;
-  accepted_at: string;
-  service_id: number;
-}
-
-interface TechnicianService {
-  service_id: number;
-  service_title: string;
-}
-
-interface PendingJobsResponse {
-  services: TechnicianService[];
-  jobs: PendingJob[];
-  technician: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  message?: string;
-  hasJobs: boolean;
-}
+import { TechnicianService, PendingJob, PendingJobsResponse } from "@/types";
 
 export default async function technicianPending(
   req: NextApiRequest,
@@ -55,13 +20,21 @@ export default async function technicianPending(
     const technicianId = session.user.id;
 
     // Query parameters
-    const { service_id, sort_by } = req.query;
+    const { service_id, sort_by, search } = req.query;
 
     // View จะกรองเฉพาะงานที่ accepted_at ไม่ null และ status = 2 (กำลังดำเนินงาน)
     let query = supabase
       .from("technician_pending_jobs")
       .select("*")
       .eq("technician_id", technicianId);
+
+    // เพิ่ม search condition
+    if (typeof search === "string" && search.trim() !== "") {
+      const searchTerm = search.trim();
+      query.or(
+        `service_title.ilike.%${searchTerm}%,service_request_code.ilike.%${searchTerm}%`
+      );
+    }
 
     // กรองตาม service_id ถ้าระบุมา
     if (service_id && service_id !== "all") {
@@ -90,7 +63,7 @@ export default async function technicianPending(
 
       const technician = {
         id: technicianId,
-        name: technicianData 
+        name: technicianData
           ? `${technicianData.first_name} ${technicianData.last_name}`
           : "Unknown Technician",
         email: technicianData?.email || "",
@@ -102,18 +75,23 @@ export default async function technicianPending(
         .select("service_id, service_title")
         .eq("technician_id", technicianId);
 
-      const services: TechnicianService[] = allServices?.map(service => ({
-        service_id: service.service_id,
-        service_title: service.service_title
-      })) || [];
+      const services: TechnicianService[] =
+        allServices?.map((service) => ({
+          service_id: service.service_id,
+          service_title: service.service_title,
+        })) || [];
 
       // กำหนดข้อความตามเงื่อนไขการกรอง
       let message = "ยังไม่มีรายการที่รอดำเนินการในขณะนี้";
-      
+
       if (service_id && service_id !== "all") {
         // หาชื่อ service ที่เลือก
-        const selectedService = services.find(s => s.service_id === parseInt(service_id as string));
-        const serviceName = selectedService ? selectedService.service_title : "บริการที่เลือก";
+        const selectedService = services.find(
+          (s) => s.service_id === parseInt(service_id as string)
+        );
+        const serviceName = selectedService
+          ? selectedService.service_title
+          : "บริการที่เลือก";
         message = `ไม่พบงานที่รอดำเนินการสำหรับ "${serviceName}"`;
       }
 
@@ -122,7 +100,7 @@ export default async function technicianPending(
         jobs: [],
         technician,
         message,
-        hasJobs: false
+        hasJobs: false,
       });
     }
 
@@ -140,13 +118,14 @@ export default async function technicianPending(
       .select("service_id, service_title")
       .eq("technician_id", technicianId);
 
-    const services: TechnicianService[] = allServices?.map(service => ({
-      service_id: service.service_id,
-      service_title: service.service_title
-    })) || [];
+    const services: TechnicianService[] =
+      allServices?.map((service) => ({
+        service_id: service.service_id,
+        service_title: service.service_title,
+      })) || [];
 
     // แปลงข้อมูลเป็น format ที่ UI ต้องการ
-    const jobs: PendingJob[] = jobsData.map(job => ({
+    const jobs: PendingJob[] = jobsData.map((job) => ({
       id: job.request_id,
       user_id: job.user_id,
       category: job.category_title,
@@ -161,29 +140,37 @@ export default async function technicianPending(
       last_name: job.customer_last_name,
       tel: job.customer_tel,
       accepted_at: job.accepted_at,
-      service_id: job.service_id
+      service_id: job.service_id,
+      service_request_code: job.service_request_code,
     }));
 
     // เรียงลำดับตาม sort_by parameter
-    if (sort_by === 'appointment') {
+    if (sort_by === "appointment") {
       // เรียงตามวันนัดที่ใกล้ถึงก่อน
-      jobs.sort((a, b) => new Date(a.appointment_at).getTime() - new Date(b.appointment_at).getTime());
+      jobs.sort(
+        (a, b) =>
+          new Date(a.appointment_at).getTime() -
+          new Date(b.appointment_at).getTime()
+      );
     } else {
       // เรียงตามรายการที่ accept ล่าสุด (default)
-      jobs.sort((a, b) => new Date(b.accepted_at).getTime() - new Date(a.accepted_at).getTime());
+      jobs.sort(
+        (a, b) =>
+          new Date(b.accepted_at).getTime() - new Date(a.accepted_at).getTime()
+      );
     }
 
     return res.status(200).json({
       services,
       jobs,
       technician,
-      hasJobs: true
+      hasJobs: true,
     });
-
   } catch (error) {
     console.error("Error in technicianPending:", error);
     return res.status(500).json({
-      error: error instanceof Error ? error.message : "An unknown error occurred"
+      error:
+        error instanceof Error ? error.message : "An unknown error occurred",
     });
   }
 }

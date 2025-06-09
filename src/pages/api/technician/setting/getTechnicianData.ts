@@ -82,7 +82,6 @@ export default async function handler(
     const { session } = authResult;
     const technicianId = session.user.id;
     const technicianData = await fetchTechnicianData(technicianId);
-    console.log("fetchTechnicianData: ", technicianData);
     
     if (!technicianData) {
       return res.status(404).json({ message: "Technician not found" });

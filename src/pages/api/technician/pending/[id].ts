@@ -1,30 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getAuthenticatedClient } from "@/utils/api-helpers";
-
-interface JobDetailResponse {
-  id: string;
-  user_id: string;
-  category: string;
-  category_color: string;
-  service: string;
-  sub_service: string;
-  appointment_at: string;
-  full_address: string;
-  latitude: number;
-  longitude: number;
-  total_price: number;
-  first_name: string;
-  last_name: string;
-  tel: string;
-  accepted_at: string;
-  service_id: number;
-  technician_latitude: number;
-  technician_longitude: number;
-}
+import { JobDetail } from "@/types";
 
 export default async function jobDetail(
   req: NextApiRequest,
-  res: NextApiResponse<JobDetailResponse | { error: string }>
+  res: NextApiResponse<JobDetail | { error: string }>
 ) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -66,7 +46,7 @@ export default async function jobDetail(
     }
 
     // แปลงข้อมูลเป็น format ที่ต้องการ
-    const jobDetail: JobDetailResponse = {
+    const jobDetail: JobDetail = {
       id: jobData.request_id,
       user_id: jobData.user_id,
       category: jobData.category_name,
@@ -83,6 +63,9 @@ export default async function jobDetail(
       tel: jobData.customer_tel,
       accepted_at: jobData.accepted_at,
       service_id: jobData.service_id,
+      quantity: jobData.quantity,
+      service_unit: jobData.service_unit,
+      service_request_code: jobData.service_request_code,
       technician_latitude: jobData.technician_latitude,
       technician_longitude: jobData.technician_longitude,
     };

@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { ServiceRequestCardProps } from "@/types";
 import { useTechnicianJobs } from "@/hooks/useTechnicianJobs";
 import toast, { Toaster } from "react-hot-toast";
-import { formatThaiDatetime } from "@/utils/datetime";
 import { MapPopup } from "./MapPopup";
+import { formatAppointmentDate } from "@/utils/datetime";
 
 export function ServiceRequestCard({
   data,
@@ -48,25 +48,29 @@ export function ServiceRequestCard({
   }, []);
 
   return (
-    <div className="w-[90%] max-w-[95%] mx-auto px-5 py-5 bg-[var(--white)] border-1 border-[var(--gray-300)] rounded-[8px] shadow-lg overflow-hidden">
+    <div className="w-[90%] md:w-[100%] max-w-[95%] mx-auto px-5 py-5 bg-[var(--white)] border-1 border-[var(--gray-300)] rounded-[8px] shadow-lg overflow-hidden">
       <div className="md:flex md:flex-row md:justify-between flex flex-col gap-2">
         <h1 className="text-heading-2">{data.service.name}</h1>
         <div className="md:flex md:gap-5">
           <p className="text-heading-5 text-[var(--gray-700)]">
             วันเวลาดำเนินการ
           </p>
-          <p className="text-heading-5 text-[var(--blue-600)]">
-            {formatThaiDatetime(data.appointment_at)}
+          <p className={`text-heading-5 ${
+            !data.appointment_at 
+              ? 'text-[var(--gray-700)]' 
+              : 'text-[var(--blue-600)]'
+          }`}>
+            {formatAppointmentDate(data.appointment_at)}
           </p>
         </div>
       </div>
 
       <div className="grid [grid-template-columns:minmax(130px,auto)_1fr] gap-y-5 mt-5">
         <p className="text-[var(--gray-700)] text-heading-5">รายการ</p>
-        <p>{data.service.sub_service}</p>
+        <p>{data.service.sub_service} {data.quantity} {data.service.unit}</p>
 
         <p className="text-[var(--gray-700)] text-heading-5">รหัสคำสั่งซ่อม</p>
-        <p>AD04071205</p>
+        <p>{data.service_request_code}</p>
 
         <p className="text-[var(--gray-700)] text-heading-5">ราคารวม</p>
         <p>{data.service.price} ฿</p>

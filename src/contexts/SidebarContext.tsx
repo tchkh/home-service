@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
 } from "react";
+import { useServiceRequestStore } from "@/utils/useServiceRequestStore";
 
 // สร้าง Context Object
 const SidebarContext = createContext<SidebarContextValue | undefined>(
@@ -27,7 +28,9 @@ export const SidebarProvider: React.FC<SidebarProviderProps> = ({
   children,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
-  const [serviceRequestCount, setServiceRequestCount] = useState(0);
+  const [isMobileSidebarClose, setMobileIsSidebarClose] = useState<boolean>(false);
+
+  const { serviceRequestCount, setServiceRequestCount} = useServiceRequestStore();
     
   useEffect(() => {
     const storedValue = localStorage.getItem(SIDEBAR_OPEN_KEY);
@@ -43,7 +46,11 @@ export const SidebarProvider: React.FC<SidebarProviderProps> = ({
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
-    console.log("isSidebarOpen:", isSidebarOpen);
+  };
+
+  const toggleMobileSidebar = () => {
+    setMobileIsSidebarClose(!isMobileSidebarClose);
+    console.log("setMobileIsSidebarClose:", isMobileSidebarClose);
   };
 
   const openSidebar = () => {
@@ -57,7 +64,9 @@ export const SidebarProvider: React.FC<SidebarProviderProps> = ({
   // กำหนด Value ที่จะส่งผ่าน Context
   const value: SidebarContextValue = {
     isSidebarOpen,
+    isMobileSidebarClose,
     toggleSidebar,
+    toggleMobileSidebar,
     openSidebar,
     closeSidebar,
     serviceRequestCount,

@@ -1,13 +1,12 @@
 import { useSidebar } from "@/contexts/SidebarContext";
 import { Button } from "@/components/ui/button";
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 
 export default function ToggleSidebarComponent() {
    const { isSidebarOpen, toggleSidebar } = useSidebar();
 
    return (
       <Button
+         type="button"
          onClick={toggleSidebar}
          // absolute z-100 top-7 -left-4
          className={`hidden md:flex  fixed top-7 ${

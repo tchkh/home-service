@@ -58,7 +58,8 @@
     "swagger": "^0.7.5",
     "tailwind-merge": "^3.2.0",
     "uuid": "^11.1.0",
-    "zod": "^3.24.4"
+    "zod": "^3.24.4",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
