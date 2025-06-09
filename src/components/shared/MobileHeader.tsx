@@ -1,9 +1,11 @@
 import { Menu } from "lucide-react";
 import Image from "next/image";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useServiceRequestStore } from "@/utils/useServiceRequestStore";
 
-function MobileHeader({ serviceRequestCount = 3 }) {
+function MobileHeader() {
   const { toggleSidebar } = useSidebar();
+  const { serviceRequestCount } = useServiceRequestStore();
 
   return (
     <div className="md:hidden bg-[var(--blue-950)] text-[var(--white)] px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-40 w-full">

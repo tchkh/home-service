@@ -48,7 +48,7 @@ export function ServiceRequestCard({
   }, []);
 
   return (
-    <div className="w-[90%] max-w-[95%] mx-auto px-5 py-5 bg-[var(--white)] border-1 border-[var(--gray-300)] rounded-[8px] shadow-lg overflow-hidden">
+    <div className="w-[90%] md:w-[100%] max-w-[95%] mx-auto px-5 py-5 bg-[var(--white)] border-1 border-[var(--gray-300)] rounded-[8px] shadow-lg overflow-hidden">
       <div className="md:flex md:flex-row md:justify-between flex flex-col gap-2">
         <h1 className="text-heading-2">{data.service.name}</h1>
         <div className="md:flex md:gap-5">
