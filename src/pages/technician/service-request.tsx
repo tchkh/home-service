@@ -78,7 +78,7 @@ export default function TechnicianRequestPage() {
       {/* Mobile Header */}
       <MobileHeader />
       {/* Header */}
-      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center px-8 h-20 md:h-24 md:py-5 py-4 bg-[var(--white)] shadow-lg overflow-hidden">
+      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center px-8 h-20 md:h-24 md:py-5 py-4 bg-[var(--white)] border-b-1 border-[var(--gray-300)]">
         {/* Hide & Show sidebar */}
         <ToggleSidebarComponent />
         <h1 className="text-heading-2 text-2xl font-semibold content-center">

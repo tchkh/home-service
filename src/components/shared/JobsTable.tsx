@@ -65,7 +65,7 @@ export default function JobsTable({
             {jobs.map((job) => (
               <tr
                 key={job.id}
-                className="hover:bg-gray-50 transition-colors text-body-2 cursor-pointer"
+                className="hover:bg-gray-50 transition-colors text-body-2 cursor-pointer md:h-[88px] h-[54px]"
                 onClick={() => onActionClick?.(job.id)}
               >
                 <td className="px-4 py-3 md:py-7">{job.service}</td>

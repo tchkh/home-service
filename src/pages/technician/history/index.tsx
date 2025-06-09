@@ -69,7 +69,7 @@ export default function TechnicianHistoryPage({
       {/* Mobile Header */}
       <MobileHeader />
       {/* Header */}
-      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center h-20 md:h-24 px-8 md:py-5 py-4 bg-[var(--white)] shadow-lg overflow-hidden">
+      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center md:h-24 px-8 md:py-5 py-4 bg-[var(--white)] border-b-1 border-[var(--gray-300)]">
         {/* Hide & Show sidebar */}
         <ToggleSidebarComponent />
         <div className="flex flex-col md:flex md:flex-row md:justify-between w-full gap-4">
@@ -91,10 +91,10 @@ export default function TechnicianHistoryPage({
 
       {/* Content */}
       <main className="px-8 md:py-5 py-4">
-        <div className="flex flex-col md:flex md:flex-row gap-3 items-center">
-          <p>บริการ</p>
+        <div className="flex flex-col md:flex md:flex-row gap-3 ">
+          <p className="content-center">บริการ</p>
           <Select value={selectedService} onValueChange={setSelectedService}>
-            <SelectTrigger className="border-1 border-[var(--gray-300)] rounded-[8px] py-2.5 px-4 md:w-[224px] w-full cursor-pointer">
+            <SelectTrigger className="border-1 border-[var(--gray-300)] bg-[var(--white)] rounded-[8px] py-2.5 px-4 md:w-[224px] w-full cursor-pointer">
               <SelectValue placeholder="เลือกบริการ" />
             </SelectTrigger>
             <SelectContent className="bg-white border-0">

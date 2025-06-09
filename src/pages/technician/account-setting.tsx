@@ -148,7 +148,7 @@ const TechnicianAccountSettingsPage: React.FC = () => {
             {/* Mobile Header */}
             <MobileHeader />
             {/* Header */}
-            <section className="relative flex items-center justify-between w-full h-fit px-4 md:px-8 py-5 md:py-5 mt-16 md:mt-0 bg-[var(--white)] border-b-1 border-[var(--gray-300)]">
+            <section className="relative flex items-center justify-between w-full h-20 md:h-24 px-4 md:px-8 py-5 md:py-5 mt-18 md:mt-0 bg-[var(--white)] border-b-1 border-[var(--gray-300)]">
               {/* Sidebar Button */}
               <ToggleSidebarComponent />
               <h1 className="text-heading-2 text-[var(--black)]">
