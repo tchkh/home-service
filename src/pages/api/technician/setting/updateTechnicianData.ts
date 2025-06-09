@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 import { TechnicianData } from "@/types";
 import { technicianAccountSchema } from "@/schemas/technicianAccountSchema";
+import { getAuthenticatedClient } from "@/utils/api-helpers";
 
 const updateTechnicianData = async (
   technicianId: string,
@@ -115,8 +116,12 @@ export default async function handler(
   }
 
   try {
-    const technicianId = req.query.technicianId as string;
-
+    const authResult = await getAuthenticatedClient(req, res);
+    if (!authResult) {
+      return;
+    }
+    const { session } = authResult;
+    const technicianId = session.user.id;
     const validPayload = technicianAccountSchema.parse(req.body);
     console.log("ValidPayload: ", validPayload);
 
@@ -139,6 +144,7 @@ export default async function handler(
       formatedPayload
     );
     console.log("UpdatedTechnicianData: ", technicianData);
+    
     if (!technicianData) {
       return res.status(404).json({ message: "Technician not found" });
     }
