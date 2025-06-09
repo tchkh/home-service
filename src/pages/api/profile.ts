@@ -15,10 +15,10 @@ export default async function handler(
       .from("users")
       .select("*")
       .eq("id", session.user.id)
-      .single();
+      .maybeSingle()
 
     if (error) {
-      console.error("Error fetching profile:", error);
+      console.error("Error fetching profiles:", error);
       return res.status(500).json({ error: "Failed to fetch profile" });
     }
 
