@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { useSidebar } from "@/contexts/SidebarContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,34 +10,26 @@ import {
   technicianAccountSchema,
   TechnicianAccountFormData,
 } from "@/schemas/technicianAccountSchema";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
-import { useRouter } from "next/router";
 import { Service, TechnicianServiceSettings } from "@/types";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import MobileHeader from "@/components/shared/MobileHeader";
+import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
 
 const TechnicianAccountSettingsPage: React.FC = () => {
   const [allServices, setAllServices] = React.useState<Service[]>([]);
   const [address, setAddress] = React.useState<string>("");
-  const router = useRouter();
-  const technicianId = router.query.technicianId as string;
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
 
   useEffect(() => {
-    if (technicianId) {
-      fetchTechnicianData(technicianId);
-    }
+    fetchTechnicianData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [technicianId]);
+  }, []);
 
-  const fetchTechnicianData = async (technicianId: string) => {
+  const fetchTechnicianData = async () => {
     try {
-      if (!technicianId) {
-        return;
-      }
       const response = await axios.get(
-        `/api/technician/getTechnicianData?technicianId=${technicianId}`
+        `/api/technician/setting/getTechnicianData`
       );
       const data = response.data;
       console.log("TechnicianData: ", data);
@@ -137,24 +128,15 @@ const TechnicianAccountSettingsPage: React.FC = () => {
     console.log("Form submitted with data:", data);
 
     try {
-      const technicianId = router.query.technicianId as string;
-
-      if (!technicianId) {
-        console.error("No technicianId found in URL");
-        toast.error("ไม่พบข้อมูลผู้ใช้ กรุณาลองใหม่อีกครั้ง");
-        return;
-      }
-
-      console.log("Sending request to API with technicianId:", technicianId);
       const response = await axios.put(
-        `/api/technician/updateTechnicianData?technicianId=${technicianId}`,
+        `/api/technician/setting/updateTechnicianData`,
         data
       );
 
       const technicianData = response.data;
       console.log("API Response:", technicianData);
       toast.success("ข้อมูลบัญชีของคุณได้รับการอัพเดทแล้ว");
-      fetchTechnicianData(technicianId);
+      fetchTechnicianData();
     } catch (error) {
       console.error("Error saving data:", error);
       toast.error("ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
@@ -171,46 +153,7 @@ const TechnicianAccountSettingsPage: React.FC = () => {
             {/* Header */}
             <section className="relative flex items-center justify-between w-full h-fit px-4 md:px-8 py-5 md:py-5 mt-16 md:mt-0 bg-[var(--white)] border-b-1 border-[var(--gray-300)]">
               {/* Sidebar Button */}
-              <Button
-                type="button"
-                onClick={toggleSidebar}
-                className="absolute top-7 -left-4 z-200 w-9 h-9 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--white)] shadow-[0_0_0_1px_var(--white)] rounded-full cursor-pointer"
-              >
-                {isSidebarOpen ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 30 24"
-                    fill="none"
-                    stroke="var(--white)"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-chevron-left-icon lucide-chevron-left"
-                  >
-                    <path d="m15 18-6-6 6-6" />
-                  </svg>
-                ) : (
-                  <>
-                    <span>&quot;</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 26 24"
-                      fill="none"
-                      stroke="var(--white)"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="lucide lucide-chevron-right-icon lucide-chevron-right"
-                    >
-                      <path d="m9 18 6-6-6-6" />
-                    </svg>
-                  </>
-                )}
-              </Button>
+              <ToggleSidebarComponent />
               <h1 className="text-heading-2 text-[var(--black)]">
                 ตั้งค่าบัญชีผู้ใช้
               </h1>
@@ -435,6 +378,37 @@ const TechnicianAccountSettingsPage: React.FC = () => {
             </section>
           </form>
         </div>
+        {/* เพิ่ม Toaster component ที่นี่เพื่อให้ toast สามารถแสดงผลได้ */}
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 2000,
+              iconTheme: {
+                primary: '#4ade80',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              duration: 4000,
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
+            },
+            loading: {
+              iconTheme: {
+                primary: '#3b82f6',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
       </main>
     </div>
   );
