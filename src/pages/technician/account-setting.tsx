@@ -32,7 +32,7 @@ const TechnicianAccountSettingsPage: React.FC = () => {
         `/api/technician/setting/getTechnicianData`
       );
       const data = response.data;
-      console.log("TechnicianData: ", data);
+
       setValue("firstName", data.first_name || "");
       setValue("lastName", data.last_name || "");
       setValue("tel", data.tel || "");
@@ -47,7 +47,6 @@ const TechnicianAccountSettingsPage: React.FC = () => {
         ? data.allServices
         : [];
       setAllServices(allServicesList);
-      console.log("AllServices: ", allServicesList);
 
       setValue(
         "servicesActive",
@@ -128,13 +127,11 @@ const TechnicianAccountSettingsPage: React.FC = () => {
     console.log("Form submitted with data:", data);
 
     try {
-      const response = await axios.put(
+      await axios.put(
         `/api/technician/setting/updateTechnicianData`,
         data
       );
 
-      const technicianData = response.data;
-      console.log("API Response:", technicianData);
       toast.success("ข้อมูลบัญชีของคุณได้รับการอัพเดทแล้ว");
       fetchTechnicianData();
     } catch (error) {

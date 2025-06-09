@@ -4,7 +4,7 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { useServiceRequestStore } from "@/utils/useServiceRequestStore";
 
 function MobileHeader() {
-  const { toggleSidebar } = useSidebar();
+  const { toggleMobileSidebar } = useSidebar();
   const { serviceRequestCount } = useServiceRequestStore();
 
   return (
@@ -23,7 +23,8 @@ function MobileHeader() {
       </div>
 
       <button
-        onClick={toggleSidebar}
+        type="button"
+        onClick={toggleMobileSidebar}
         className="p-2 hover:bg-blue-800 rounded-lg transition-colors relative cursor-pointer"
       >
         <Menu className="w-6 h-6" />

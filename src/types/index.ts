@@ -73,6 +73,8 @@ export interface SidebarItem {
 export interface SidebarContextValue {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
+  isMobileSidebarClose: boolean;
+  toggleMobileSidebar: () => void;
   openSidebar: () => void;
   closeSidebar: () => void;
   serviceRequestCount: number;
