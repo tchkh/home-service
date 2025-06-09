@@ -100,11 +100,11 @@ export default function TechnicianPendingPage({
       {/* Mobile Header */}
       <MobileHeader />
       {/* Header */}
-      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center px-8 md:py-5 py-4 bg-[var(--white)] shadow-lg overflow-hidden">
+      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center h-20 md:h-24 px-8 md:py-5 py-4 bg-[var(--white)] shadow-lg overflow-hidden">
         {/* Hide & Show sidebar */}
         <ToggleSidebarComponent />
         <div className="flex flex-col md:flex md:flex-row md:justify-between w-full gap-4">
-          <h1 className="text-heading-2 text-2xl font-semibold">
+          <h1 className="text-heading-2 text-2xl font-semibold content-center">
             รายการที่รอดำเนินการ
           </h1>
           <input

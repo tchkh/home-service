@@ -70,7 +70,7 @@ function Navbar() {
                 {user?.first_name} {user?.last_name}
               </span>
               <DropdownMenu modal={false}>
-                <DropdownMenuTrigger>
+                <DropdownMenuTrigger className="cursor-pointer">
                   {user?.image_url ? (
                     <div className="w-[32px] h-[32px] rounded-full overflow-hidden">
                       <Image
@@ -184,7 +184,7 @@ function Navbar() {
         <div className="md:hidden flex items-center">
           {user ? (
             <DropdownMenu modal={false}>
-              <DropdownMenuTrigger>
+              <DropdownMenuTrigger className="cursor-pointer">
                 {user?.image_url ? (
                   <div className="flex gap-2">
                     <div className="w-[32px] h-[32px] rounded-full overflow-hidden">

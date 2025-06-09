@@ -7,6 +7,7 @@ import NotificationIcon from "@/components/icons/NotificationIcon";
 import { calculateStraightDistance } from "@/utils/distance";
 import { useServiceRequestStore } from "@/utils/useServiceRequestStore";
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function TechnicianRequestPage() {
   const [serviceRequestData, setServiceRequestData] = useState<
@@ -55,15 +56,32 @@ export default function TechnicianRequestPage() {
     fetchNearbyRequests();
   };
 
+  const handleUpdateStatus = async () => {
+    try {
+      const response = await axios.put("/api/technician/updateStatusTechnician");
+
+      if (response.status === 200) {
+        toast.success("เปิดสถานะพร้อมให้บริการแล้ว!");
+        fetchNearbyRequests();
+      } else {
+        toast.error("ไม่สามารถเปลี่ยนสถานะได้");
+        console.error("Update status failed:", response.data);
+      }
+    } catch (error) {
+      toast.error("เกิดข้อผิดพลาดในการเปลี่ยนสถานะ");
+      console.error("Error updating technician status:", error);
+    }
+  };
+
   return (
     <>
       {/* Mobile Header */}
-      <MobileHeader serviceRequestCount={serviceRequestData.length} />
+      <MobileHeader />
       {/* Header */}
-      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center px-8 md:py-5 py-4 bg-[var(--white)] shadow-lg overflow-hidden">
+      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center px-8 h-20 md:h-24 md:py-5 py-4 bg-[var(--white)] shadow-lg overflow-hidden">
         {/* Hide & Show sidebar */}
         <ToggleSidebarComponent />
-        <h1 className="text-heading-2 text-2xl font-semibold">
+        <h1 className="text-heading-2 text-2xl font-semibold content-center">
           คำขอบริการซ่อม
         </h1>
       </header>
@@ -81,14 +99,17 @@ export default function TechnicianRequestPage() {
           <p className="text-body-2 text-[var(--gray-700)] mt-1 mb-6">
             เปิดใช้งานสถานะพร้อมให้บริการเพื่อแสดงรายการและรับงานซ่อมในบริเวณตำแหน่งที่คุณอยู่
           </p>
-          <button className="btn btn--primary py-[10px] px-[24px] mb-6">
+          <button
+            onClick={handleUpdateStatus}
+            className="btn btn--primary py-[10px] px-[24px] mb-6"
+          >
             เปลี่ยนสถานะเป็นพร้อมให้บริการ
           </button>
         </section>
       ) : (
         <>
           {/* If Technician Status: active */}
-          <section className="flex flex-row justify-between w-[90%] max-w-[95%] mx-auto px-5 py-5 gap-2 bg-[var(--blue-100)] border-1 border-[var(--blue-300)] rounded-[8px] shadow-lg overflow-hidden items-center mt-[16px]">
+          <section className="flex flex-row justify-between w-[90%] md:w-[100%] max-w-[95%] mx-auto px-5 py-5 gap-2 bg-[var(--blue-100)] border-1 border-[var(--blue-300)] rounded-[8px] shadow-lg overflow-hidden items-center mt-[16px]">
             <div className="flex gap-2 md:gap-3 items-center">
               <svg
                 className="content-center w-10 h-10 text-[var(--blue-600)]"
@@ -169,6 +190,36 @@ export default function TechnicianRequestPage() {
                   );
                 })}
             </div>
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                duration: 3000,
+                style: {
+                  background: "#363636",
+                  color: "#fff",
+                },
+                success: {
+                  duration: 2000,
+                  iconTheme: {
+                    primary: "#4ade80",
+                    secondary: "#fff",
+                  },
+                },
+                error: {
+                  duration: 4000,
+                  iconTheme: {
+                    primary: "#ef4444",
+                    secondary: "#fff",
+                  },
+                },
+                loading: {
+                  iconTheme: {
+                    primary: "#3b82f6",
+                    secondary: "#fff",
+                  },
+                },
+              }}
+            />
           </main>
         </>
       )}

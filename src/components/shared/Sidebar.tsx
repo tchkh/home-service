@@ -88,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, items }) => {
         </div>
       </div>
       <button
-        className="text-[var(--blue-600)] text-heading-3 md:hidden justify-start flex mx-3 my-5"
+        className="text-[var(--blue-600)] text-heading-3 md:hidden justify-start flex mx-3 my-5 cursor-pointer"
         onClick={toggleSidebar}
       >
         ✕
