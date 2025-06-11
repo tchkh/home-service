@@ -39,9 +39,9 @@ function Navbar() {
   if (loading) return null; // หรือ Skeleton loader
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-[color:var(--white)] shadow-sm">
+    <nav className="sticky top-0 z-50 w-full bg-[color:var(--white)] shadow-sm h-[52px] md:h-[80px] content-center">
       <div className="px-5 md:px-50 py-3 flex items-center justify-between">
-        <div className="flex items-center md:gap-20 gap-6">
+        <div className="flex items-center md:gap-20 gap-10">
           <Link
             className="text-[color:var(--blue-600)] flex items-center"
             href="/"
@@ -65,14 +65,14 @@ function Navbar() {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <span className="hidden md:inline text-body-3 text-[color:var(--gray-700)]">
                 {user?.first_name} {user?.last_name}
               </span>
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger className="cursor-pointer">
                   {user?.image_url ? (
-                    <div className="w-[32px] h-[32px] rounded-full overflow-hidden">
+                    <div className="w-[32px] h-[32px] md:w-[40px] md:h-[40px] rounded-full overflow-hidden">
                       <Image
                         src={user.image_url}
                         width={32}
@@ -82,7 +82,7 @@ function Navbar() {
                       />
                     </div>
                   ) : (
-                    <div className="w-[32px] h-[32px] bg-gray-300 rounded-full flex items-center justify-center">
+                    <div className="w-[32px] h-[32px] md:w-[40px] md:h-[40px] bg-gray-300 rounded-full flex items-center justify-center">
                       <span className="text-xs font-medium text-gray-600">
                         {user?.first_name?.charAt(0)}
                         {user?.last_name?.charAt(0)}
@@ -144,7 +144,7 @@ function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
               <button
-                className={`btn btn--icon ${isActivate ? "activate" : ""}`}
+                className={`btn btn--icon ${isActivate ? "activate" : ""} w-[40px] h-[40px]`}
                 onClick={() => setIsActivate(!isActivate)}
                 aria-pressed={isActivate}
               >
@@ -185,8 +185,9 @@ function Navbar() {
           {user ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger className="cursor-pointer">
-                {user?.image_url ? (
-                  <div className="flex gap-2">
+                {/* แยกการแสดงรูปโปรไฟล์กับการแสดงปุ่ม Notification */}
+                <div className="flex gap-2 items-center"> {/* เพิ่ม items-center เพื่อจัดแนวให้สวยงาม */}
+                  {user?.image_url ? (
                     <div className="w-[32px] h-[32px] rounded-full overflow-hidden">
                       <Image
                         src={user.image_url}
@@ -196,40 +197,39 @@ function Navbar() {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div
-                      className={`btn btn--icon ${
-                        isActivate ? "activate" : ""
-                      }`}
-                      onClick={() => setIsActivate(!isActivate)}
-                      aria-pressed={isActivate}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="size-4"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6ZM8.05 14.943a33.54 33.54 0 0 0 3.9 0 2 2 0 0 1-3.9 0Z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                  ) : (
+                    <div className="w-[32px] h-[32px] bg-gray-300 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-medium text-gray-600">
+                        {user?.first_name?.charAt(0)}
+                        {user?.last_name?.charAt(0)}
+                      </span>
                     </div>
+                  )}
+                  {/* ย้ายปุ่ม Notification ออกมานอกเงื่อนไข user?.image_url แต่ยังคงอยู่ในเงื่อนไข user? */}
+                  <div
+                    className={`btn btn--icon ${isActivate ? "activate" : ""} w-[32px] h-[32px]`}
+                    onClick={() => setIsActivate(!isActivate)}
+                    aria-pressed={isActivate}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="size-4"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6ZM8.05 14.943a33.54 33.54 0 0 0 3.9 0 2 2 0 0 1-3.9 0Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                   </div>
-                ) : (
-                  <div className="w-[32px] h-[32px] bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-medium text-gray-600">
-                      {user?.first_name?.charAt(0)}
-                      {user?.last_name?.charAt(0)}
-                    </span>
-                  </div>
-                )}
+                </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-[color:var(--white)] border-0 w-[164px]">
                 <DropdownMenuLabel className="flex items-center gap-2">
                   <span className="text-sm font-medium">
-                    {user?.first_name} {user?.last_name}
+                    My Account
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
