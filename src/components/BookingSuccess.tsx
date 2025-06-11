@@ -16,12 +16,15 @@ const BookingSuccessPage = () => {
     customerInfo,
     getActiveCartItems,
     getTotalAmount,
+    getFinalAmount,
+    paymentInfo,
     resetBooking,
     // serviceName removed as it's not used
   } = useBookingStore()
 
   const cartItems = getActiveCartItems()
   const totalAmount = getTotalAmount()
+  const finalAmount = getFinalAmount()
 
   useEffect(() => {
     if (payment_intent) {
@@ -169,22 +172,52 @@ const BookingSuccessPage = () => {
           {/* Divider */}
           <div className="border-t border-gray-200"></div>
 
-          {/* Total Amount */}
-          <div className="flex justify-between items-center">
-            <span className="text-gray-500">ราคา</span>
-            <span className="text-xl md:text-2xl font-bold text-gray-800">
-              {totalAmount > 0 ? (
-                <>
+          {/* Pricing Summary */}
+          <div className="space-y-2">
+            {/* Original Amount (if discount applied) */}
+            {paymentInfo.discount && totalAmount > 0 && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">ราคาก่อนส่วนลด</span>
+                <span className="text-gray-500 line-through">
                   {totalAmount.toLocaleString('th-TH', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
-                  })}{' '}
-                  ฿
-                </>
-              ) : (
-                <span className="text-gray-400">ไม่พบข้อมูลราคา</span>
-              )}
-            </span>
+                  })} ฿
+                </span>
+              </div>
+            )}
+
+            {/* Discount Applied */}
+            {paymentInfo.discount && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-green-600">
+                  ส่วนลด ({paymentInfo.promoCode})
+                </span>
+                <span className="text-green-600 font-medium">
+                  -{paymentInfo.discount.amount.toLocaleString('th-TH', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })} ฿
+                </span>
+              </div>
+            )}
+
+            {/* Final Amount */}
+            <div className="flex justify-between items-center border-t border-gray-200 pt-2">
+              <span className="text-gray-800 font-semibold">ราคารวม</span>
+              <span className="text-xl md:text-2xl font-bold text-gray-800">
+                {finalAmount > 0 ? (
+                  <>
+                    {finalAmount.toLocaleString('th-TH', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })} ฿
+                  </>
+                ) : (
+                  <span className="text-gray-400">ไม่พบข้อมูลราคา</span>
+                )}
+              </span>
+            </div>
           </div>
         </div>
 

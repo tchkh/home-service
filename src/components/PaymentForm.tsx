@@ -54,6 +54,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     paymentInfo,
     updatePaymentInfo,
     getTotalAmount,
+    getFinalAmount,
+    setPromoCodeDiscount,
+    clearPromoCode,
     customerInfo,
     getActiveCartItems,
   } = useBookingStore();
@@ -69,6 +72,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
 
   const paymentMethod = form.watch("method");
   const totalAmount = getTotalAmount();
+  const finalAmount = getFinalAmount();
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
 
   // Store refs for latest values (to avoid stale closures)
   const storeRef = useRef({
@@ -76,6 +81,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     getActiveCartItems,
     totalAmount,
     userId,
+    paymentInfo,
+    getFinalAmount,
   });
 
   useEffect(() => {
@@ -84,8 +91,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
       getActiveCartItems,
       totalAmount,
       userId,
+      paymentInfo,
+      getFinalAmount,
     };
-  }, [customerInfo, getActiveCartItems, totalAmount, userId]);
+  }, [customerInfo, getActiveCartItems, totalAmount, userId, paymentInfo, getFinalAmount]);
 
   // จำลองการชำระเงินสำเร็จผ่าน PromptPay
   const handlePromptPaySuccess = useCallback(
@@ -105,6 +114,17 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
         const { customerInfo, getActiveCartItems, totalAmount, userId } =
           storeRef.current;
 
+        // Apply promocode if exists
+        if (storeRef.current.paymentInfo.discount && storeRef.current.paymentInfo.promoCode) {
+          try {
+            await axios.post('/api/promocode/apply', {
+              code: storeRef.current.paymentInfo.promoCode
+            });
+          } catch (error) {
+            console.error('Error applying promocode:', error);
+          }
+        }
+
         // บันทึกข้อมูลการจองลง Supabase
         const { data: bookingData } = await axios.post(
           "/api/booking/create",
@@ -113,6 +133,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
             items: getActiveCartItems(),
             customerInfo: customerInfo,
             totalAmount: totalAmount,
+            finalAmount: storeRef.current.getFinalAmount(),
+            promoCode: storeRef.current.paymentInfo.promoCode,
+            discount: storeRef.current.paymentInfo.discount,
             paymentIntentId: paymentId,
             paymentStatus: "paid",
           },
@@ -140,10 +163,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
   // PromptPay Payment
   const processPromptPayPayment = useCallback(async () => {
     // Use refs for latest values
-    const { customerInfo, getActiveCartItems, totalAmount } = storeRef.current;
+    const { customerInfo, getActiveCartItems } = storeRef.current;
 
     const { data: qrData } = await axios.post("/api/create-promptpay-qr", {
-      amount: totalAmount,
+      amount: storeRef.current.getFinalAmount(),
       bookingId: `booking_${Date.now()}`,
       customerInfo: customerInfo,
       items: getActiveCartItems(),
@@ -171,17 +194,54 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     }, 10000);
   }, [setQrCodeData, setQrCountdown, setShowQRModal, handlePromptPaySuccess]);
 
-  const handleApplyPromoCode = () => {
+  const handleApplyPromoCode = async () => {
     const promoCode = form.getValues("promoCode");
-    if (promoCode?.trim()) {
-      toast.success(`โค้ด "${promoCode}" ถูกใช้แล้ว (จำลอง)`, {
-        duration: 3000,
-      });
-    } else {
+    if (!promoCode?.trim()) {
       toast.error("กรุณากรอกโค้ดส่วนลด", {
         duration: 3000,
       });
+      return;
     }
+
+    setIsValidatingPromo(true);
+    try {
+      const response = await axios.post('/api/promocode/validate', {
+        code: promoCode.trim(),
+        totalAmount: totalAmount
+      });
+
+      if (response.data.success) {
+        setPromoCodeDiscount(response.data.discount);
+        toast.success(`ใช้โค้ดส่วนลดสำเร็จ! ลด ฿${response.data.discount.amount.toFixed(2)}`, {
+          duration: 4000,
+        });
+      } else {
+        clearPromoCode();
+        form.setValue('promoCode', '');
+        toast.error(response.data.message, {
+          duration: 4000,
+        });
+      }
+    } catch (error: unknown) {
+      clearPromoCode();
+      form.setValue('promoCode', '');
+      const errorMessage = axios.isAxiosError(error) && error.response?.data?.message 
+        ? error.response.data.message 
+        : 'เกิดข้อผิดพลาดในการตรวจสอบโค้ดส่วนลด';
+      toast.error(errorMessage, {
+        duration: 4000,
+      });
+    } finally {
+      setIsValidatingPromo(false);
+    }
+  };
+
+  const handleRemovePromoCode = () => {
+    clearPromoCode();
+    form.setValue('promoCode', '');
+    toast.success('ยกเลิกโค้ดส่วนลดแล้ว', {
+      duration: 2000,
+    });
   };
 
   // NOTE: Commented out booking sync logic as it interferes with new booking flow
@@ -235,11 +295,23 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     const { customerInfo, getActiveCartItems, totalAmount, userId } =
       storeRef.current;
 
+    // Apply promocode if exists
+    if (storeRef.current.paymentInfo.discount && storeRef.current.paymentInfo.promoCode) {
+      try {
+        await axios.post('/api/promocode/apply', {
+          code: storeRef.current.paymentInfo.promoCode
+        });
+      } catch (error) {
+        console.error('Error applying promocode:', error);
+        // Continue with payment even if promocode application fails
+      }
+    }
+
     // Create payment intent
     const { data: paymentData } = await axios.post(
       "/api/create-payment-intent",
       {
-        amount: totalAmount,
+        amount: storeRef.current.getFinalAmount(),
         bookingId: `booking_${Date.now()}`,
         customerId: userId,
         customerInfo: {
@@ -285,6 +357,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
           items: getActiveCartItems(),
           customerInfo: customerInfo,
           totalAmount: totalAmount,
+          finalAmount: storeRef.current.getFinalAmount(),
+          promoCode: storeRef.current.paymentInfo.promoCode,
+          discount: storeRef.current.paymentInfo.discount,
           paymentIntentId: paymentIntentId,
           paymentStatus: "paid",
         },
@@ -321,7 +396,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
           return;
         }
 
-        if (totalAmount <= 0) {
+        if (finalAmount <= 0) {
           throw new Error("ไม่มียอดที่ต้องชำระ");
         }
 
@@ -356,11 +431,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     paymentMethod,
     stripe,
     elements,
-    totalAmount,
+    finalAmount,
     userId,
     isProcessing,
-    customerInfo,
-    getActiveCartItems,
     processCreditCardPayment,
     processPromptPayPayment,
   ]);
@@ -542,17 +615,48 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
                     placeholder="กรอกรหัสส่วนลด (ถ้ามี)"
                     {...field}
                     className="w-full"
+                    disabled={isValidatingPromo}
                   />
                 </FormControl>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleApplyPromoCode}
-                  className="border-blue-500 text-blue-500 hover:bg-blue-50 cursor-pointer w-full md:w-auto"
-                >
-                  ใช้โค้ด
-                </Button>
+                {!paymentInfo.discount ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleApplyPromoCode}
+                    disabled={isValidatingPromo || !field.value?.trim()}
+                    className="border-blue-500 text-blue-500 hover:bg-blue-50 cursor-pointer w-full md:w-auto"
+                  >
+                    {isValidatingPromo ? "กำลังตรวจสอบ..." : "ใช้โค้ด"}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleRemovePromoCode}
+                    className="border-red-500 text-red-500 hover:bg-red-50 cursor-pointer w-full md:w-auto"
+                  >
+                    ยกเลิก
+                  </Button>
+                )}
               </div>
+              
+              {/* Show discount info if applied */}
+              {paymentInfo.discount && (
+                <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-green-800 font-medium">
+                      ✅ ใช้โค้ดส่วนลดแล้ว: {paymentInfo.promoCode}
+                    </span>
+                  </div>
+                  <div className="text-sm text-green-700 mt-1">
+                    ส่วนลด {paymentInfo.discount.type === 'percentage' 
+                      ? `${paymentInfo.discount.value}%` 
+                      : `฿${paymentInfo.discount.value}`
+                    } = ฿{paymentInfo.discount.amount.toFixed(2)}
+                  </div>
+                </div>
+              )}
+              
               <FormMessage />
             </FormItem>
           )}

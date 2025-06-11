@@ -26,6 +26,12 @@ interface CustomerInfo {
   longitude?: number
 }
 
+interface PromoCodeDiscount {
+  type: 'percentage' | 'fixed'
+  value: number
+  amount: number
+}
+
 interface PaymentInfo {
   method: 'promptpay' | 'creditcard'
   cardNumber: string
@@ -33,6 +39,7 @@ interface PaymentInfo {
   expiryDate: string
   cvv: string
   promoCode: string
+  discount: PromoCodeDiscount | null
 }
 
 interface BookingState {
@@ -65,6 +72,9 @@ interface BookingState {
   // Computed getters (เปลี่ยนจาก property เป็น function)
   getActiveCartItems: () => CartItem[]
   getTotalAmount: () => number
+  getFinalAmount: () => number
+  setPromoCodeDiscount: (discount: PromoCodeDiscount | null) => void
+  clearPromoCode: () => void
 }
 
 const initialCustomerInfo: CustomerInfo = {
@@ -86,6 +96,7 @@ const initialPaymentInfo: PaymentInfo = {
   expiryDate: '',
   cvv: '',
   promoCode: '',
+  discount: null,
 }
 
 export const useBookingStore = create<BookingState>()(
@@ -148,6 +159,25 @@ export const useBookingStore = create<BookingState>()(
             0
           )
         },
+        getFinalAmount: () => {
+          const state = get()
+          const totalAmount = state.cart.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+          )
+          if (state.paymentInfo.discount) {
+            return Math.max(0, totalAmount - state.paymentInfo.discount.amount)
+          }
+          return totalAmount
+        },
+        setPromoCodeDiscount: (discount) =>
+          set(state => ({
+            paymentInfo: { ...state.paymentInfo, discount },
+          })),
+        clearPromoCode: () =>
+          set(state => ({
+            paymentInfo: { ...state.paymentInfo, promoCode: '', discount: null },
+          })),
         canProceedToNext: () => {
           const state = get()
           const {

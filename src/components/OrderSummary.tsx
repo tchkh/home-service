@@ -7,14 +7,11 @@ import { useBookingStore } from '@/stores/bookingStore'
 
 const OrderSummary: React.FC = () => {
   // ดึง cart และคำนวณ activeCartItems กับ totalAmount เอง
-  const { cart, customerInfo, currentStep } = useBookingStore()
+  const { cart, customerInfo, currentStep, paymentInfo, getFinalAmount } = useBookingStore()
 
-  // คำนวณ activeCartItems และ totalAmount ใน component
+  // คำนวณ activeCartItems และ finalAmount ใน component
   const activeCartItems = cart.filter(item => item.quantity > 0)
-  const totalAmount = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  )
+  const finalAmount = getFinalAmount()
 
   const showDetails = currentStep !== 'items'
 
@@ -62,7 +59,7 @@ const OrderSummary: React.FC = () => {
               )}
             </div>
             <span className="text-lg font-bold text-gray-900">
-              {totalAmount.toLocaleString()} ฿
+              {finalAmount.toLocaleString()} ฿
             </span>
           </div>
         </div>
@@ -171,12 +168,28 @@ const OrderSummary: React.FC = () => {
             </div>
           )}
 
+          {/* Discount */}
+          {paymentInfo.discount && (
+            <div className="border-t border-gray-300 pt-4 space-y-2">
+              <div className="flex justify-between text-sm text-green-600">
+                <span>โค้ดส่วนลด: {paymentInfo.promoCode}</span>
+                <span>-{paymentInfo.discount.amount.toLocaleString()} ฿</span>
+              </div>
+              <div className="text-xs text-gray-500">
+                ส่วนลด {paymentInfo.discount.type === 'percentage' 
+                  ? `${paymentInfo.discount.value}%` 
+                  : `฿${paymentInfo.discount.value}`
+                }
+              </div>
+            </div>
+          )}
+
           {/* Total */}
           <div className="border-t border-gray-300 pt-4">
             <div className="flex justify-between items-center">
               <span className="text-gray-800 font-semibold">รวม</span>
               <span className="text-xl font-bold text-gray-900">
-                {totalAmount.toLocaleString()} ฿
+                {finalAmount.toLocaleString()} ฿
               </span>
             </div>
           </div>
