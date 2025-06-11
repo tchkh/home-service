@@ -1,7 +1,7 @@
 import supabase, { withAdmin } from '../lib/supabase'
 import bcrypt from 'bcrypt'
 import crypto from 'crypto'
-import { splitName, getGravatarUrl } from '../utils/string-utils'
+import { splitName} from '../utils/string-utils'
 import { validateEmail } from '../utils/validation'
 
 // ประเภทของข้อมูลสำหรับการลงทะเบียน
@@ -25,7 +25,7 @@ export interface LoginInput {
  * @returns ข้อมูลผู้ใช้ที่ลงทะเบียนสำเร็จ
  */
 export async function registerUser(input: RegisterInput) {
-  const { name, email, password, tel, imageUrl } = input
+  const { name, email, password, tel,  } = input
 
   // ตรวจสอบข้อมูลนำเข้า
   if (!name || !email || !password || !tel) {
@@ -77,7 +77,7 @@ export async function registerUser(input: RegisterInput) {
       last_name: lastName,
       email,
       tel,
-      image_url: imageUrl || getGravatarUrl(email),
+      // image_url: imageUrl || getGravatarUrl(email),
     },
   ])
 

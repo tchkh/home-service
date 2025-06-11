@@ -21,8 +21,8 @@ const prompt = Prompt({
   weight: ["300", "400", "500", "600"],
 });
 
-const navbarPages = ["/login", "/register", "/serviceList"];
-const footerPages = ["/", "/serviceList"];
+const navbarPages = ["/login", "/register", "/serviceList", "/user/profile"];
+const footerPages = ["/", "/serviceList", "/user/profile"];
 
 const adminSidebarItems: SidebarItem[] = [
   {
