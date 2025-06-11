@@ -387,7 +387,6 @@ export default function ProfileForm({
           )}
         </div>
       </div>
-      ;
     </>
   );
 }

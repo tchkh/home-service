@@ -196,8 +196,6 @@
 }
 
 .btn--icon {
-   width: 2.25rem;
-   height: 2.25rem;
    padding: 0;
    border-radius: 50%;
    background-color: var(--gray-100);
