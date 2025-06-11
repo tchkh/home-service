@@ -186,19 +186,19 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
       : canProceedToNext() && !isNavigating
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col pb-20">
       {/* BookingHeader: เต็มจอ */}
       <BookingHeader />
 
       {/* Main content container */}
-      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col px-4 py-6">
+      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col px-4 pb-6">
         <BookingStepper currentStepId={currentStep} steps={STEPS_DATA} />
 
         {/* Desktop layout: side-by-side, Mobile: stacked */}
-        <div className="flex flex-col lg:flex-row lg:gap-8 mt-6">
+        <div className="flex flex-col lg:flex-row lg:gap-8 flex-1">
           {/* Main content area */}
           <div className="flex-1 lg:flex-[2] order-1 lg:order-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-4 md:p-6 mb-6 lg:mb-0">
               {currentStep === 'items' && (
                 <ServiceSelection onNext={handleNext} onBack={handleBack} />
               )}
@@ -211,26 +211,29 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
             </div>
           </div>
 
-          {/* OrderSummary: mobile อยู่ล่าง, desktop อยู่ขวา */}
-          <div className="lg:flex-1 order-2 lg:order-2 mt-6 lg:mt-0">
+          {/* OrderSummary: desktop only (hidden on mobile) */}
+          <div className="hidden lg:block lg:flex-1 order-2 lg:order-2">
             <div className="lg:sticky lg:top-6">
               <OrderSummary />
             </div>
           </div>
         </div>
-
-        {/* BookingFooter: อยู่ล่างสุดเสมอ */}
-        <div className="mt-6">
-          <BookingFooter
-            onBack={handleBack}
-            onNext={handleNext}
-            isNextDisabled={!canProceed}
-            isBackDisabled={isBackDisabled}
-            nextButtonText={nextButtonText}
-            currentStep={currentStep}
-          />
-        </div>
       </div>
+
+      {/* Mobile OrderSummary - positioned above fixed footer */}
+      <div className="lg:hidden fixed bottom-20 left-0 right-0 z-40 px-4">
+        <OrderSummary />
+      </div>
+
+      {/* Footer - fixed at viewport bottom for both mobile and desktop */}
+      <BookingFooter
+        onBack={handleBack}
+        onNext={handleNext}
+        isNextDisabled={!canProceed}
+        isBackDisabled={isBackDisabled}
+        nextButtonText={nextButtonText}
+        currentStep={currentStep}
+      />
     </div>
   )
 }
