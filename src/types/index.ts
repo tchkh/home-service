@@ -134,6 +134,7 @@ export interface ServiceRequest {
   id: string;
   user_id: string;
   full_address: string;
+  total_price: number;
   latitude: number;
   longitude: number;
   appointment_at: string;
