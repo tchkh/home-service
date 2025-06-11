@@ -3,6 +3,7 @@
       "*": true,
       "plaintext": false,
       "markdown": true,
-      "scminput": false
+      "scminput": false,
+      "typescriptreact": true
    }
 }
