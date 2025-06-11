@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
 import { th } from 'date-fns/locale'
-import { Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, MapPin, User } from 'lucide-react'
 import { useBookingStore } from '@/stores/bookingStore'
 import { customerInfoSchema, CustomerInfoForm } from '@/schemas/booking'
 import {
@@ -11,6 +11,7 @@ import {
   type District,
   type Subdistrict,
 } from '@/hooks/useThailandAddress'
+import { useUser } from '@/contexts/UserContext'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Input } from '@/components/ui/input'
@@ -39,6 +40,7 @@ import {
 
 const BookingDetailsForm: React.FC = () => {
   const { customerInfo, updateCustomerInfo } = useBookingStore()
+  const { user } = useUser()
   const [gettingLocation, setGettingLocation] = useState(false)
 
   // ใช้ Thailand Address Hook
@@ -56,6 +58,9 @@ const BookingDetailsForm: React.FC = () => {
     number | null
   >(null)
   const [selectedDistrictCode, setSelectedDistrictCode] = useState<
+    number | null
+  >(null)
+  const [selectedSubdistrictCode, setSelectedSubdistrictCode] = useState<
     number | null
   >(null)
   const [districts, setDistricts] = useState<District[]>([])
@@ -139,11 +144,55 @@ const BookingDetailsForm: React.FC = () => {
     )
   }
 
+  // Auto-fill user's default address
+  const handleUseDefaultAddress = () => {
+    if (!user?.address || !user?.province || !user?.district || !user?.subdistrict) {
+      alert('คุณยังไม่มีที่อยู่เริ่มต้น กรุณาตั้งค่าที่อยู่ในหน้าโปรไฟล์')
+      return
+    }
+
+    // Find and set dropdown selections first to populate the dropdown states
+    const userProvince = provinces.find(p => p.nameTh === user.province)
+    if (userProvince) {
+      setSelectedProvinceCode(userProvince.code)
+      const districtsList = getDistrictsByProvince(userProvince.code)
+      setDistricts(districtsList)
+
+      const userDistrict = districtsList.find(d => d.nameTh === user.district)
+      if (userDistrict) {
+        setSelectedDistrictCode(userDistrict.code)
+        const subdistrictsList = getSubdistrictsByDistrict(userDistrict.code)
+        setSubdistricts(subdistrictsList)
+
+        const userSubdistrict = subdistrictsList.find(s => s.nameTh === user.subdistrict)
+        if (userSubdistrict) {
+          setSelectedSubdistrictCode(userSubdistrict.code)
+          const postal = getPostalCode(userSubdistrict.code)
+          setPostalCode(postal)
+        }
+      }
+    }
+
+    // Then set form values after a small delay to ensure dropdowns are populated
+    setTimeout(() => {
+      form.setValue('address', user.address)
+      form.setValue('province', user.province)
+      form.setValue('district', user.district)
+      form.setValue('subDistrict', user.subdistrict)
+      
+      // Set additional info if user has postal code data
+      if (user.postalCode) {
+        form.setValue('additionalInfo', user.postalCode)
+      }
+    }, 100)
+  }
+
   // Handle province selection
   const handleProvinceChange = (provinceCode: string) => {
     const code = parseInt(provinceCode)
     setSelectedProvinceCode(code)
     setSelectedDistrictCode(null)
+    setSelectedSubdistrictCode(null)
 
     // หาชื่อจังหวัด
     const province = provinces.find(p => p.code === code)
@@ -164,6 +213,7 @@ const BookingDetailsForm: React.FC = () => {
   const handleDistrictChange = (districtCode: string) => {
     const code = parseInt(districtCode)
     setSelectedDistrictCode(code)
+    setSelectedSubdistrictCode(null)
 
     // หาชื่ออำเภอ
     const district = districts.find(d => d.code === code)
@@ -181,6 +231,7 @@ const BookingDetailsForm: React.FC = () => {
   // Handle subdistrict selection
   const handleSubdistrictChange = (subdistrictCode: string) => {
     const code = parseInt(subdistrictCode)
+    setSelectedSubdistrictCode(code)
     // หาชื่อตำบลและรหัสไปรษณีย์
     const subdistrict = subdistricts.find(s => s.code === code)
     if (subdistrict) {
@@ -373,13 +424,27 @@ const BookingDetailsForm: React.FC = () => {
                 ที่อยู่ <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Input
-                    placeholder="บ้านเลขที่, หมู่บ้าน, ซอย, ถนน"
-                    {...field}
-                    className="w-full"
-                  />
-                  <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Input
+                      placeholder="บ้านเลขที่, หมู่บ้าน, ซอย, ถนน"
+                      {...field}
+                      className="w-full"
+                    />
+                    <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                  </div>
+                  {user?.address && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleUseDefaultAddress}
+                      className="w-full md:w-auto border-blue-500 text-blue-600 hover:bg-blue-50"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      ใช้ที่อยู่เริ่มต้นของฉัน
+                    </Button>
+                  )}
                 </div>
               </FormControl>
               <FormMessage />
@@ -497,6 +562,7 @@ const BookingDetailsForm: React.FC = () => {
                   แขวง/ตำบล <span className="text-red-500">*</span>
                 </FormLabel>
                 <Select
+                  value={selectedSubdistrictCode?.toString()}
                   onValueChange={handleSubdistrictChange}
                   disabled={!selectedDistrictCode}
                 >

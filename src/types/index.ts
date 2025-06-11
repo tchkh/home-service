@@ -25,6 +25,15 @@ export interface User {
   updated_at: string
 }
 
+// Extended User interface with address fields (from API)
+export interface UserWithAddress extends User {
+  address: string
+  subdistrict: string
+  district: string
+  province: string
+  postalCode?: string
+}
+
 // Admin interfaces
 export interface Admin {
   id: number
