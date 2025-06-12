@@ -25,23 +25,10 @@ import {
    PopoverTrigger,
 } from "@/components/ui/popover";
 
-// import { string } from "zod";
-// import { string } from "zod";
-// import { string } from "zod";
-// import { number } from 'zod';
-// import { boolean } from 'zod';
-
 const prompt = Prompt({
    subsets: ["latin", "thai"],
    weight: ["300", "400", "500", "600"],
 });
-// ส่วน icon
-const iconSearch = (
-   <FontAwesomeIcon
-      className="text-[var(--gray-300)]"
-      icon={faMagnifyingGlass}
-   />
-);
 
 /* 
 เก็บใน useState เป็น object
@@ -68,6 +55,7 @@ export default function Home() {
       image_url: string;
       min_price: string;
       max_price: string;
+      color: string;
    }
    interface SearchType {
       search: string;
@@ -79,7 +67,7 @@ export default function Home() {
    }
    // ส่วน DATA
    const [dataCard, setDataCard] = useState<ServiceCardProps[]>([]);
-   // console.log('dataCard: ', dataCard);
+   // console.log("dataCard: ", dataCard);
    const [fetchDataQuery, setFetchDataQuery] = useState<SearchType>({
       search: "",
       category: "บริการทั้งหมด",
@@ -342,7 +330,6 @@ export default function Home() {
       }, 600);
       return () => clearTimeout(timer); // ล้าง timer ถ้า query เปลี่ยนก่อน 3 วิ
    }, [dataQuery.search]);
-
    // ตรวจจับการคลิกนอกกล่อง
    useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
@@ -380,7 +367,10 @@ export default function Home() {
                   <div ref={boxRef} className="w-full">
                      <label htmlFor="inputSearch" className="relative w-full ">
                         <span className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                           {iconSearch}
+                           <FontAwesomeIcon
+                              className="text-[var(--gray-300)]"
+                              icon={faMagnifyingGlass}
+                           />
                         </span>
                         <input
                            id="inputSearch"
@@ -574,6 +564,7 @@ export default function Home() {
                      category={service.category_name}
                      minPrice={service.min_price}
                      maxPrice={service.max_price}
+                     color={service.color}
                   />
                ))}
             {!dataCard[0] && !loading && (

@@ -239,6 +239,8 @@ const ServicePage = () => {
 
    const handleDragEnd = async (event: DragEndEvent) => {
       const { active, over } = event;
+      console.log("active: ", active);
+      console.log("over: ", over);
 
       if (over && active.id !== over.id) {
          const oldIndex = services.findIndex(
@@ -439,7 +441,7 @@ const ServicePage = () => {
                                  <TableCell>{service.title}</TableCell>
                                  <TableCell>
                                     <Link
-                                       href={`/admin/categories/category?categoryId=${service.category_id}`}
+                                       href={`/admin/categories/${service.category_id}`}
                                     >
                                        <span
                                           className={`px-2 py-1 rounded text-xs ${

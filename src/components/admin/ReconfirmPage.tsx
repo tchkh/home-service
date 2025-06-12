@@ -10,7 +10,17 @@ interface propVarible {
    setTaggle: Dispatch<SetStateAction<boolean>>;
    actionFunction: () => void;
 }
+/* 
+-นำไปไว้ในลำดับแรกของ component
+-เงื่อนไข ต้องสร้าง useState เก็บ booleen ในไฟล์ที่เรัยกใช้ component
 
+ title, หัวข้อใหญ่
+   subTitle, หัวข้อย่อย
+   action, ต้องการให้ปุ่มแสดงข้อควสามอะไร
+   toggle, ต่า booleen useState
+   setTaggle, set booleen useState
+   actionFunction, เมื่อกดปุ่มต้องการให้ทำอะไร
+*/
 function ReconfirmPage({
    title,
    subTitle,
@@ -42,7 +52,7 @@ function ReconfirmPage({
       <div
          className={`${
             toggle ? "flex" : "hidden"
-         } z-50 fixed w-[100%] h-[100vh] bg-[#00000034]  items-center justify-center `}
+         } z-200 fixed left-0 top-0 w-[100%] h-[100vh] bg-[#00000034]  items-center justify-center `}
       >
          <div
             ref={boxRef}
