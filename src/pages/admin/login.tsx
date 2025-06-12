@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
 
       // ถ้าสำเร็จ ทำการ redirect
       if (response.data.success) {
-        router.push('/admin/dashboard')
+        router.push('/admin/categories')
       }
     } catch (error: unknown) {
       // จัดการกับข้อผิดพลาด
