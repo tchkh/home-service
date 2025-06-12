@@ -10,73 +10,10 @@ import {
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
 import DragAndDropCategory from "@/components/admin/category/DragAndDropCategory";
 
-// import axios from "axios";
-// import { Card, CardContent } from "@/components/ui/card";
-// import { CategoryData } from "@/types/index";
-
 export default function CategoryForm() {
    const router = useRouter();
-   // const [categoryName, setCategoryName] = useState("บริการห้องครัว");
+
    const [inputSearch, setInputSearch] = useState("");
-
-   // console.log("dataCatag: ", dataCatag);
-
-   // const [isEditing, setIsEditing] = useState(false);
-
-   // Mock data for demonstration
-
-   // const handleSave = () => {
-   //    console.log("Saving category:", categoryName);
-   //    setIsEditing(false);
-   //    // Here you would typically save to your backend
-   // };
-   // // console.log("isEditing: ", isEditing);
-   // const handleCancel = () => {
-   //    console.log("Cancelling changes");
-   //    setCategoryName(categoryData.name);
-   //    setIsEditing(false);
-   // };
-
-   // // fetch ครั้งแรก
-   // useEffect(() => {
-   //    const firstGetDataService = async () => {
-   //       try {
-   //          // setLoading(true);
-   //          const res = await axios.get(`/api/admin/category`);
-
-   //          setDataCatag(res.data);
-   //          // allCategory(res.data.service);
-   //          // setLoading(false);
-   //       } catch (error) {
-   //          console.log("error: ", error);
-   //       }
-   //    };
-   //    firstGetDataService();
-   // }, []);
-   // // fetch จากการค้นหา
-   // useEffect(() => {
-   //    setTimeout(() => {}, 600);
-   //    const firstGetDataService = async () => {
-   //       try {
-   //          // setLoading(true);
-   //          await axios.get(`/api/admin/category`, {
-   //             params: {
-   //                search: { inputSearch },
-   //             },
-   //          });
-   //          // const res = await axios.get(`/api/service?${queryString}`);
-   //          // setDataCard(res.data.service);
-   //          // allCategory(res.data.service);
-   //          // setMaxPrice(res.data.service);
-   //          // setMaxLimit(res.data.count - 1);
-   //          // setCurrentLimit(res.data.service.length - 1);
-   //          // setLoading(false);
-   //       } catch (error) {
-   //          console.log("error: ", error);
-   //       }
-   //    };
-   //    firstGetDataService();
-   // }, [inputSearch]);
 
    return (
       <div className="min-h-screen bg-[#f3f4f6]">
