@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ServiceRequestCardProps } from '@/types'
 import { useTechnicianJobs } from '@/hooks/useTechnicianJobs'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 import { MapPopup } from './MapPopup'
 import { formatAppointmentDate } from '@/utils/datetime'
 
@@ -142,37 +142,6 @@ export function ServiceRequestCard({
         />
       )}
 
-      {/* เพิ่ม Toaster component ที่นี่เพื่อให้ toast สามารถแสดงผลได้ */}
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
-            duration: 2000,
-            iconTheme: {
-              primary: '#4ade80',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            duration: 4000,
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
-            },
-          },
-          loading: {
-            iconTheme: {
-              primary: '#3b82f6',
-              secondary: '#fff',
-            },
-          },
-        }}
-      />
     </div>
   )
 }
