@@ -3,7 +3,6 @@ import { CategoryData } from "@/types/index";
 import { useRouter } from "next/router";
 import axios from "axios";
 import ReconfirmPage from "@/components/admin/ReconfirmPage";
-// ของพี่นัท
 import { toast } from "sonner";
 import setDateTimeFormat from "@/hooks/setDateTimeFormat";
 import { Button } from "@/components/ui/button";
@@ -15,16 +14,7 @@ import {
    TableHeader,
    TableRow,
 } from "@/components/ui/table";
-// import {
-//    AlertDialog,
-//    AlertDialogAction,
-//    AlertDialogCancel,
-//    AlertDialogContent,
-//    AlertDialogDescription,
-//    AlertDialogFooter,
-//    AlertDialogHeader,
-//    AlertDialogTitle,
-// } from "@/components/ui/alert-dialog";
+
 import { Plus, Pencil, Trash2, GripVertical } from "lucide-react";
 import {
    closestCenter,
@@ -166,11 +156,6 @@ function DraggableRow({
    );
 }
 
-// interface dragAndDropType {
-//    // dataCatag: CategoryData[];
-//    fetchDataCatag: () => void;
-// }
-
 // ส่วน componente
 export default function DragAndDropCategory({
    search,
@@ -185,13 +170,6 @@ export default function DragAndDropCategory({
    const [toggleDeleteConfirm, setToggleDeleteConfirm] = useState(false);
    const [removeIndex, setRemoveIndex] = useState<number>(0);
    const [titleRemove, setTitleRemove] = useState<string>("");
-   // -------------------
-   // const [search, setSearch] = useState("");
-   // const [deleteId, setDeleteId] = useState<string | null>(null);
-   // const [isLoading, setIsLoading] = useState(true);
-   // const [isDeleting, setIsDeleting] = useState(false);
-   // const [error, setError] = useState<string | null>(null);
-   // const [services, setServices] = useState<ServiceWithCategory[]>([]);
 
    // fetch ครั้งแรก
    const firstGetDataService = async () => {
@@ -225,41 +203,8 @@ export default function DragAndDropCategory({
          console.log(data.error);
       }
       alert("delete data complete");
-      // router.push("/admin/categories"); //หรือ router.back();
+      setToggleDeleteConfirm(false);
    };
-   // const fetchServicesData = async () => {
-   //    try {
-   //       // setIsLoading(true);
-   //       // setError(null as string | null);
-   //       const data = await getServices();
-   //       const formattedServices = data.map((s) => ({
-   //          ...s,
-   //          id: s.id.toString(), // ถ้าต้องการให้ id เป็น string
-   //       }));
-   //       setServices(formattedServices as ServiceWithCategory[]);
-   //    } catch (err) {
-   //       console.error("Failed to fetch services:", err);
-   //       setError(
-   //          "ไม่สามารถโหลดข้อมูลบริการได้ กรุณาลองใหม่อีกครั้ง" as string | null
-   //       );
-   //       throw err;
-   //    } finally {
-   //       setIsLoading(false);
-   //    }
-   // };
-   // useEffect(() => {
-   //    fetchServicesData();
-   // }, []);
-
-   // function convertDateAndTime(dateString: string) {
-   //    const date = new Date(dateString);
-   //    return date.toLocaleString();
-   // }
-
-   // เรียงลำดับ drag and drop
-   // const filteredServices = [...dataCatag].sort(
-   //    (a, b) => (Number(a.order_num) || 0) - (Number(b.order_num) || 0)
-   // );
 
    const sortedCategory = [...dataCatag].sort(
       (a, b) => (Number(a.order_num) || 0) - (Number(b.order_num) || 0)
@@ -331,31 +276,6 @@ export default function DragAndDropCategory({
          }
       }
    };
-
-   // fetch จากการค้นหา
-   // useEffect(() => {
-   //    setTimeout(() => {}, 600);
-   //    const firstGetDataService = async () => {
-   //       try {
-   //          // setLoading(true);
-   //          await axios.get(`/api/admin/category`, {
-   //             params: {
-   //                search: { inputSearch },
-   //             },
-   //          });
-   //          // const res = await axios.get(`/api/service?${queryString}`);
-   //          // setDataCard(res.data.service);
-   //          // allCategory(res.data.service);
-   //          // setMaxPrice(res.data.service);
-   //          // setMaxLimit(res.data.count - 1);
-   //          // setCurrentLimit(res.data.service.length - 1);
-   //          // setLoading(false);
-   //       } catch (error) {
-   //          console.log("error: ", error);
-   //       }
-   //    };
-   //    firstGetDataService();
-   // }, [inputSearch]);
 
    const subTitle = titleRemove ? titleRemove : "หวดหมู่";
    // const subTitle = "หวดหมู่";
