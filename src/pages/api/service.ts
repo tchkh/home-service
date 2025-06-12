@@ -51,7 +51,7 @@ export default async function handler(
             limit = 8;
          }
          let query = supabase
-            .from("services_with_card")
+            .from("services_with_card2")
             // head: false นับจำนวนแล้ว เอาข้อมูลมาด้วย
             .select("*", { count: "exact", head: false })
             .range(0, limit);
@@ -89,6 +89,7 @@ export default async function handler(
             console.log("error: ", error);
             return res.status(500).json({ error: "Error fetching services" });
          }
+         console.log("service: ", service);
          return res.status(200).json({ count, service });
       } catch (error) {
          console.log("error at get methor", error);
