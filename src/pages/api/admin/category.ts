@@ -13,8 +13,9 @@ export default async function handler(
    // get ข้อมูลทั้งหมด และ get ด้วย id
 
    if (req.method === "GET") {
-      const { id } = req.query as {
+      const { id, search } = req.query as {
          id?: string;
+         search?: string;
       };
       console.log("id: ", id);
       let query = supabase.from("categories").select("*");
@@ -22,6 +23,9 @@ export default async function handler(
       // เมื่อมี id ให้ query เฉพาะ id หาก
       if (id) {
          query = query.eq("id", Number(id));
+      }
+      if (search) {
+         query = query.ilike("name", search);
       }
 
       // ดึงข้อมูลแล้วเก็บใน data
