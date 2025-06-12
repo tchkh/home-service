@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
-import ReconfirmPage from "@/components/ReconfirmPage";
+import ReconfirmPage from "@/components/admin/ReconfirmPage";
 import axios from "axios";
 
 interface CategoryData {
