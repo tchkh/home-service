@@ -59,6 +59,18 @@ export interface RepairCardProps {
 }
 
 
+export interface RepairCardProps {
+  code: string;
+  status: 'รอดำเนินการ' | 'กำลังดำเนินการ' | 'ดำเนินการสำเร็จ' | 'ยกเลิก';
+  appointment_at: string;
+  technician_name: string;
+  total_price: string;
+  quantity: number;
+  service_title: string;
+  service_unit: string;
+}
+
+
 // Admin interfaces
 export interface Admin {
    id: number;
