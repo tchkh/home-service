@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
+import toast from "react-hot-toast"; // เพิ่ม import สำหรับ toast
 
 interface CategoryData {
    name: string;
@@ -43,8 +44,17 @@ export default function CategoryForm() {
       if (checkData === "error") {
          return null;
       }
-      await axios.post(`/api/admin/category`, categoryData);
-      // router.push("/admin/categories"); //หรือ router.back();
+      const res = await axios.post(`/api/admin/category`, categoryData);
+      console.log("res: ", res);
+      if (res.status === 200) {
+         // แสดง toast เมื่อเข้าสู่ระบบสำเร็จ
+         toast.success("สร้างหมวดหมู่สำเร็จ...", {
+            duration: 2000,
+         });
+         router.push("/admin/categories"); //หรือ router.back();}
+      } else {
+         console.error("Error creating category:", res.data);
+      }
    };
 
    const handleColor = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -166,7 +166,7 @@ export default function DragAndDropCategory({
 }) {
    const router = useRouter();
    const [dataCatag, setDataCatag] = useState<CategoryData[]>([]);
-   console.log("dataCatag: ", dataCatag);
+   // console.log("dataCatag: ", dataCatag);
    const [toggleDeleteConfirm, setToggleDeleteConfirm] = useState(false);
    const [removeIndex, setRemoveIndex] = useState<number>(0);
    const [titleRemove, setTitleRemove] = useState<string>("");
@@ -188,14 +188,15 @@ export default function DragAndDropCategory({
       firstGetDataService();
    }, []);
 
-   const handleDelete = async (idRemove: number) => {
+   const handleDelete = async (idRemove: string) => {
+      console.log("idRemove: ", idRemove);
       if (!idRemove) {
          alert("ไม่มี id ขออภัย");
          return null;
       }
       const { data } = await axios.delete(`/api/admin/category`, {
          params: {
-            id: idRemove,
+            id: Number(idRemove),
          },
       });
       console.log("data: ", data);
@@ -204,6 +205,7 @@ export default function DragAndDropCategory({
       }
       alert("delete data complete");
       setToggleDeleteConfirm(false);
+      firstGetDataService();
    };
 
    const sortedCategory = [...dataCatag].sort(
@@ -228,6 +230,8 @@ export default function DragAndDropCategory({
 
    // ส่ง order_number ที่มีการเปลี่ยนแปลงไป update ค่าใหม่ ใน database
    async function updateServiceOrder(oldOrder: number, newOrder: number) {
+      console.log("updateServiceOrder newOrder: ", newOrder);
+      console.log("updateServiceOrder oldOrder: ", oldOrder);
       try {
          const res = await axios.post(
             "/api/admin/category/updateCategoryOrder",
@@ -251,13 +255,13 @@ export default function DragAndDropCategory({
    // function การยก drag and drop ไปวาง
    const handleDragEnd = async (event: DragEndEvent) => {
       const { active, over } = event;
-      console.log("active: ", active);
-      console.log("over: ", over);
 
+      console.log("handleDragEnd dataCatag: ", dataCatag);
       if (over && active.id !== over.id) {
          const oldIndex = dataCatag.findIndex(
             (item) => item.order_num === Number(active.id)
          );
+
          const newIndex = dataCatag.findIndex(
             (item) => item.order_num === Number(over.id)
          );
@@ -266,8 +270,6 @@ export default function DragAndDropCategory({
          setDataCatag(newCategory);
 
          try {
-            console.log("start updateServiceOrder");
-
             await updateServiceOrder(oldIndex + 1, newIndex + 1);
             firstGetDataService();
          } catch (error) {
@@ -290,7 +292,7 @@ export default function DragAndDropCategory({
             action={actionDelete}
             toggle={toggleDeleteConfirm}
             setTaggle={setToggleDeleteConfirm}
-            actionFunction={() => handleDelete(removeIndex)}
+            actionFunction={() => handleDelete(dataCatag[removeIndex].id)}
          />
          {filteredServices.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 bg-[var(--white)]">
@@ -389,7 +391,7 @@ export default function DragAndDropCategory({
                                        asChild
                                        onClick={() => {
                                           router.push(
-                                             `/admin/categorys/${category.id}/edit`
+                                             `/admin/categories/${category.id}/edit`
                                           );
                                        }}
                                     >
