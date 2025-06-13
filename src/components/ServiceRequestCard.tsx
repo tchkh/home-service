@@ -1,9 +1,140 @@
-import { useState, useEffect } from 'react'
-import { ServiceRequestCardProps } from '@/types'
-import { useTechnicianJobs } from '@/hooks/useTechnicianJobs'
-import toast from 'react-hot-toast'
-import { MapPopup } from './MapPopup'
-import { formatAppointmentDate } from '@/utils/datetime'
+import { useState, useEffect } from "react";
+import { ServiceRequestCardProps } from "@/types";
+import { useTechnicianJobs } from "@/hooks/useTechnicianJobs";
+import toast from "react-hot-toast";
+import { MapPopup } from "./MapPopup";
+import { formatAppointmentDate } from "@/utils/datetime";
+import Image from "next/image";
+
+// Confirmation Modal Component
+interface ConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  message: string;
+  confirmText: string;
+  cancelText: string;
+  type: "accept" | "reject";
+  loading: boolean;
+}
+
+function ConfirmationModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText,
+  cancelText,
+  type,
+  loading,
+}: ConfirmationModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-gray-700 opacity-40 bg"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="relative bg-white rounded-lg shadow-xl p-6 mx-4 max-w-md w-full animate-in fade-in zoom-in duration-200">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1 disabled:opacity-50 cursor-pointer"
+          disabled={loading}
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <div className="text-center">
+          {/* Icon */}
+          <div
+            className="mx-auto flex items-center justify-center h-12 w-12 rounded-full"
+          >
+            {type === "accept" ? (
+              <Image
+                src="/asset/images/Group.png"
+                alt="Accept Icon"
+                width={36}
+                height={36}
+                className="h-9 w-9"
+              />
+            ) : (
+              <svg
+                className="h-9 w-9 text-red-600 "
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            )}
+          </div>
+
+          {/* Title */}
+          <h3 className="text-[20px] font-medium text-[var(--gray-950)] mb-2">{title}</h3>
+
+          {/* Message */}
+          <p className="text-[16px] text-[var(--gray-700)] mb-6 md:px-10">{message}</p>
+
+          {/* Buttons */}
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={onClose}
+              className="w-[112px] h-[44px] btn btn--secondary"
+              disabled={loading}
+            >
+              {cancelText}
+            </button>
+            <button
+              onClick={onConfirm}
+              className="w-[112px] h-[44px] btn btn--primary"
+              disabled={loading}
+            >
+              {loading ? (
+                <div className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  กำลังดำเนินการ...
+                </div>
+              ) : (
+                confirmText
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function ServiceRequestCard({
   data,
@@ -11,41 +142,58 @@ export function ServiceRequestCard({
   straightDistance,
   onJobActionComplete,
 }: ServiceRequestCardProps) {
-  const [showMap, setShowMap] = useState(false)
-  const [isClient, setIsClient] = useState(false)
+  const [showMap, setShowMap] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"accept" | "reject" | null>(null);
   // ดึงฟังก์ชัน acceptJob และ rejectJob จาก hook
-  const { acceptJob, rejectJob, loading } = useTechnicianJobs() // เพิ่ม loading state เพื่อปิดปุ่มระหว่างรอ
+  const { acceptJob, rejectJob, loading } = useTechnicianJobs(); // เพิ่ม loading state เพื่อปิดปุ่มระหว่างรอ
 
-  const handleAccept = async () => {
-    // ส่ง serviceRequestId ไปที่ฟังก์ชัน acceptJob
-    const result = await acceptJob(data.id)
-    if (result.success) {
-      toast.success('รับงานเรียบร้อย!')
-      onJobActionComplete() // เรียกใช้ callback เมื่อเสร็จสิ้น
-      // TODO: อาจจะต้องเรียก fetchNearbyRequests ใหม่จาก TechnicianRequestPage เพื่ออัปเดตรายการ
-      // หรือลบรายการนี้ออกจาก state ไปเลย
-    } else {
-      alert(`เกิดข้อผิดพลาดในการรับงาน: ${result.error}`)
+  const handleAcceptClick = () => {
+    setConfirmAction("accept");
+    setShowConfirmModal(true);
+  };
+
+  const handleRejectClick = () => {
+    setConfirmAction("reject");
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmAction = async () => {
+    if (confirmAction === 'accept') {
+      const result = await acceptJob(data.id);
+      if (result.success) {
+        toast.success("รับงานเรียบร้อย!");
+        onJobActionComplete();
+        setShowConfirmModal(false);
+      } else {
+        toast.error(`เกิดข้อผิดพลาดในการรับงาน: ${result.error}`);
+        setShowConfirmModal(false);
+      }
+    } else if (confirmAction === 'reject') {
+      const result = await rejectJob(data.id);
+      if (result.success) {
+        toast.success("ปฏิเสธงานเรียบร้อย!");
+        onJobActionComplete();
+        setShowConfirmModal(false);
+      } else {
+        toast.error(`เกิดข้อผิดพลาดในการปฏิเสธงาน: ${result.error}`);
+        setShowConfirmModal(false);
+      }
     }
   }
 
-  const handleReject = async () => {
-    // ส่ง serviceRequestId ไปที่ฟังก์ชัน rejectJob
-    const result = await rejectJob(data.id)
-    if (result.success) {
-      toast.success('ปฏิเสธงานเรียบร้อย!')
-      onJobActionComplete() // เรียกใช้ callback เมื่อเสร็จสิ้น
-      // TODO: อาจจะต้องเรียก fetchNearbyRequests ใหม่จาก TechnicianRequestPage เพื่ออัปเดตรายการ
-      // หรือลบรายการนี้ออกจาก state ไปเลย
-    } else {
-      alert(`เกิดข้อผิดพลาดในการปฏิเสธงาน: ${result.error}`)
+  const handleCloseModal = () => {
+    if (!loading) {
+      setShowConfirmModal(false);
+      setConfirmAction(null);
     }
-  }
+  };
 
   // ตรวจสอบว่าอยู่ใน client-side แล้ว
   useEffect(() => {
-    setIsClient(true)
-  }, [])
+    setIsClient(true);
+  }, []);
 
   return (
     <div className="w-[90%] md:w-[100%] max-w-[95%] mx-auto px-5 py-5 bg-[var(--white)] border-1 border-[var(--gray-300)] rounded-[8px] shadow-lg overflow-hidden">
@@ -58,8 +206,8 @@ export function ServiceRequestCard({
           <p
             className={`text-heading-5 ${
               !data.appointment_at
-                ? 'text-[var(--gray-700)]'
-                : 'text-[var(--blue-600)]'
+                ? "text-[var(--gray-700)]"
+                : "text-[var(--blue-600)]"
             }`}
           >
             {formatAppointmentDate(data.appointment_at)}
@@ -77,16 +225,16 @@ export function ServiceRequestCard({
         <p>{data.service_request_code}</p>
 
         <p className="text-[var(--gray-700)] text-heading-5">ราคารวม</p>
-        <p>{data.service.price} ฿</p>
+        <p>{data.total_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2, })} ฿</p>
 
         <p className="text-[var(--gray-700)] text-heading-5">สถานที่</p>
         <p>{data.full_address}</p>
       </div>
 
-      <div className="md:flex md:flex-row md:justify-between mt-2">
+      <div className="md:flex md:flex-row md:justify-between mt-2 items-center content-center justify-center flex flex-col">
         <button
           onClick={() => setShowMap(true)}
-          className="btn btn--ghost mb-7 pl-32"
+          className="btn btn--ghost mb-7 md:pl-32 pl-5"
           disabled={!isClient}
         >
           <svg
@@ -115,18 +263,18 @@ export function ServiceRequestCard({
         </button>
         <div className="flex gap-[16px]">
           <button
-            onClick={handleReject}
-            className="btn btn--secondary w-[112px] h-[44px]"
-            disabled={loading} // ปิดการใช้งานปุ่มขณะโหลด
+            onClick={handleRejectClick}
+            className="btn btn--secondary md:w-[112px] w-[141px] h-[44px]"
+            disabled={loading} 
           >
-            {loading ? 'กำลังปฏิเสธ...' : 'ปฏิเสธ'}
+            ปฏิเสธ
           </button>
           <button
-            onClick={handleAccept}
-            className="btn btn--primary w-[112px] h-[44px]"
-            disabled={loading} // ปิดการใช้งานปุ่มขณะโหลด
+            onClick={handleAcceptClick}
+            className="btn btn--primary md:w-[112px] w-[141px] h-[44px]"
+            disabled={loading}
           >
-            {loading ? 'กำลังรับงาน...' : 'รับงาน'}
+            รับงาน
           </button>
         </div>
       </div>
@@ -142,6 +290,23 @@ export function ServiceRequestCard({
         />
       )}
 
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmAction}
+        title={confirmAction === 'accept' ? 'ยืนยันการรับงาน?' : 'ยืนยันการปฏิเสธงาน?'}
+        message={
+          confirmAction === 'accept' 
+            ? `คุณสามารถให้บริการ "${data.service.name}" ในวันที่ ${formatAppointmentDate(data.appointment_at)}`
+            : `คุณต้องการปฏิเสธงาน "${data.service.name}" ในวันที่ ${formatAppointmentDate(data.appointment_at)}`
+        }
+        
+        confirmText={confirmAction === 'accept' ? 'รับงาน' : 'ปฏิเสธ'}
+        cancelText="ยกเลิก"
+        type={confirmAction || 'accept'}
+        loading={loading}
+      />
     </div>
-  )
+  );
 }
