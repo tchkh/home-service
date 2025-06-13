@@ -183,7 +183,7 @@ export default function JobHistoryDetailPage() {
           <p>{jobData.service_request_code}</p>
 
           <p className="text-[var(--gray-700)] text-heading-5">ราคารวม</p>
-          <p>{jobData.total_price} ฿</p>
+          <p>{jobData.total_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2, })} ฿</p>
 
           <p className="text-[var(--gray-700)] text-heading-5">ผู้รับบริการ</p>
           <p>

@@ -54,7 +54,7 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section className="bg-[color:var(--white)] py-12">
+      <section className="py-12">
         <div className="flex flex-col items-center gap-8">
           <h2 className="text-heading-2 md:text-heading-1 text-center">
             บริการยอดฮิตของเรา
