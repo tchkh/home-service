@@ -63,11 +63,11 @@ export default function CategoryForm() {
    };
 
    return (
-      <div className="min-h-screen bg-[var(--gray-100)]">
+      <div className="min-h-screen bg-[var(--gray-100)] flex flex-col items-center w-100vw">
          {/* Header */}
-         <header className="relative bg-[var(--white)] px-10 py-6 mb-14 h-auto box-border ">
+         <header className="relative bg-[var(--white)] px-10 py-6 mb-14 h-auto box-border w-full flex justify-center  ">
             <ToggleSidebarComponent />
-            <div className="flex items-center justify-between max-w-[1440px]">
+            <div className="flex items-center justify-between w-full max-w-[1440px]">
                <h1 className="text-heading-2 ">เพิ่มหมวดหมู่</h1>
                <div className="flex items-center gap-x-6 ">
                   <button
@@ -85,14 +85,13 @@ export default function CategoryForm() {
                </div>
             </div>
          </header>
-
          {/* Main Content */}
-         <section className="max-w-[1440px] h-fit mx-10 my-14 py-10 px-6 box-border bg-[var(--white)] flex flex-col items-start gap-y-5  shadow-sm">
+         <section className="max-w-[1440px] w-[90%] h-fit mx-10 my-14 py-10 px-6 box-border bg-[var(--white)] flex flex-col items-start gap-y-5  shadow-sm">
             {/* Category Name Input */}
-            <div className="w-full space-x-[15%] relative ">
+            <div className="w-full space-x-[24px] relative flex">
                <label
                   htmlFor="categoryName"
-                  className="text-heading-5 text-[var(--gray-700)]"
+                  className="text-heading-5 w-[205px] text-[var(--gray-700)]"
                >
                   ชื่อหมวดหมู่<span className="text-red-500">*</span>
                </label>
@@ -118,21 +117,14 @@ export default function CategoryForm() {
                   กรุณาใส่ชื่่อหมวดหมู่*
                </p>
             </div>
-            <div className="w-full flex flex-row items-center space-x-[22%] relative ">
+            <div className="w-full flex flex-row items-center space-x-[24px] relative ">
                <label
                   htmlFor="changeColor"
-                  className="text-heading-5 text-[var(--gray-700)]"
+                  className="text-heading-5 w-[205px] text-[var(--gray-700)]"
                >
                   สีหมวดหมู่<span className="text-red-500">*</span>
                </label>
-               <div className="relative w-[34%]">
-                  <input
-                     id="changeColor"
-                     type="color"
-                     value={categoryColor}
-                     onChange={handleColor}
-                     className={`absolute -left-[65px] bottom-[6.5px]`}
-                  />
+               <div className="relative w-[40%] flex gap-x-2">
                   <input
                      type="text"
                      value={categoryColor}
@@ -143,6 +135,13 @@ export default function CategoryForm() {
                            : "border border-[var(--gray-300)]"
                      } w-full text-heading-5 text-[var(--gray-700)] px-3 py-2  rounded-[8px] focus:ring-2 focus:ring-blue-500 `}
                      placeholder="ใส่ค่าสี hex #000000"
+                  />{" "}
+                  <input
+                     id="changeColor"
+                     type="color"
+                     value={categoryColor}
+                     onChange={handleColor}
+                     // className={`absolute -left-[65px] bottom-[6.5px]`}
                   />
                </div>
                <p

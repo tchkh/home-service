@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleLeft, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+import { Trash2 } from "lucide-react";
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
 import ReconfirmPage from "@/components/admin/ReconfirmPage";
 import axios from "axios";
@@ -147,7 +148,7 @@ export default function CategoryForm() {
    }, [categoryId]);
 
    return (
-      <div className="min-h-screen w-full bg-[var(--gray-100)]">
+      <div className="min-h-screen w-full bg-[var(--gray-100)] flex flex-col items-center w-100vw">
          {/* Header */}
          {/* ReconfirmPage การ update */}
          <ReconfirmPage
@@ -168,8 +169,8 @@ export default function CategoryForm() {
             actionFunction={() => handleDelete()}
          />
          <ToggleSidebarComponent />
-         <header className="relative bg-[var(--white)] px-10 py-6 mb-14 h-auto box-border ">
-            <div className="flex items-center justify-between max-w-[1440px]">
+         <header className="relative bg-[var(--white)] px-10 py-6 mb-14 h-auto w-full flex justify-center box-border ">
+            <div className="flex items-center justify-between  w-full max-w-[1440px]">
                <div className="flex items-center space-x-7">
                   <button onClick={() => router.back()} className="btn">
                      <FontAwesomeIcon
@@ -201,7 +202,7 @@ export default function CategoryForm() {
          </header>
 
          {/* Main Content */}
-         <main className="relative max-w-[1440px] h-fit mx-10 my-14 py-10 px-6 box-border bg-[var(--white)] flex flex-col items-start gap-y-5  shadow-sm">
+         <main className="relative w-[90%] max-w-[1440px] h-fit mx-10 my-14 py-10 px-6 box-border bg-[var(--white)] flex flex-col items-start gap-y-5  shadow-sm">
             {/* Category Name Input */}
             <div className="w-full space-x-[24px] flex ">
                <h1 className="text-heading-5 w-[205px] text-[var(--gray-700)]">
@@ -231,14 +232,7 @@ export default function CategoryForm() {
                <h1 className="text-heading-5 w-[205px] text-[var(--gray-700)]">
                   สีหมวดหมู่
                </h1>
-               <div className="relative w-[34%]">
-                  <input
-                     id="changeColor"
-                     type="color"
-                     value={dataCatag.color}
-                     onChange={handleColor}
-                     className={`absolute -left-[65px] bottom-[6.5px]`}
-                  />
+               <div className="relative w-[40%] flex gap-x-2">
                   <input
                      type="text"
                      value={dataCatag.color}
@@ -249,6 +243,12 @@ export default function CategoryForm() {
                            : "border border-[var(--gray-300)]"
                      } w-full text-heading-5 text-[var(--gray-700)] px-3 py-2  rounded-[8px] focus:ring-2 focus:ring-blue-500 `}
                      placeholder="ใส่ค่าสี hex #000000"
+                  />
+                  <input
+                     id="changeColor"
+                     type="color"
+                     value={dataCatag.color}
+                     onChange={handleColor}
                   />
                </div>
                <p
@@ -284,10 +284,7 @@ export default function CategoryForm() {
                onClick={() => setToggleDeleteConfirm(true)}
                className="btn absolute right-0 -bottom-[48px]  h-[24px] w-fit text-[16px] text-[var(--gray-600)]"
             >
-               <FontAwesomeIcon
-                  icon={faTrashCan}
-                  className="mr-2 text-[18px]"
-               />
+               <Trash2 className="h-4 w-4" />
                <p className="underline underline-offset-2">{actionDelete}</p>
             </button>
          </main>
