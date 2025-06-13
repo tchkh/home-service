@@ -27,7 +27,7 @@ export default async function handler(
       if (search) {
          query = query.ilike("name", search);
       }
-
+      query.order("order_num", { ascending: true });
       // ดึงข้อมูลแล้วเก็บใน data
       const { data, error } = await query;
       if (error) {
@@ -109,7 +109,6 @@ export default async function handler(
       const numId = Number(id);
       const { data, error: dbError } = await supabase
          .from("categories")
-
          .delete()
          .eq("id", numId);
       if (dbError) throw dbError;

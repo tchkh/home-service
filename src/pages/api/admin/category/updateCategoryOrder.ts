@@ -10,7 +10,7 @@ export default async function handler(
 
    const { oldOrder, newOrder } = req.body;
 
-   console.log("Call reorder_category with", { oldOrder, newOrder });
+   // console.log("Call reorder_category with", { oldOrder, newOrder });
 
    if (oldOrder === undefined || newOrder === undefined) {
       return res.status(400).json({ error: "Missing required fields" });
