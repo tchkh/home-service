@@ -4,7 +4,7 @@ import axios from "axios";
 import JobsTable from "@/components/shared/JobsTable";
 import { useRouter } from "next/router";
 import { TechnicianPendingProps } from "@/types";
-import toast, { Toaster } from "react-hot-toast"; 
+import toast from "react-hot-toast"; 
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
 import {
   Select,
@@ -181,36 +181,6 @@ export default function TechnicianPendingPage({
         onCompleteJob={handleCompleteJob}
       />
 
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: "#363636",
-            color: "#fff",
-          },
-          success: {
-            duration: 2000,
-            iconTheme: {
-              primary: "#4ade80",
-              secondary: "#fff",
-            },
-          },
-          error: {
-            duration: 4000,
-            iconTheme: {
-              primary: "#ef4444",
-              secondary: "#fff",
-            },
-          },
-          loading: {
-            iconTheme: {
-              primary: "#3b82f6",
-              secondary: "#fff",
-            },
-          },
-        }}
-      />
     </>
   );
 }

@@ -7,7 +7,7 @@ import Link from 'next/link'
 import axios, { AxiosError } from 'axios'
 import { registerSchema, RegisterFormInputs } from '../schemas/auth'
 import LegalModal from '@/components/shared/LegalModal'
-import toast, { Toaster } from 'react-hot-toast' // เพิ่ม import Toaster ด้วย
+import toast from 'react-hot-toast'
 
 // สร้าง interface สำหรับ error response
 interface ErrorResponse {
@@ -285,32 +285,6 @@ export default function RegisterPage() {
           content={privacyContent}
         />
       </div>
-
-      {/* เพิ่ม Toaster component ที่นี่เพื่อให้ toast สามารถแสดงผลได้ */}
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
-            duration: 2000,
-            iconTheme: {
-              primary: '#4ade80',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            duration: 4000,
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
-            },
-          },
-        }}
-      />
     </>
   )
 }

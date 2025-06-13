@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
-import axios from "axios";
-import Link from "next/link";
-import { useUser } from "@/contexts/UserContext";
+import { useState } from 'react'
+import { useRouter } from 'next/router'
+import axios from 'axios'
+import Link from 'next/link'
+import { useUser } from '@/contexts/UserContext'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,33 +10,32 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import Image from "next/image";
-import toast, { Toaster } from "react-hot-toast";
+} from '@/components/ui/dropdown-menu'
+import Image from 'next/image'
+import toast from 'react-hot-toast'
 
 function Navbar() {
-  const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isActivate, setIsActivate] = useState(false);
-  const { user, loading, refetchUser } = useUser();
+  const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isActivate, setIsActivate] = useState(false)
+  const { user, loading, refetchUser } = useUser()
 
-  const handleLogin = () => router.push("/login");
-  const handleRegister = () => router.push("/register");
+  const handleLogin = () => router.push('/login')
+  const handleRegister = () => router.push('/register')
   const handleLogout = async () => {
-    const res = await axios("/api/auth/logout", {
-      method: "POST",
-    });
+    const res = await axios('/api/auth/logout', {
+      method: 'POST',
+    })
     if (res.status === 200) {
-      toast.success("ออกจากระบบสำเร็จ!", {
+      toast.success('ออกจากระบบสำเร็จ!', {
         duration: 2000,
-      });
-      await refetchUser();
-      window.location.href = "/";
-
+      })
+      await refetchUser()
+      window.location.href = '/'
     }
-  };
+  }
 
-  if (loading) return null; // หรือ Skeleton loader
+  if (loading) return null // หรือ Skeleton loader
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[color:var(--white)] shadow-sm h-[52px] md:h-[80px] content-center">
@@ -95,7 +94,7 @@ function Navbar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                    onClick={() => router.push("/user/profile")}
+                    onClick={() => router.push('/user/profile')}
                   >
                     <Image
                       src="/asset/svgs/account.svg"
@@ -107,7 +106,7 @@ function Navbar() {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                    onClick={() => router.push("/service/repair")}
+                    onClick={() => router.push('/service/repair')}
                   >
                     <Image
                       src="/asset/svgs/list.svg"
@@ -119,7 +118,7 @@ function Navbar() {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                    onClick={() => router.push("/service/history")}
+                    onClick={() => router.push('/service/history')}
                   >
                     <Image
                       src="/asset/svgs/history.svg"
@@ -144,7 +143,9 @@ function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
               <button
-                className={`btn btn--icon ${isActivate ? "activate" : ""} w-[40px] h-[40px]`}
+                className={`btn btn--icon ${
+                  isActivate ? 'activate' : ''
+                } w-[40px] h-[40px]`}
                 onClick={() => setIsActivate(!isActivate)}
                 aria-pressed={isActivate}
               >
@@ -186,7 +187,9 @@ function Navbar() {
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger className="cursor-pointer">
                 {/* แยกการแสดงรูปโปรไฟล์กับการแสดงปุ่ม Notification */}
-                <div className="flex gap-2 items-center"> {/* เพิ่ม items-center เพื่อจัดแนวให้สวยงาม */}
+                <div className="flex gap-2 items-center">
+                  {' '}
+                  {/* เพิ่ม items-center เพื่อจัดแนวให้สวยงาม */}
                   {user?.image_url ? (
                     <div className="w-[32px] h-[32px] rounded-full overflow-hidden">
                       <Image
@@ -207,7 +210,9 @@ function Navbar() {
                   )}
                   {/* ย้ายปุ่ม Notification ออกมานอกเงื่อนไข user?.image_url แต่ยังคงอยู่ในเงื่อนไข user? */}
                   <div
-                    className={`btn btn--icon ${isActivate ? "activate" : ""} w-[32px] h-[32px]`}
+                    className={`btn btn--icon ${
+                      isActivate ? 'activate' : ''
+                    } w-[32px] h-[32px]`}
                     onClick={() => setIsActivate(!isActivate)}
                     aria-pressed={isActivate}
                   >
@@ -228,14 +233,12 @@ function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-[color:var(--white)] border-0 w-[164px]">
                 <DropdownMenuLabel className="flex items-center gap-2">
-                  <span className="text-sm font-medium">
-                    My Account
-                  </span>
+                  <span className="text-sm font-medium">My Account</span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                  onClick={() => router.push("/user/profile")}
+                  onClick={() => router.push('/user/profile')}
                 >
                   <Image
                     src="/asset/svgs/account.svg"
@@ -247,7 +250,7 @@ function Navbar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                  onClick={() => router.push("/service/repair")}
+                  onClick={() => router.push('/service/repair')}
                 >
                   <Image
                     src="/asset/svgs/list.svg"
@@ -259,7 +262,7 @@ function Navbar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                  onClick={() => router.push("/service/history")}
+                  onClick={() => router.push('/service/history')}
                 >
                   <Image
                     src="/asset/svgs/history.svg"
@@ -318,39 +321,8 @@ function Navbar() {
           </div>
         </div>
       )}
-      {/* เพิ่ม Toaster component ที่นี่เพื่อให้ toast สามารถแสดงผลได้ */}
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: "#363636",
-            color: "#fff",
-          },
-          success: {
-            duration: 2000,
-            iconTheme: {
-              primary: "#4ade80",
-              secondary: "#fff",
-            },
-          },
-          error: {
-            duration: 4000,
-            iconTheme: {
-              primary: "#ef4444",
-              secondary: "#fff",
-            },
-          },
-          loading: {
-            iconTheme: {
-              primary: "#3b82f6",
-              secondary: "#fff",
-            },
-          },
-        }}
-      />
     </nav>
-  );
+  )
 }
 
-export default Navbar;
+export default Navbar

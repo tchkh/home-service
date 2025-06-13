@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
-import type { User } from '@/types'
+import type { UserWithAddress } from '@/types'
 
 interface UserContextType {
-  user: User | null
+  user: UserWithAddress | null
   loading: boolean
-  setUser: (user: User | null) => void
+  setUser: (user: UserWithAddress | null) => void
   refetchUser: () => Promise<void>
-  updateUser: (updates: Partial<User>) => void
+  updateUser: (updates: Partial<UserWithAddress>) => void
 }
 
 const UserContext = createContext<UserContextType>({
@@ -19,7 +19,7 @@ const UserContext = createContext<UserContextType>({
 })
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<UserWithAddress | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchUser = async () => {
@@ -39,7 +39,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   // --- ฟังก์ชันใหม่: สำหรับอัปเดตข้อมูล user บางส่วน ---
-  const updateUser = useCallback((updates: Partial<User>) => {
+  const updateUser = useCallback((updates: Partial<UserWithAddress>) => {
     setUser(prevUser => {
       // หากไม่มี user เก่าอยู่ ให้คืนค่า null หรือ throw error ตาม logic ของคุณ
       if (!prevUser) return null;

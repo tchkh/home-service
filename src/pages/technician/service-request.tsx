@@ -7,7 +7,7 @@ import NotificationIcon from "@/components/icons/NotificationIcon";
 import { calculateStraightDistance } from "@/utils/distance";
 import { useServiceRequestStore } from "@/utils/useServiceRequestStore";
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function TechnicianRequestPage() {
   const [serviceRequestData, setServiceRequestData] = useState<
@@ -190,36 +190,6 @@ export default function TechnicianRequestPage() {
                   );
                 })}
             </div>
-            <Toaster
-              position="top-center"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  background: "#363636",
-                  color: "#fff",
-                },
-                success: {
-                  duration: 2000,
-                  iconTheme: {
-                    primary: "#4ade80",
-                    secondary: "#fff",
-                  },
-                },
-                error: {
-                  duration: 4000,
-                  iconTheme: {
-                    primary: "#ef4444",
-                    secondary: "#fff",
-                  },
-                },
-                loading: {
-                  iconTheme: {
-                    primary: "#3b82f6",
-                    secondary: "#fff",
-                  },
-                },
-              }}
-            />
           </main>
         </>
       )}

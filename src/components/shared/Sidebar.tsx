@@ -7,6 +7,7 @@ import House from "../../../public/asset/svgs/houseLogo.svg";
 import Logout from "../../../public/asset/svgs/logout.svg";
 import { SidebarItemProps, SidebarProps } from "@/types";
 import { useServiceRequestStore } from "@/utils/useServiceRequestStore";
+import toast from "react-hot-toast";
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
   icon: Icon,
@@ -65,16 +66,23 @@ const Sidebar: React.FC<SidebarProps> = ({ className, items }) => {
     try {
       const res = await axios.post("/api/auth/logout");
       if (res.status === 200) {
-        if (router.pathname.startsWith("/technician")) {
-          window.location.href = "/technician/login";
-        } else if (router.pathname.startsWith("/admin")) {
-          window.location.href = "/admin/login";
-        } else {
-          window.location.href = "/login";
-        }
+        toast.success("ออกจากระบบสำเร็จ!", {
+          duration: 2000,
+        });
+        // รอให้ toast แสดงแล้วค่อย redirect
+        setTimeout(() => {
+          if (router.pathname.startsWith("/technician")) {
+            window.location.href = "/technician/login";
+          } else if (router.pathname.startsWith("/admin")) {
+            window.location.href = "/admin/login";
+          } else {
+            window.location.href = "/login";
+          }
+        }, 1500);
       }
     } catch (error) {
       console.error("Error logging out:", error);
+      toast.error("เกิดข้อผิดพลาดในการออกจากระบบ");
     }
   };
 
