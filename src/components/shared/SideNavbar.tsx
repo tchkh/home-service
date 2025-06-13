@@ -25,7 +25,7 @@ export default function SideNavbar() {
       id: "repair-orders",
       label: ["รายการ", "คำสั่งซ่อม"],
       icon: ClipboardList,
-      route: "/user/repair",
+      route: "/user/order-list",
     },
     {
       id: "repair-history",
