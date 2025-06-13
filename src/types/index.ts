@@ -14,6 +14,10 @@ export interface AppProvidersProps {
 }
 
 // User interfaces
+export interface CategoryColor {
+   id?: number;
+   color?: string;
+}
 export interface User {
    id: number;
    first_name: string;
@@ -42,6 +46,18 @@ export interface UserWithAddress extends User {
    province: string;
    postalCode?: string;
 }
+
+export interface RepairCardProps {
+  code: string;
+  status: 'รอดำเนินการ' | 'กำลังดำเนินการ' | 'ดำเนินการสำเร็จ' | 'ยกเลิก';
+  appointment_at: string;
+  technician_name: string;
+  total_price: string;
+  quantity: number;
+  service_title: string;
+  service_unit: string;
+}
+
 
 // Admin interfaces
 export interface Admin {
