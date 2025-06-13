@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from "react";
+
+import setDateTimeFormat from "@/hooks/setDateTimeFormat";
 import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
 import CategoryStyle from "@/components/serviceComponent/CategoryStyle";
 import axios from "axios";
+import { CategoryData } from "@/types/index";
 
-interface CategoryData {
-   id: string;
-   name: string;
-   description: string;
-   created_at: string;
-   updated_at: string;
-   color: string;
-   order_num: number;
-}
+// interface CategoryData {
+//    id: string;
+//    name: string;
+//    description: string;
+//    created_at: string;
+//    updated_at: string;
+//    color: string;
+//    order_num: number;
+// }
 
 export default function CategoryForm() {
    const router = useRouter();
@@ -40,15 +43,15 @@ export default function CategoryForm() {
    // };
 
    // set เวลาเพื่อแสดง
-   const setDateTimeFormat = (date: Date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      const amPm = date.getHours() >= 12 ? "PM" : "AM";
-      return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`;
-   };
+   // const setDateTimeFormat = (date: Date) => {
+   //    const year = date.getFullYear();
+   //    const month = String(date.getMonth() + 1).padStart(2, "0");
+   //    const day = String(date.getDate()).padStart(2, "0");
+   //    const hours = String(date.getHours()).padStart(2, "0");
+   //    const minutes = String(date.getMinutes()).padStart(2, "0");
+   //    const amPm = date.getHours() >= 12 ? "PM" : "AM";
+   //    return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`;
+   // };
 
    useEffect(() => {
       const fetchCategory = async () => {
@@ -83,7 +86,7 @@ export default function CategoryForm() {
 
                <button
                   onClick={() =>
-                     router.push(`/admin/categories/${categoryId}/edite`)
+                     router.push(`/admin/categories/${categoryId}/edit`)
                   }
                   className="btn btn--primary text-heading-5 px-9 py-2 text-[var(--blue-600)] w-[112px] h-[45px] rounded-[8px]"
                >
