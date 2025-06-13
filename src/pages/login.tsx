@@ -55,6 +55,20 @@ export default function LoginPage() {
         return
       }
     } catch (error: unknown) {
+      // Handle auth login API error
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<ErrorResponse>
+        const errorMessage =
+          axiosError.response?.data?.error ??
+          axiosError.response?.data?.message ??
+          'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง'
+        
+        toast.error(errorMessage)
+        setError(errorMessage)
+        setIsLoading(false)
+        return
+      }
+
       console.warn('การเข้าสู่ระบบปกติล้มเหลว กำลังลองใช้ระบบสำรอง', error)
 
       // 2. ถ้าการเข้าสู่ระบบปกติล้มเหลว ลองใช้ระบบสำรอง
@@ -87,7 +101,7 @@ export default function LoginPage() {
         } else {
           // แสดง error toast
           const errorMessage =
-            fallbackResult.error || 'การเข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง'
+            fallbackResult.error ?? 'การเข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง'
           toast.error(errorMessage)
           setError(errorMessage)
         }
@@ -97,7 +111,7 @@ export default function LoginPage() {
           // Type guard เพื่อตรวจสอบว่าเป็น AxiosError
           const axiosError = fallbackError as AxiosError<ErrorResponse>
           const errorMessage =
-            axiosError.response?.data?.error ||
+            axiosError.response?.data?.error ??
             'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง'
 
           toast.error(errorMessage)
@@ -197,7 +211,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-(--blue-600) text-heading-5 text-(--white) py-3 px-4 rounded-md font-medium hover:bg-(--blue-700) focus:outline-none focus:ring-2 focus:ring-(--blue-500) focus:ring-offset-2 transition-colors"
+            className="w-full bg-(--blue-600) text-heading-5 text-(--white) py-3 px-4 rounded-md font-medium hover:bg-(--blue-700) focus:outline-none focus:ring-2 focus:ring-(--blue-500) focus:ring-offset-2 transition-colors cursor-pointer"
           >
             {isLoading ? 'กำลังดำเนินการ...' : 'เข้าสู่ระบบ'}
           </button>
@@ -217,7 +231,7 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={handleFacebookLogin}
-          className="w-full flex items-center justify-center gap-2 bg-(--white) border border-(--gray-300) py-3 px-4 rounded-md font-medium text-heading-5 text-(--gray-700) hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-(--blue-500) focus:ring-offset-2 transition-colors mb-6"
+          className="w-full flex items-center justify-center gap-2 bg-(--white) border border-(--gray-300) py-3 px-4 rounded-md font-medium text-heading-5 text-(--gray-700) hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-(--blue-500) focus:ring-offset-2 transition-colors mb-6 cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
