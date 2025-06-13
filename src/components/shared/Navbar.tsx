@@ -106,7 +106,7 @@ function Navbar() {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                    onClick={() => router.push("/order-list")}
+                    onClick={() => router.push("/user/order-list")}
                   >
                     <Image
                       src="/asset/svgs/list.svg"
@@ -118,7 +118,7 @@ function Navbar() {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                    onClick={() => router.push("/history")}
+                    onClick={() => router.push("/user/history")}
                   >
                     <Image
                       src="/asset/svgs/history.svg"
@@ -250,7 +250,7 @@ function Navbar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                  onClick={() => router.push("/order-list")}
+                  onClick={() => router.push("/user/order-list")}
                 >
                   <Image
                     src="/asset/svgs/list.svg"
@@ -262,7 +262,7 @@ function Navbar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer hover:bg-[color:var(--gray-100)] hover:text-[color:var(--gray-950)] text-body-3 text-[color:var(--gray-800)]"
-                  onClick={() => router.push("/history")}
+                  onClick={() => router.push("/user/history")}
                 >
                   <Image
                     src="/asset/svgs/history.svg"

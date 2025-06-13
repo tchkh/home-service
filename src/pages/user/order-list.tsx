@@ -4,6 +4,7 @@ import { RepairCardProps } from "@/types/index";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import axios from "axios";
+import SideNavbar from "@/components/shared/SideNavbar";
 
 interface Props {
   repairs: RepairCardProps[];
@@ -22,11 +23,7 @@ const OrderListPage: React.FC<Props> = ({ repairs }) => {
 
       <section className="flex flex-col md:flex-row md:justify-center md:gap-2">
       {/* Menu */}
-      <section className="flex flex-row md:flex-col justify-around md:h-32 bg-[var(--white)] rounded-xl shadow p-4 mb-4 text-sm">
-        <div className="text-[var(--gray-600)]">ข้อมูลผู้ใช้งาน</div>
-        <div className="text-[var(--blue-600)] font-semibold">รายการคำสั่งซ่อม</div>
-        <div className="text-[var(--gray-600)]">ประวัติการซ่อม</div>
-      </section>
+      <SideNavbar />
 
       {/* Mobile Title */}
       <h1 className="md:hidden text-center text-heading-2 text-white bg-[var(--blue-600)] rounded-md py-2 mx-4 mb-4">
