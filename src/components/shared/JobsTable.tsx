@@ -73,7 +73,7 @@ export default function JobsTable({
                   {formatAppointmentDate(job.appointment_at)}
                 </td>
                 <td className="px-4 py-3 md:py-7">{job.service_request_code}</td>
-                <td className="px-4 py-3 md:py-7">{job.total_price} ฿</td>
+                <td className="px-4 py-3 md:py-7">{job.total_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2, })} ฿</td>
                 {showActions && (
                 <td className="px-4 py-3 md:py-7 text-center">
                   <button
