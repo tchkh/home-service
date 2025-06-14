@@ -146,7 +146,12 @@ const BookingDetailsForm: React.FC = () => {
 
   // Auto-fill user's default address
   const handleUseDefaultAddress = () => {
-    if (!user?.address || !user?.province || !user?.district || !user?.subdistrict) {
+    if (
+      !user?.address ||
+      !user?.province ||
+      !user?.district ||
+      !user?.subdistrict
+    ) {
       alert('คุณยังไม่มีที่อยู่เริ่มต้น กรุณาตั้งค่าที่อยู่ในหน้าโปรไฟล์')
       return
     }
@@ -164,7 +169,9 @@ const BookingDetailsForm: React.FC = () => {
         const subdistrictsList = getSubdistrictsByDistrict(userDistrict.code)
         setSubdistricts(subdistrictsList)
 
-        const userSubdistrict = subdistrictsList.find(s => s.nameTh === user.subdistrict)
+        const userSubdistrict = subdistrictsList.find(
+          s => s.nameTh === user.subdistrict
+        )
         if (userSubdistrict) {
           setSelectedSubdistrictCode(userSubdistrict.code)
           const postal = getPostalCode(userSubdistrict.code)
@@ -179,7 +186,7 @@ const BookingDetailsForm: React.FC = () => {
       form.setValue('province', user.province)
       form.setValue('district', user.district)
       form.setValue('subDistrict', user.subdistrict)
-      
+
       // Set additional info if user has postal code data
       if (user.postalCode) {
         form.setValue('additionalInfo', user.postalCode)
@@ -295,7 +302,7 @@ const BookingDetailsForm: React.FC = () => {
                         className={cn(
                           'w-full justify-start text-left font-normal',
                           'flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50',
-                          'h-9 transition-colors',
+                          'h-9 transition-colors cursor-pointer',
                           !field.value && 'text-muted-foreground'
                         )}
                       >
@@ -337,81 +344,134 @@ const BookingDetailsForm: React.FC = () => {
           <FormField
             control={form.control}
             name="serviceTime"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  เวลาที่สะดวกใช้บริการ <span className="text-red-500">*</span>
-                </FormLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <div className="flex items-center">
-                        <Clock className="mr-2 h-4 w-4 text-gray-400" />
-                        <SelectValue placeholder="เลือกเวลา">
-                          {field.value || 'เลือกเวลา'}
-                        </SelectValue>
-                      </div>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="w-auto p-0 border-gray-300">
-                    <div className="flex">
-                      {/* Hours Column */}
-                      <div className="border-r border-gray-200">
-                        <div className="max-h-[200px] overflow-y-auto w-16">
-                          {Array.from({ length: 24 }, (_, i) => i).map(hour => (
-                            <button
-                              key={hour}
-                              type="button"
-                              className="w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100"
-                              onClick={() => {
-                                const currentMinute = field.value
-                                  ? field.value.split(':')[1]
-                                  : '00'
-                                field.onChange(
-                                  `${hour
-                                    .toString()
-                                    .padStart(2, '0')}:${currentMinute}`
-                                )
-                              }}
-                            >
-                              {hour.toString().padStart(2, '0')}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+            render={({ field }) => {
+              const [tempTime, setTempTime] = useState({
+                hour: '00',
+                minute: '00',
+              })
+              const [isTimeOpen, setIsTimeOpen] = useState(false)
 
-                      {/* Minutes Column */}
-                      <div>
-                        <div className="max-h-[200px] overflow-y-auto w-16">
-                          {Array.from({ length: 60 }, (_, i) => i).map(
-                            minute => (
-                              <button
-                                key={minute}
-                                type="button"
-                                className="w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100"
-                                onClick={() => {
-                                  const currentHour = field.value
-                                    ? field.value.split(':')[0]
-                                    : '00'
-                                  field.onChange(
-                                    `${currentHour}:${minute
-                                      .toString()
-                                      .padStart(2, '0')}`
-                                  )
-                                }}
-                              >
-                                {minute.toString().padStart(2, '0')}
-                              </button>
-                            )
+              // Initialize temp time when field value changes
+              useEffect(() => {
+                if (field.value) {
+                  const [hour, minute] = field.value.split(':')
+                  setTempTime({ hour, minute })
+                }
+              }, [field.value])
+
+              const handleConfirmTime = () => {
+                field.onChange(`${tempTime.hour}:${tempTime.minute}`)
+                setIsTimeOpen(false)
+              }
+
+              return (
+                <FormItem>
+                  <FormLabel>
+                    เวลาที่สะดวกใช้บริการ{' '}
+                    <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Popover open={isTimeOpen} onOpenChange={setIsTimeOpen}>
+                      <PopoverTrigger>
+                        <button
+                          type="button"
+                          className={cn(
+                            'w-full justify-start text-left font-normal',
+                            'flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50',
+                            'h-9 transition-colors cursor-pointer',
+                            !field.value && 'text-muted-foreground'
                           )}
+                        >
+                          <Clock className="mr-2 h-4 w-4 text-gray-400" />
+                          <span className="truncate">
+                            {field.value || 'เลือกเวลา'}
+                          </span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="min-w-0 max-w-34 rounded-lg shadow-lg bg-white overflow-hidden z-50"
+                        align="start"
+                        side="bottom"
+                        sideOffset={4}
+                      >
+                        <div className="flex">
+                          {/* Hours Column */}
+                          <div className="border-r border-gray-200">
+                            <div className="max-h-[200px] overflow-y-auto w-16">
+                              {Array.from({ length: 24 }, (_, i) => i).map(
+                                hour => (
+                                  <button
+                                    key={hour}
+                                    type="button"
+                                    className={cn(
+                                      'w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100',
+                                      tempTime.hour ===
+                                        hour.toString().padStart(2, '0') &&
+                                        'bg-blue-100'
+                                    )}
+                                    onClick={() => {
+                                      setTempTime(prev => ({
+                                        ...prev,
+                                        hour: hour.toString().padStart(2, '0'),
+                                      }))
+                                    }}
+                                  >
+                                    {hour.toString().padStart(2, '0')}
+                                  </button>
+                                )
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Minutes Column */}
+                          <div>
+                            <div className="max-h-[200px] overflow-y-auto w-16">
+                              {Array.from({ length: 60 }, (_, i) => i).map(
+                                minute => (
+                                  <button
+                                    key={minute}
+                                    type="button"
+                                    className={cn(
+                                      'w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100',
+                                      tempTime.minute ===
+                                        minute.toString().padStart(2, '0') &&
+                                        'bg-blue-100'
+                                    )}
+                                    onClick={() => {
+                                      setTempTime(prev => ({
+                                        ...prev,
+                                        minute: minute
+                                          .toString()
+                                          .padStart(2, '0'),
+                                      }))
+                                    }}
+                                  >
+                                    {minute.toString().padStart(2, '0')}
+                                  </button>
+                                )
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+                        {/* Time Display and Confirm Button */}
+                        <div className="border-t border-gray-200 px-3 py-2 flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">
+                            {tempTime.hour}:{tempTime.minute}
+                          </span>
+                          <button
+                            onClick={handleConfirmTime}
+                            className="text-blue-700 underline text-sm font-bold px-2 cursor-pointer"
+                          >
+                            ยืนยัน
+                          </button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )
+            }}
           />
         </div>
 
