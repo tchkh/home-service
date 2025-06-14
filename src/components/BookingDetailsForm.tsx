@@ -43,6 +43,10 @@ const BookingDetailsForm: React.FC = () => {
   const { user } = useUser()
   const [gettingLocation, setGettingLocation] = useState(false)
 
+  // Time picker state
+  const [tempTime, setTempTime] = useState({ hour: '00', minute: '00' })
+  const [isTimeOpen, setIsTimeOpen] = useState(false)
+
   // ใช้ Thailand Address Hook
   const {
     provinces,
@@ -81,6 +85,21 @@ const BookingDetailsForm: React.FC = () => {
       longitude: customerInfo.longitude,
     },
   })
+
+  // Time picker handlers
+  const handleConfirmTime = () => {
+    form.setValue('serviceTime', `${tempTime.hour}:${tempTime.minute}`)
+    setIsTimeOpen(false)
+  }
+
+  // Initialize temp time when service time changes
+  useEffect(() => {
+    const serviceTime = form.getValues('serviceTime')
+    if (serviceTime) {
+      const [hour, minute] = serviceTime.split(':')
+      setTempTime({ hour, minute })
+    }
+  }, [form, customerInfo.serviceTime])
 
   // Update store when form values change
   useEffect(() => {
@@ -344,134 +363,112 @@ const BookingDetailsForm: React.FC = () => {
           <FormField
             control={form.control}
             name="serviceTime"
-            render={({ field }) => {
-              const [tempTime, setTempTime] = useState({
-                hour: '00',
-                minute: '00',
-              })
-              const [isTimeOpen, setIsTimeOpen] = useState(false)
-
-              // Initialize temp time when field value changes
-              useEffect(() => {
-                if (field.value) {
-                  const [hour, minute] = field.value.split(':')
-                  setTempTime({ hour, minute })
-                }
-              }, [field.value])
-
-              const handleConfirmTime = () => {
-                field.onChange(`${tempTime.hour}:${tempTime.minute}`)
-                setIsTimeOpen(false)
-              }
-
-              return (
-                <FormItem>
-                  <FormLabel>
-                    เวลาที่สะดวกใช้บริการ{' '}
-                    <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Popover open={isTimeOpen} onOpenChange={setIsTimeOpen}>
-                      <PopoverTrigger>
-                        <button
-                          type="button"
-                          className={cn(
-                            'w-full justify-start text-left font-normal',
-                            'flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50',
-                            'h-9 transition-colors cursor-pointer',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          <Clock className="mr-2 h-4 w-4 text-gray-400" />
-                          <span className="truncate">
-                            {field.value || 'เลือกเวลา'}
-                          </span>
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="min-w-0 max-w-34 rounded-lg shadow-lg bg-white overflow-hidden z-50"
-                        align="start"
-                        side="bottom"
-                        sideOffset={4}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  เวลาที่สะดวกใช้บริการ <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Popover open={isTimeOpen} onOpenChange={setIsTimeOpen}>
+                    <PopoverTrigger>
+                      <button
+                        type="button"
+                        className={cn(
+                          'w-full justify-start text-left font-normal',
+                          'flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50',
+                          'h-9 transition-colors cursor-pointer',
+                          !field.value && 'text-muted-foreground'
+                        )}
                       >
-                        <div className="flex">
-                          {/* Hours Column */}
-                          <div className="border-r border-gray-200">
-                            <div className="max-h-[200px] overflow-y-auto w-16">
-                              {Array.from({ length: 24 }, (_, i) => i).map(
-                                hour => (
-                                  <button
-                                    key={hour}
-                                    type="button"
-                                    className={cn(
-                                      'w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100',
-                                      tempTime.hour ===
-                                        hour.toString().padStart(2, '0') &&
-                                        'bg-blue-100'
-                                    )}
-                                    onClick={() => {
-                                      setTempTime(prev => ({
-                                        ...prev,
-                                        hour: hour.toString().padStart(2, '0'),
-                                      }))
-                                    }}
-                                  >
-                                    {hour.toString().padStart(2, '0')}
-                                  </button>
-                                )
-                              )}
-                            </div>
+                        <Clock className="mr-2 h-4 w-4 text-gray-400" />
+                        <span className="truncate">
+                          {field.value || 'เลือกเวลา'}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="min-w-0 max-w-34 rounded-lg shadow-lg bg-white overflow-hidden z-50"
+                      align="start"
+                      side="bottom"
+                      sideOffset={4}
+                    >
+                      <div className="flex">
+                        {/* Hours Column */}
+                        <div className="border-r border-gray-200">
+                          <div className="max-h-[200px] overflow-y-auto w-16">
+                            {Array.from({ length: 24 }, (_, i) => i).map(
+                              hour => (
+                                <button
+                                  key={hour}
+                                  type="button"
+                                  className={cn(
+                                    'w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100',
+                                    tempTime.hour ===
+                                      hour.toString().padStart(2, '0') &&
+                                      'bg-blue-100'
+                                  )}
+                                  onClick={() => {
+                                    setTempTime(prev => ({
+                                      ...prev,
+                                      hour: hour.toString().padStart(2, '0'),
+                                    }))
+                                  }}
+                                >
+                                  {hour.toString().padStart(2, '0')}
+                                </button>
+                              )
+                            )}
                           </div>
+                        </div>
 
-                          {/* Minutes Column */}
-                          <div>
-                            <div className="max-h-[200px] overflow-y-auto w-16">
-                              {Array.from({ length: 60 }, (_, i) => i).map(
-                                minute => (
-                                  <button
-                                    key={minute}
-                                    type="button"
-                                    className={cn(
-                                      'w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100',
-                                      tempTime.minute ===
-                                        minute.toString().padStart(2, '0') &&
-                                        'bg-blue-100'
-                                    )}
-                                    onClick={() => {
-                                      setTempTime(prev => ({
-                                        ...prev,
-                                        minute: minute
-                                          .toString()
-                                          .padStart(2, '0'),
-                                      }))
-                                    }}
-                                  >
-                                    {minute.toString().padStart(2, '0')}
-                                  </button>
-                                )
-                              )}
-                            </div>
+                        {/* Minutes Column */}
+                        <div>
+                          <div className="max-h-[200px] overflow-y-auto w-16">
+                            {Array.from({ length: 60 }, (_, i) => i).map(
+                              minute => (
+                                <button
+                                  key={minute}
+                                  type="button"
+                                  className={cn(
+                                    'w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100',
+                                    tempTime.minute ===
+                                      minute.toString().padStart(2, '0') &&
+                                      'bg-blue-100'
+                                  )}
+                                  onClick={() => {
+                                    setTempTime(prev => ({
+                                      ...prev,
+                                      minute: minute
+                                        .toString()
+                                        .padStart(2, '0'),
+                                    }))
+                                  }}
+                                >
+                                  {minute.toString().padStart(2, '0')}
+                                </button>
+                              )
+                            )}
                           </div>
                         </div>
-                        {/* Time Display and Confirm Button */}
-                        <div className="border-t border-gray-200 px-3 py-2 flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-700">
-                            {tempTime.hour}:{tempTime.minute}
-                          </span>
-                          <button
-                            onClick={handleConfirmTime}
-                            className="text-blue-700 underline text-sm font-bold px-2 cursor-pointer"
-                          >
-                            ยืนยัน
-                          </button>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )
-            }}
+                      </div>
+                      {/* Time Display and Confirm Button */}
+                      <div className="border-t border-gray-200 px-3 py-2 flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">
+                          {tempTime.hour}:{tempTime.minute}
+                        </span>
+                        <button
+                          onClick={handleConfirmTime}
+                          className="text-blue-700 underline text-sm font-bold px-2 cursor-pointer"
+                        >
+                          ยืนยัน
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
 

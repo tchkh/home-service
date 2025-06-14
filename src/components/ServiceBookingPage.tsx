@@ -50,18 +50,22 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ id }) => {
     setServiceId,
     setSubServices,
     canProceedToNext,
-    // resetBooking, // removed as not used
+    resetForNewService,
   } = useBookingStore()
 
   // Fetch service details
   const { data: subServices, isLoading, error } = useServiceDetails(serviceId)
 
-  // Set service ID from props
+  // Set service ID from props and reset data for new service
   useEffect(() => {
     if (id && id !== serviceId) {
+      // If we have a different service ID, reset the booking data first
+      if (serviceId !== null) {
+        resetForNewService()
+      }
       setServiceId(id)
     }
-  }, [id, serviceId, setServiceId])
+  }, [id, serviceId, setServiceId, resetForNewService])
 
   // Update sub-services when data is fetched
   useEffect(() => {
