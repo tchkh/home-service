@@ -67,6 +67,7 @@ interface BookingState {
   updatePaymentInfo: (info: Partial<PaymentInfo>) => void
   setCurrentStep: (step: BookingState['currentStep']) => void
   resetBooking: () => void
+  resetForNewService: () => void
   canProceedToNext: () => boolean
 
   // Computed getters (เปลี่ยนจาก property เป็น function)
@@ -148,6 +149,15 @@ export const useBookingStore = create<BookingState>()(
             customerInfo: initialCustomerInfo,
             paymentInfo: initialPaymentInfo,
           }),
+        resetForNewService: () =>
+          set(() => ({
+            currentStep: 'items',
+            serviceName: '',
+            subServices: [],
+            cart: [],
+            customerInfo: initialCustomerInfo,
+            paymentInfo: initialPaymentInfo,
+          })),
         getActiveCartItems: () => {
           const state = get()
           return state.cart.filter(item => item.quantity > 0)

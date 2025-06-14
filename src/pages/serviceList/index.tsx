@@ -3,6 +3,7 @@ import ServiceCard from "@/components/ServiceCard";
 import LoadingServiceCard from "@/components/LoadingServiceCard";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState, useRef } from "react";
+import { useResetBookingOnNavigation } from "@/hooks/useResetBookingOnNavigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
    faMagnifyingGlass,
@@ -48,6 +49,9 @@ const prompt = Prompt({
 // };
 
 export default function Home() {
+   // Reset booking data when user navigates to service list page
+   useResetBookingOnNavigation()
+   
    interface ServiceCardProps {
       id: number;
       category_name: string;
