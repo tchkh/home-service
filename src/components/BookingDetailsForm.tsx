@@ -119,6 +119,82 @@ const BookingDetailsForm: React.FC = () => {
     return () => subscription.unsubscribe()
   }, [form, updateCustomerInfo])
 
+  // Reverse geocoding function using Nominatim (same as team implementation)
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=th`,
+        {
+          headers: {
+            'User-Agent': 'TechUpHomeService/1.0 (your@email.com)',
+            Accept: 'application/json',
+          },
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Reverse geocoding failed')
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Reverse geocoding error:', error)
+      return null
+    }
+  }
+
+  // Nominatim response types
+  interface NominatimAddress {
+    house_number?: string
+    road?: string
+    neighbourhood?: string
+    suburb?: string
+    village?: string
+    hamlet?: string
+    city?: string
+    town?: string
+    municipality?: string
+    county?: string
+    state?: string
+    province?: string
+  }
+
+  interface NominatimResult {
+    display_name?: string
+    address?: NominatimAddress
+  }
+
+  // Parse address from Nominatim geocoding result
+  const parseAddressFromGeocode = (geocodeResult: NominatimResult | null) => {
+    if (!geocodeResult || !geocodeResult.address) return null
+
+    const addr = geocodeResult.address
+    let province = ''
+    let district = ''
+    let subdistrict = ''
+    let address = ''
+
+    // Extract address components from Nominatim result
+    province = addr.state || addr.province || ''
+    district = addr.city || addr.town || addr.municipality || addr.county || ''
+    subdistrict =
+      addr.suburb || addr.village || addr.neighbourhood || addr.hamlet || ''
+
+    // Build address from available components
+    const addressParts = [
+      addr.house_number,
+      addr.road,
+      addr.neighbourhood,
+      addr.suburb,
+    ].filter(Boolean)
+
+    address =
+      addressParts.join(' ') || geocodeResult.display_name?.split(',')[0] || ''
+
+    return { province, district, subdistrict, address }
+  }
+
   // GPS Location handler
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -128,15 +204,102 @@ const BookingDetailsForm: React.FC = () => {
 
     setGettingLocation(true)
     navigator.geolocation.getCurrentPosition(
-      position => {
+      async position => {
         const { latitude, longitude } = position.coords
-        // Update form values
-        form.setValue('latitude', latitude)
-        form.setValue('longitude', longitude)
-        // Update store
-        updateCustomerInfo({ latitude, longitude })
-        setGettingLocation(false)
-        console.log('📍 GPS Location saved:', { latitude, longitude })
+
+        try {
+          // Update GPS coordinates first
+          form.setValue('latitude', latitude)
+          form.setValue('longitude', longitude)
+          updateCustomerInfo({ latitude, longitude })
+
+          console.log('📍 GPS Location saved:', { latitude, longitude })
+
+          // Attempt reverse geocoding using Nominatim (same as team)
+          const geocodeResult = await reverseGeocode(latitude, longitude)
+
+          if (geocodeResult) {
+            const parsedAddress = parseAddressFromGeocode(geocodeResult)
+
+            if (parsedAddress) {
+              // Find matching province in dropdown
+              const matchedProvince = provinces.find(
+                p =>
+                  parsedAddress.province &&
+                  (p.nameTh.includes(parsedAddress.province) ||
+                    parsedAddress.province.includes(p.nameTh) ||
+                    p.nameEn
+                      .toLowerCase()
+                      .includes(parsedAddress.province.toLowerCase()))
+              )
+
+              if (matchedProvince) {
+                setSelectedProvinceCode(matchedProvince.code)
+                const districtsList = getDistrictsByProvince(
+                  matchedProvince.code
+                )
+                setDistricts(districtsList)
+
+                // Find matching district
+                const matchedDistrict = districtsList.find(
+                  d =>
+                    parsedAddress.district &&
+                    (d.nameTh.includes(parsedAddress.district) ||
+                      parsedAddress.district.includes(d.nameTh))
+                )
+
+                if (matchedDistrict) {
+                  setSelectedDistrictCode(matchedDistrict.code)
+                  const subdistrictsList = getSubdistrictsByDistrict(
+                    matchedDistrict.code
+                  )
+                  setSubdistricts(subdistrictsList)
+
+                  // Find matching subdistrict
+                  const matchedSubdistrict = subdistrictsList.find(
+                    s =>
+                      parsedAddress.subdistrict &&
+                      (s.nameTh.includes(parsedAddress.subdistrict) ||
+                        parsedAddress.subdistrict.includes(s.nameTh))
+                  )
+
+                  if (matchedSubdistrict) {
+                    setSelectedSubdistrictCode(matchedSubdistrict.code)
+                    const postal = getPostalCode(matchedSubdistrict.code)
+                    setPostalCode(postal)
+
+                    // Set form values after dropdowns are populated
+                    setTimeout(() => {
+                      form.setValue('subDistrict', matchedSubdistrict.nameTh)
+                    }, 300)
+                  }
+
+                  // Set district form value
+                  setTimeout(() => {
+                    form.setValue('district', matchedDistrict.nameTh)
+                  }, 200)
+                }
+
+                // Set province form value
+                setTimeout(() => {
+                  form.setValue('province', matchedProvince.nameTh)
+                }, 100)
+              }
+
+              // Set address immediately if found
+              if (parsedAddress.address) {
+                form.setValue('address', parsedAddress.address)
+              }
+
+              console.log('✅ Address auto-filled from GPS:', parsedAddress)
+              console.log('📍 Full address result:', geocodeResult.display_name)
+            }
+          }
+        } catch (error) {
+          console.error('Error during reverse geocoding:', error)
+        } finally {
+          setGettingLocation(false)
+        }
       },
       error => {
         console.error('GPS Error:', error)
@@ -708,7 +871,7 @@ const BookingDetailsForm: React.FC = () => {
               className="border-green-500 text-green-600 hover:bg-green-50 cursor-pointer w-full md:w-auto"
             >
               <MapPin className="w-4 h-4 mr-2" />
-              {gettingLocation ? 'กำลังค้นหา...' : 'ใช้ตำแหน่งปัจจุบัน'}
+              {gettingLocation ? 'กำลังค้นหาตำแหน่ง...' : 'ใช้ตำแหน่งปัจจุบัน'}
             </Button>
           </div>
         </div>
