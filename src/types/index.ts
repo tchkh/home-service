@@ -51,6 +51,11 @@ export interface Admin {
    email: string;
 }
 
+export interface CategoryName {
+   id: string;
+   name: string;
+}
+
 export interface Service {
    id: string;
    title: string;
@@ -67,6 +72,34 @@ export interface SubService {
    title: string;
    price: string;
    service_unit: string;
+}
+
+export interface ServiceWithDetails {
+   id: string;
+   title: string;
+   image_url: string;
+   created_at: Date;
+   updated_at: Date;
+   category:
+     | {
+         id: string;
+         name: string;
+         description: string;
+         created_at: Date;
+         updated_at: Date;
+       }[]
+     | null;
+   sub_services: {
+     id: string;
+     title: string;
+     price: number;
+     service_unit: string;
+   }[];
+}
+
+export interface ServiceWithDetailsAndCategories {
+   service: ServiceWithDetails;
+   categories: CategoryName[];
 }
 
 export interface ServiceWithCategory extends Service {
@@ -415,3 +448,5 @@ export interface CategoryData {
    color: string;
    order_num: number;
 }
+
+

@@ -25,10 +25,12 @@ import {
   ServiceFormValues,
 } from "../../../schemas/edit-service";
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
+import { CategoryName } from "@/types";
 
 function EditServicePage() {
   const router = useRouter(); // สร้าง router instance
 
+  const [categories, setCategories] = useState<CategoryName[]>([]);
   // เพิ่ม state เก็บไฟล์จริงๆ (File) แยกจาก URL preview
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -56,6 +58,7 @@ function EditServicePage() {
             created_at: result.data.created_at || "",
             updated_at: result.data.updated_at || "",
           });
+          setCategories(result.data.categories || []);
           setSelectedImage(result.data.image_url);
           setSelectedFile(null);
           console.log(
@@ -341,14 +344,16 @@ function EditServicePage() {
             </Label>
             <select
               id="category"
-              className="w-80 pl-2 border-1 border-[var(--gray-300)] rounded-sm text-sm"
+              className="w-80 h-9 pl-2 border-1 border-[var(--gray-300)] rounded-md text-sm"
               {...register("category", { required: true })}
               defaultValue={serviceData?.category}
             >
               <option value="">เลือกหมวดหมู่</option>
-              <option value="บริการทั่วไป">บริการทั่วไป</option>
-              <option value="บริการห้องครัว">บริการห้องครัว</option>
-              <option value="บริการห้องน้ำ">บริการห้องน้ำ</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
             </select>
             {errors.category && (
               <p className="text-sm text-[var(--red)]">
