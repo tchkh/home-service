@@ -18,6 +18,7 @@ async function fetchServiceWithDetails(
   try {
     const { data, error } = await supabase
       .from("services") // ระบุตารางที่ต้องการดึงข้อมูล
+      .from("services") // ระบุตารางที่ต้องการดึงข้อมูล
       .select(
         `
         id,
@@ -42,11 +43,16 @@ async function fetchServiceWithDetails(
       )
       .eq("id", serviceId) // กรองข้อมูลด้วย serviceId ที่ระบุ
       .single(); // ดึงข้อมูลเพียงรายการเดียว (เนื่องจากเราใช้ serviceId ซึ่งเป็น Primary Key)
+      .eq("id", serviceId) // กรองข้อมูลด้วย serviceId ที่ระบุ
+      .single(); // ดึงข้อมูลเพียงรายการเดียว (เนื่องจากเราใช้ serviceId ซึ่งเป็น Primary Key)
 
     if (error) {
       console.error("Error fetching service with details:", error);
+      console.error("Error fetching service with details:", error);
       // ตรวจสอบ Error Code จาก Supabase ว่าเป็นกรณีไม่พบข้อมูลหรือไม่
       if (
+        error.code === "PGRST116" &&
+        error.details === "The result contains 0 rows"
         error.code === "PGRST116" &&
         error.details === "The result contains 0 rows"
       ) {
