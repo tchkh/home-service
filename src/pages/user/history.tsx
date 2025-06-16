@@ -17,7 +17,7 @@ const HistoryPage: React.FC<Props> = ({ repairs }) => {
       <Navbar />
 
       {/* Desktop Title */}
-      <h1 className="hidden md:block text-center text-heading-2 text-white bg-[var(--blue-600)] py-4 mb-6">
+      <h1 className="hidden md:block text-center text-[20px] md:text-[32px] md:h-[96px] content-center text-white bg-[var(--blue-600)] py-4 mb-6">
         ประวัติการซ่อม
       </h1>
 

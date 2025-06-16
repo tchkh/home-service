@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -77,10 +76,10 @@ export default function ProfileImageManager({
                 </DialogTitle>
               </DialogHeader>
               <div className="flex flex-col gap-4 py-4">
-                <Button
+                <button
+                  type="button"
                   onClick={handleUploadClick}
-                  className="flex items-center justify-center gap-2 w-full btn btn--primary"
-                  variant="outline"
+                  className="flex items-center justify-center gap-2 w-full btn btn--primary py-2"
                   disabled={isUploading}
                 >
                   {isUploading ? (
@@ -89,12 +88,12 @@ export default function ProfileImageManager({
                     <Upload className="w-4 h-4" />
                   )}
                   อัพโหลดรูป
-                </Button>
+                </button>
 
-                <Button
+                <button
+                  type="button"
                   onClick={handleDeleteImage}
-                  className="flex items-center justify-center gap-2 w-full btn btn--secondary"
-                  variant="outline"
+                  className="flex items-center justify-center gap-2 w-full btn btn--secondary py-2"
                   disabled={!profileData?.image_url || isDeleting}
                 >
                   {isDeleting ? (
@@ -103,7 +102,7 @@ export default function ProfileImageManager({
                     <Trash2 className="w-4 h-4" />
                   )}
                   ลบรูป
-                </Button>
+                </button>
               </div>
             </DialogContent>
           </Dialog>

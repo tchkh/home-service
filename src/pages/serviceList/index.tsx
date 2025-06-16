@@ -358,7 +358,7 @@ export default function Home() {
             </p>
          </section>
          {/* ส่วน search bar  max-w-[1130px]*/}
-         <section className="sticky top-[49px] md:top-[59px] z-50 bg-[var(--white)] w-full h-[134px] md:h-[84px] flex ">
+         <section className="sticky top-[51px] md:top-[80px] z-50 bg-[var(--white)] w-full h-[134px] md:h-[84px] flex ">
             <div className="container flex flex-col md:justify-between items-center px-5 md:px-50 py-4 gap-y-4 md:flex-row     ">
                {/* ส่วนค้นหา */}
                <section
@@ -412,7 +412,7 @@ export default function Home() {
                      onValueChange={changeCategory}
                      value={dataQuery.category}
                   >
-                     <SelectTrigger className="relative box-border w-[114px]  md:w-[120px] h-[42px] px-0 py-0 border-0 ">
+                     <SelectTrigger className="relative box-border w-[114px]  md:w-[120px] h-[42px] px-0 py-0 border-0 cursor-pointer">
                         <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
                            หมวดหมู่บริการ
                            <p
@@ -423,10 +423,10 @@ export default function Home() {
                            </p>
                         </h2>
                      </SelectTrigger>
-                     <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
+                     <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)] ">
                         <SelectItem
                            value={"บริการทั้งหมด"}
-                           className={`${
+                           className={`cursor-pointer ${
                               dataQuery.category === "บริการทั้งหมด"
                                  ? "text-[var(--blue-700)]"
                                  : ""
@@ -438,7 +438,7 @@ export default function Home() {
                            <SelectItem
                               key={index}
                               value={value}
-                              className={`${
+                              className={`cursor-pointer ${
                                  value === dataQuery.category
                                     ? "text-[var(--blue-700)]"
                                     : ""
@@ -452,7 +452,7 @@ export default function Home() {
                   <div className="border-1 border-[var(--gray-300)] h-full "></div>
                   {/* ส่วน ราคา Slider */}
                   <Popover>
-                     <PopoverTrigger className="flex flex-col items-start relative box-border w-[114px] md:w-[120px] h-[42px] px-[10px]  ">
+                     <PopoverTrigger className="flex flex-col items-start relative box-border w-[114px] md:w-[120px] h-[42px] px-[10px] cursor-pointer ">
                         <p className="text-body-4 text-[var(--gray-700)]">
                            ราคา
                         </p>
@@ -464,7 +464,7 @@ export default function Home() {
                            className="absolute top-[12px] right-[5px] text-[13px] text-[#7F7F7F] "
                         />
                      </PopoverTrigger>
-                     <PopoverContent className="w-[253px] h-[112px] flex flex-col items-start bg-[var(--white)] box-border gap-y-4 py-5 px-4 rounded-lg border-0 ">
+                     <PopoverContent className="w-[253px] h-[112px] flex flex-col items-start bg-[var(--white)] box-border gap-y-4 py-5 px-4 rounded-lg border-0 cursor-pointer">
                         <p className="text-body-3 text-[var(--gray-700)]">
                            {range[0]}-{range[1]}฿
                         </p>
@@ -512,7 +512,7 @@ export default function Home() {
                         onValueChange={changeSortBy}
                         value={dataQuery.sortBy}
                      >
-                        <SelectTrigger className="relative box-border w-[114px] md:w-fit  h-[42px] px-[10px] py-0 border-0 ">
+                        <SelectTrigger className="relative box-border w-[114px] md:w-fit  h-[42px] px-[10px] py-0 border-0 cursor-pointer">
                            <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
                               เรียงตาม
                               <p className="text-heading-5 w-[84px]  lg:w-fit overflow-hidden text-ellipsis text-[var(--gray-950)] ">
@@ -520,12 +520,12 @@ export default function Home() {
                               </p>
                            </h2>
                         </SelectTrigger>
-                        <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
+                        <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)] ">
                            {Object.entries(typeSortBy).map(([value, label]) => (
                               <SelectItem
                                  key={value}
                                  value={value}
-                                 className={`${
+                                 className={`cursor-pointer ${
                                     value === dataQuery.sortBy
                                        ? "text-[var(--blue-700)]"
                                        : ""
