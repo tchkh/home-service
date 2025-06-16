@@ -12,16 +12,16 @@ interface Props {
 
 const OrderListPage: React.FC<Props> = ({ repairs }) => {
   return (
-    <main className="bg-[var(--bg)] w-full min-h-screen pb-10">
+    <main className="bg-[var(--bg)] w-full min-h-screen pb-10 ">
       {/* Header */}
       <Navbar />
 
       {/* Desktop Title */}
-      <h1 className="hidden md:block text-center text-heading-2 text-white bg-[var(--blue-600)] py-4 mb-6">
+      <h1 className="hidden md:block text-center text-[20px] md:text-[32px] md:h-[96px] content-center text-white bg-[var(--blue-600)] py-4 mb-6">
         รายการคำสั่งซ่อม
       </h1>
 
-      <section className="flex flex-col md:flex-row md:justify-center md:gap-2">
+      <section className="flex flex-col md:flex-row md:justify-center md:gap-2 ">
       {/* Menu */}
       <SideNavbar />
 
