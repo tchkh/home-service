@@ -3,32 +3,13 @@ import { supabase } from "@/lib/supabase";
 import { ServiceIdSchema } from "../../../../schemas/get-service-by-id";
 import { z } from "zod";
 import { getAuthenticatedClient } from "@/utils/api-helpers";
-
+import { ServiceWithDetails } from "@/types";
+import { CategoryName } from "@/types";
+import { ServiceWithDetailsAndCategories } from "@/types";
 // 2. กำหนด Interface สำหรับโครงสร้างข้อมูลของ Service ที่มีข้อมูลที่เกี่ยวข้อง
-interface ServiceWithDetails {
-  id: string;
-  title: string;
-  image_url: string;
-  created_at: Date;
-  updated_at: Date;
-  category:
-    | {
-        // กำหนดโครงสร้างข้อมูลของ Categories
-        id: string;
-        name: string;
-        description: string;
-        created_at: Date;
-        updated_at: Date;
-      }[]
-    | null;
-  sub_services: {
-    // กำหนดโครงสร้างข้อมูลของ Sub-services
-    id: string;
-    title: string;
-    price: number;
-    service_unit: string;
-  }[];
-}
+
+
+
 
 // 3. ฟังก์ชันสำหรับดึงข้อมูล Service พร้อม Categories และ Sub-services จาก Supabase
 async function fetchServiceWithDetails(
@@ -86,10 +67,26 @@ async function fetchServiceWithDetails(
   }
 }
 
+const getAllCategories = async () : Promise<CategoryName[] | null> => {
+   try {
+      const { data, error } = await supabase.from("categories").select(
+        `
+        id,
+        name
+        `
+      );
+      if (error) throw error;
+      return data as CategoryName[];
+   } catch (error) {
+      console.error("Error fetching categories:", error);
+      return null;
+   }
+};
+
 // 4. Handler Function สำหรับ API Route ของ Next.js
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ServiceWithDetails | { message: string }> // กำหนด Type ของ Response
+  res: NextApiResponse<ServiceWithDetailsAndCategories | { message: string }> // กำหนด Type ของ Response
 ) {
   if (req.method !== "GET") {
     // ตรวจสอบว่า Method เป็น GET หรือไม่
@@ -104,10 +101,11 @@ export default async function handler(
     const { serviceId } = ServiceIdSchema.parse(req.query); // ตรวจสอบและดึงค่า serviceId จาก Query
 
     const service = await fetchServiceWithDetails(serviceId); // ดึงข้อมูล Service จากฐานข้อมูล
+    const categories = await getAllCategories();
 
     if (service) {
       // ถ้าดึงข้อมูล Service ได้สำเร็จ
-      return res.status(200).json(service); // ส่งข้อมูล Service กลับไปพร้อม Status 200 OK
+      return res.status(200).json({service, categories: categories as CategoryName[] || []}); // ส่งข้อมูล Service กลับไปพร้อม Status 200 OK
     } else {
       // ถ้าไม่พบ Service ที่มี ID ตรงกับที่ระบุ
       return res
