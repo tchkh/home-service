@@ -10,8 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { CreditCard, QrCode } from 'lucide-react'
-import Image from 'next/image'
+import { CreditCard } from 'lucide-react'
 import axios from 'axios'
 import {
   Form,
@@ -21,12 +20,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 
 interface PaymentFormProps {
   onPaymentReady?: (paymentHandler: () => Promise<void>) => void
@@ -38,17 +31,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
   const elements = useElements()
   const [isProcessing, setIsProcessing] = useState(false)
   const { userId } = useAuth()
-
-  // PromptPay QR Code states
-  const [showQRModal, setShowQRModal] = useState(false)
-  const [qrCodeData, setQrCodeData] = useState<{
-    qrCode: string
-    paymentId: string
-    amount: number
-    promptPayId: string
-    expiresIn: number
-  } | null>(null)
-  const [qrCountdown, setQrCountdown] = useState(0)
 
   const {
     paymentInfo,
@@ -102,107 +84,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     paymentInfo,
     getFinalAmount,
   ])
-
-  // จำลองการชำระเงินสำเร็จผ่าน PromptPay
-  const handlePromptPaySuccess = useCallback(
-    async (paymentId: string) => {
-      setShowQRModal(false)
-      setIsProcessing(true)
-
-      try {
-        toast.success(
-          'ชำระเงินผ่านพร้อมเพย์สำเร็จ! กำลังบันทึกข้อมูลการจอง...',
-          {
-            duration: 4000,
-          }
-        )
-
-        // Use refs for latest values
-        const { customerInfo, getActiveCartItems, totalAmount, userId } =
-          storeRef.current
-
-        // Apply promocode if exists
-        if (
-          storeRef.current.paymentInfo.discount &&
-          storeRef.current.paymentInfo.promoCode
-        ) {
-          try {
-            await axios.post('/api/promocode/apply', {
-              code: storeRef.current.paymentInfo.promoCode,
-            })
-          } catch (error) {
-            console.error('Error applying promocode:', error)
-          }
-        }
-
-        // บันทึกข้อมูลการจองลง Supabase
-        const { data: bookingData } = await axios.post(
-          '/api/booking/create',
-          {
-            userId: userId,
-            items: getActiveCartItems(),
-            customerInfo: customerInfo,
-            totalAmount: totalAmount,
-            finalAmount: storeRef.current.getFinalAmount(),
-            promoCode: storeRef.current.paymentInfo.promoCode,
-            discount: storeRef.current.paymentInfo.discount,
-            paymentIntentId: paymentId,
-            paymentStatus: 'paid',
-          },
-          {
-            withCredentials: true,
-          }
-        )
-
-        console.log('Booking created successfully:', bookingData.bookingId)
-
-        // Redirect to success page
-        router.push(`/booking-success?payment_intent=${paymentId}`)
-      } catch (error) {
-        console.error('Error processing PromptPay payment:', error)
-        toast.error('เกิดข้อผิดพลาดในการดำเนินการ', {
-          duration: 5000,
-        })
-      } finally {
-        setIsProcessing(false)
-      }
-    },
-    [setShowQRModal, setIsProcessing, router]
-  )
-
-  // PromptPay Payment
-  const processPromptPayPayment = useCallback(async () => {
-    // Use refs for latest values
-    const { customerInfo, getActiveCartItems } = storeRef.current
-
-    const { data: qrData } = await axios.post('/api/create-promptpay-qr', {
-      amount: storeRef.current.getFinalAmount(),
-      bookingId: `booking_${Date.now()}`,
-      customerInfo: customerInfo,
-      items: getActiveCartItems(),
-    })
-
-    setQrCodeData(qrData)
-    setQrCountdown(qrData.expiresIn)
-    setShowQRModal(true)
-
-    // เริ่ม countdown timer
-    const timer = setInterval(() => {
-      setQrCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timer)
-          setShowQRModal(false)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    // จำลองการชำระเงินหลัง 10 วินาที (สำหรับ demo)
-    setTimeout(() => {
-      handlePromptPaySuccess(qrData.paymentId)
-    }, 10000)
-  }, [setQrCodeData, setQrCountdown, setShowQRModal, handlePromptPaySuccess])
 
   const handleApplyPromoCode = async () => {
     const promoCode = form.getValues('promoCode')
@@ -424,8 +305,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
             throw new Error('กรุณารอสักครู่ ระบบกำลังโหลด...')
           }
           await processCreditCardPayment()
-        } else {
-          await processPromptPayPayment()
         }
       } catch (error) {
         toast.error(
@@ -454,7 +333,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     userId,
     isProcessing,
     processCreditCardPayment,
-    processPromptPayPayment,
   ])
 
   // Update store when form values change
