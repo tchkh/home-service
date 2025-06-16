@@ -89,7 +89,7 @@ export default async function handler(
             console.log("error: ", error);
             return res.status(500).json({ error: "Error fetching services" });
          }
-         console.log("service: ", service);
+
          return res.status(200).json({ count, service });
       } catch (error) {
          console.log("error at get methor", error);
