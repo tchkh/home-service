@@ -81,6 +81,8 @@ export default async function handler(
          } else if (sortBy === "descending ") {
             query = query.order("service_title", { ascending: false });
          } else if (sortBy === "title") {
+            query = query.order("order_num", { ascending: true });
+         } else if (sortBy === "poppular") {
             query = query.order("id", { ascending: true });
          }
 
@@ -89,7 +91,7 @@ export default async function handler(
             console.log("error: ", error);
             return res.status(500).json({ error: "Error fetching services" });
          }
-         console.log("service: ", service);
+         // console.log("service: ", service);
          return res.status(200).json({ count, service });
       } catch (error) {
          console.log("error at get methor", error);
