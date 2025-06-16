@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useBookingStore } from "@/stores/bookingStore";
-import { simplePaymentSchema, SimplePaymentForm } from "@/schemas/booking";
-import toast from "react-hot-toast";
-import { useRouter } from "next/router";
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
-import { useAuth } from "@/hooks/useAuth";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { CreditCard, QrCode } from "lucide-react";
-import Image from "next/image";
-import axios from "axios";
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useBookingStore } from '@/stores/bookingStore'
+import { simplePaymentSchema, SimplePaymentForm } from '@/schemas/booking'
+import toast from 'react-hot-toast'
+import { useRouter } from 'next/router'
+import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js'
+import { useAuth } from '@/hooks/useAuth'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { CreditCard, QrCode } from 'lucide-react'
+import Image from 'next/image'
+import axios from 'axios'
 import {
   Form,
   FormControl,
@@ -20,35 +20,35 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form'
 import {
   AlertDialog,
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog'
 
 interface PaymentFormProps {
-  onPaymentReady?: (paymentHandler: () => Promise<void>) => void;
+  onPaymentReady?: (paymentHandler: () => Promise<void>) => void
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
-  const router = useRouter();
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const { userId } = useAuth();
+  const router = useRouter()
+  const stripe = useStripe()
+  const elements = useElements()
+  const [isProcessing, setIsProcessing] = useState(false)
+  const { userId } = useAuth()
 
   // PromptPay QR Code states
-  const [showQRModal, setShowQRModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false)
   const [qrCodeData, setQrCodeData] = useState<{
-    qrCode: string;
-    paymentId: string;
-    amount: number;
-    promptPayId: string;
-    expiresIn: number;
-  } | null>(null);
-  const [qrCountdown, setQrCountdown] = useState(0);
+    qrCode: string
+    paymentId: string
+    amount: number
+    promptPayId: string
+    expiresIn: number
+  } | null>(null)
+  const [qrCountdown, setQrCountdown] = useState(0)
 
   const {
     paymentInfo,
@@ -59,7 +59,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     clearPromoCode,
     customerInfo,
     getActiveCartItems,
-  } = useBookingStore();
+  } = useBookingStore()
 
   const form = useForm<SimplePaymentForm>({
     resolver: zodResolver(simplePaymentSchema),
@@ -68,12 +68,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
       cardName: paymentInfo.cardName,
       promoCode: paymentInfo.promoCode,
     },
-  });
+  })
 
-  const paymentMethod = form.watch("method");
-  const totalAmount = getTotalAmount();
-  const finalAmount = getFinalAmount();
-  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
+  const paymentMethod = form.watch('method')
+  const totalAmount = getTotalAmount()
+  const finalAmount = getFinalAmount()
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false)
 
   // Store refs for latest values (to avoid stale closures)
   const storeRef = useRef({
@@ -83,7 +83,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     userId,
     paymentInfo,
     getFinalAmount,
-  });
+  })
 
   useEffect(() => {
     storeRef.current = {
@@ -93,41 +93,51 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
       userId,
       paymentInfo,
       getFinalAmount,
-    };
-  }, [customerInfo, getActiveCartItems, totalAmount, userId, paymentInfo, getFinalAmount]);
+    }
+  }, [
+    customerInfo,
+    getActiveCartItems,
+    totalAmount,
+    userId,
+    paymentInfo,
+    getFinalAmount,
+  ])
 
   // จำลองการชำระเงินสำเร็จผ่าน PromptPay
   const handlePromptPaySuccess = useCallback(
     async (paymentId: string) => {
-      setShowQRModal(false);
-      setIsProcessing(true);
+      setShowQRModal(false)
+      setIsProcessing(true)
 
       try {
         toast.success(
-          "ชำระเงินผ่านพร้อมเพย์สำเร็จ! กำลังบันทึกข้อมูลการจอง...",
+          'ชำระเงินผ่านพร้อมเพย์สำเร็จ! กำลังบันทึกข้อมูลการจอง...',
           {
             duration: 4000,
-          },
-        );
+          }
+        )
 
         // Use refs for latest values
         const { customerInfo, getActiveCartItems, totalAmount, userId } =
-          storeRef.current;
+          storeRef.current
 
         // Apply promocode if exists
-        if (storeRef.current.paymentInfo.discount && storeRef.current.paymentInfo.promoCode) {
+        if (
+          storeRef.current.paymentInfo.discount &&
+          storeRef.current.paymentInfo.promoCode
+        ) {
           try {
             await axios.post('/api/promocode/apply', {
-              code: storeRef.current.paymentInfo.promoCode
-            });
+              code: storeRef.current.paymentInfo.promoCode,
+            })
           } catch (error) {
-            console.error('Error applying promocode:', error);
+            console.error('Error applying promocode:', error)
           }
         }
 
         // บันทึกข้อมูลการจองลง Supabase
         const { data: bookingData } = await axios.post(
-          "/api/booking/create",
+          '/api/booking/create',
           {
             userId: userId,
             items: getActiveCartItems(),
@@ -137,112 +147,118 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
             promoCode: storeRef.current.paymentInfo.promoCode,
             discount: storeRef.current.paymentInfo.discount,
             paymentIntentId: paymentId,
-            paymentStatus: "paid",
+            paymentStatus: 'paid',
           },
           {
             withCredentials: true,
-          },
-        );
+          }
+        )
 
-        console.log("Booking created successfully:", bookingData.bookingId);
+        console.log('Booking created successfully:', bookingData.bookingId)
 
         // Redirect to success page
-        router.push(`/booking-success?payment_intent=${paymentId}`);
+        router.push(`/booking-success?payment_intent=${paymentId}`)
       } catch (error) {
-        console.error("Error processing PromptPay payment:", error);
-        toast.error("เกิดข้อผิดพลาดในการดำเนินการ", {
+        console.error('Error processing PromptPay payment:', error)
+        toast.error('เกิดข้อผิดพลาดในการดำเนินการ', {
           duration: 5000,
-        });
+        })
       } finally {
-        setIsProcessing(false);
+        setIsProcessing(false)
       }
     },
-    [setShowQRModal, setIsProcessing, router],
-  );
+    [setShowQRModal, setIsProcessing, router]
+  )
 
   // PromptPay Payment
   const processPromptPayPayment = useCallback(async () => {
     // Use refs for latest values
-    const { customerInfo, getActiveCartItems } = storeRef.current;
+    const { customerInfo, getActiveCartItems } = storeRef.current
 
-    const { data: qrData } = await axios.post("/api/create-promptpay-qr", {
+    const { data: qrData } = await axios.post('/api/create-promptpay-qr', {
       amount: storeRef.current.getFinalAmount(),
       bookingId: `booking_${Date.now()}`,
       customerInfo: customerInfo,
       items: getActiveCartItems(),
-    });
+    })
 
-    setQrCodeData(qrData);
-    setQrCountdown(qrData.expiresIn);
-    setShowQRModal(true);
+    setQrCodeData(qrData)
+    setQrCountdown(qrData.expiresIn)
+    setShowQRModal(true)
 
     // เริ่ม countdown timer
     const timer = setInterval(() => {
-      setQrCountdown((prev) => {
+      setQrCountdown(prev => {
         if (prev <= 1) {
-          clearInterval(timer);
-          setShowQRModal(false);
-          return 0;
+          clearInterval(timer)
+          setShowQRModal(false)
+          return 0
         }
-        return prev - 1;
-      });
-    }, 1000);
+        return prev - 1
+      })
+    }, 1000)
 
     // จำลองการชำระเงินหลัง 10 วินาที (สำหรับ demo)
     setTimeout(() => {
-      handlePromptPaySuccess(qrData.paymentId);
-    }, 10000);
-  }, [setQrCodeData, setQrCountdown, setShowQRModal, handlePromptPaySuccess]);
+      handlePromptPaySuccess(qrData.paymentId)
+    }, 10000)
+  }, [setQrCodeData, setQrCountdown, setShowQRModal, handlePromptPaySuccess])
 
   const handleApplyPromoCode = async () => {
-    const promoCode = form.getValues("promoCode");
+    const promoCode = form.getValues('promoCode')
     if (!promoCode?.trim()) {
-      toast.error("กรุณากรอกโค้ดส่วนลด", {
+      toast.error('กรุณากรอกโค้ดส่วนลด', {
         duration: 3000,
-      });
-      return;
+      })
+      return
     }
 
-    setIsValidatingPromo(true);
+    setIsValidatingPromo(true)
     try {
       const response = await axios.post('/api/promocode/validate', {
         code: promoCode.trim(),
-        totalAmount: totalAmount
-      });
+        totalAmount: totalAmount,
+      })
 
       if (response.data.success) {
-        setPromoCodeDiscount(response.data.discount);
-        toast.success(`ใช้โค้ดส่วนลดสำเร็จ! ลด ฿${response.data.discount.amount.toFixed(2)}`, {
-          duration: 4000,
-        });
+        setPromoCodeDiscount(response.data.discount)
+        toast.success(
+          `ใช้โค้ดส่วนลดสำเร็จ! ลด ฿${response.data.discount.amount.toFixed(
+            2
+          )}`,
+          {
+            duration: 4000,
+          }
+        )
       } else {
-        clearPromoCode();
-        form.setValue('promoCode', '');
+        clearPromoCode()
+        form.setValue('promoCode', '')
         toast.error(response.data.message, {
           duration: 4000,
-        });
+        })
       }
     } catch (error: unknown) {
-      clearPromoCode();
-      form.setValue('promoCode', '');
-      const errorMessage = axios.isAxiosError(error) && error.response?.data?.message 
-        ? error.response.data.message 
-        : 'เกิดข้อผิดพลาดในการตรวจสอบโค้ดส่วนลด';
+      clearPromoCode()
+      form.setValue('promoCode', '')
+      const errorMessage =
+        axios.isAxiosError(error) && error.response?.data?.message
+          ? error.response.data.message
+          : 'เกิดข้อผิดพลาดในการตรวจสอบโค้ดส่วนลด'
       toast.error(errorMessage, {
         duration: 4000,
-      });
+      })
     } finally {
-      setIsValidatingPromo(false);
+      setIsValidatingPromo(false)
     }
-  };
+  }
 
   const handleRemovePromoCode = () => {
-    clearPromoCode();
-    form.setValue('promoCode', '');
+    clearPromoCode()
+    form.setValue('promoCode', '')
     toast.success('ยกเลิกโค้ดส่วนลดแล้ว', {
       duration: 2000,
-    });
-  };
+    })
+  }
 
   // NOTE: Commented out booking sync logic as it interferes with new booking flow
   // If you need to restore previous bookings, implement this in a separate component
@@ -282,34 +298,37 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
   // Credit Card Payment with Stripe Elements
   const processCreditCardPayment = useCallback(async () => {
     if (!stripe || !elements) {
-      throw new Error("Stripe has not loaded");
+      throw new Error('Stripe has not loaded')
     }
 
-    const cardElement = elements.getElement(CardElement);
+    const cardElement = elements.getElement(CardElement)
 
     if (!cardElement) {
-      throw new Error("Card element not found");
+      throw new Error('Card element not found')
     }
 
     // Use refs for latest values
     const { customerInfo, getActiveCartItems, totalAmount, userId } =
-      storeRef.current;
+      storeRef.current
 
     // Apply promocode if exists
-    if (storeRef.current.paymentInfo.discount && storeRef.current.paymentInfo.promoCode) {
+    if (
+      storeRef.current.paymentInfo.discount &&
+      storeRef.current.paymentInfo.promoCode
+    ) {
       try {
         await axios.post('/api/promocode/apply', {
-          code: storeRef.current.paymentInfo.promoCode
-        });
+          code: storeRef.current.paymentInfo.promoCode,
+        })
       } catch (error) {
-        console.error('Error applying promocode:', error);
+        console.error('Error applying promocode:', error)
         // Continue with payment even if promocode application fails
       }
     }
 
     // Create payment intent
     const { data: paymentData } = await axios.post(
-      "/api/create-payment-intent",
+      '/api/create-payment-intent',
       {
         amount: storeRef.current.getFinalAmount(),
         bookingId: `booking_${Date.now()}`,
@@ -321,10 +340,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
           additionalInfo: customerInfo.additionalInfo,
         },
         items: getActiveCartItems(),
-      },
-    );
+      }
+    )
 
-    const { clientSecret, paymentIntentId } = paymentData;
+    const { clientSecret, paymentIntentId } = paymentData
 
     // Confirm payment with Stripe Elements
     const { error: confirmError } = await stripe.confirmCardPayment(
@@ -333,25 +352,25 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
         payment_method: {
           card: cardElement,
           billing_details: {
-            name: form.getValues("cardName") ?? "Anonymous",
+            name: form.getValues('cardName') ?? 'Anonymous',
           },
         },
-      },
-    );
+      }
+    )
 
     if (confirmError) {
-      throw new Error(confirmError.message ?? "Payment confirmation failed");
+      throw new Error(confirmError.message ?? 'Payment confirmation failed')
     }
 
     // Payment successful
-    toast.success("ชำระเงินสำเร็จ! กำลังบันทึกข้อมูลการจอง...", {
+    toast.success('ชำระเงินสำเร็จ! กำลังบันทึกข้อมูลการจอง...', {
       duration: 4000,
-    });
+    })
 
     // บันทึกข้อมูลการจองลง Supabase
     try {
       const { data: bookingData } = await axios.post(
-        "/api/booking/create",
+        '/api/booking/create',
         {
           userId: userId,
           items: getActiveCartItems(),
@@ -361,71 +380,71 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
           promoCode: storeRef.current.paymentInfo.promoCode,
           discount: storeRef.current.paymentInfo.discount,
           paymentIntentId: paymentIntentId,
-          paymentStatus: "paid",
+          paymentStatus: 'paid',
         },
         {
           withCredentials: true,
-        },
-      );
+        }
+      )
 
-      console.log("Booking created successfully:", bookingData.bookingId);
+      console.log('Booking created successfully:', bookingData.bookingId)
     } catch (error) {
-      console.error("Error creating booking:", error);
-      toast.error("ระบบบันทึกข้อมูลมีปัญหา กรุณาติดต่อเจ้าหน้าที่", {
+      console.error('Error creating booking:', error)
+      toast.error('ระบบบันทึกข้อมูลมีปัญหา กรุณาติดต่อเจ้าหน้าที่', {
         duration: 6000,
-      });
+      })
     }
 
     // Redirect to success page
-    router.push(`/booking-success?payment_intent=${paymentIntentId}`);
-  }, [stripe, elements, form, router]);
+    router.push(`/booking-success?payment_intent=${paymentIntentId}`)
+  }, [stripe, elements, form, router])
 
   // Register payment handler with parent
   useEffect(() => {
-    if (!onPaymentReady) return;
+    if (!onPaymentReady) return
 
     // Create a stable reference to the payment handler
     const handleProcessPayment = async () => {
       if (isProcessing) {
-        return;
+        return
       }
 
-      setIsProcessing(true);
+      setIsProcessing(true)
       try {
         if (!userId) {
-          return;
+          return
         }
 
         if (finalAmount <= 0) {
-          throw new Error("ไม่มียอดที่ต้องชำระ");
+          throw new Error('ไม่มียอดที่ต้องชำระ')
         }
 
-        if (paymentMethod === "creditcard") {
+        if (paymentMethod === 'creditcard') {
           if (!stripe || !elements) {
-            throw new Error("กรุณารอสักครู่ ระบบกำลังโหลด...");
+            throw new Error('กรุณารอสักครู่ ระบบกำลังโหลด...')
           }
-          await processCreditCardPayment();
+          await processCreditCardPayment()
         } else {
-          await processPromptPayPayment();
+          await processPromptPayPayment()
         }
       } catch (error) {
         toast.error(
-          (error as Error).message || "ไม่สามารถดำเนินการชำระเงินได้",
+          (error as Error).message || 'ไม่สามารถดำเนินการชำระเงินได้',
           {
             duration: 5000,
-          },
-        );
+          }
+        )
       } finally {
-        setIsProcessing(false);
+        setIsProcessing(false)
       }
-    };
+    }
 
-    onPaymentReady(handleProcessPayment);
+    onPaymentReady(handleProcessPayment)
 
     // Cleanup function to set handler to null when component unmounts or dependencies change
     return () => {
-      onPaymentReady(async () => {});
-    };
+      onPaymentReady(async () => {})
+    }
   }, [
     onPaymentReady,
     paymentMethod,
@@ -436,22 +455,22 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
     isProcessing,
     processCreditCardPayment,
     processPromptPayPayment,
-  ]);
+  ])
 
   // Update store when form values change
   useEffect(() => {
-    const subscription = form.watch((value) => {
+    const subscription = form.watch(value => {
       updatePaymentInfo({
-        method: value.method ?? "creditcard",
-        cardNumber: "",
-        cardName: value.cardName ?? "",
-        expiryDate: "",
-        cvv: "",
-        promoCode: value.promoCode ?? "",
-      });
-    });
-    return () => subscription.unsubscribe();
-  }, [form, updatePaymentInfo]);
+        method: value.method ?? 'creditcard',
+        cardNumber: '',
+        cardName: value.cardName ?? '',
+        expiryDate: '',
+        cvv: '',
+        promoCode: value.promoCode ?? '',
+      })
+    })
+    return () => subscription.unsubscribe()
+  }, [form, updatePaymentInfo])
 
   return (
     <Form {...form}>
@@ -466,64 +485,34 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
           name="method"
           render={({ field }) => (
             <FormItem>
-              <div className="flex flex-col gap-2 md:grid md:grid-cols-2 md:gap-4">
+              <div className="flex flex-col gap-2 md:grid md:grid-cols-1 md:gap-4">
                 <button
                   type="button"
-                  onClick={() => field.onChange("creditcard")}
+                  onClick={() => field.onChange('creditcard')}
                   className={cn(
-                    "flex flex-col items-center justify-center p-6 border rounded-lg transition-all duration-150 ease-in-out cursor-pointer",
-                    field.value === "creditcard"
-                      ? "border-blue-500 ring-2 ring-blue-500 bg-blue-50"
-                      : "border-gray-300 hover:border-gray-400",
+                    'flex flex-col items-center justify-center p-6 border rounded-lg transition-all duration-150 ease-in-out cursor-pointer',
+                    field.value === 'creditcard'
+                      ? 'border-blue-500 ring-2 ring-blue-500 bg-blue-50'
+                      : 'border-gray-300 hover:border-gray-400'
                   )}
                 >
                   <CreditCard
                     className={cn(
-                      "w-10 h-10 mb-2",
-                      field.value === "creditcard"
-                        ? "text-blue-600"
-                        : "text-gray-500",
+                      'w-10 h-10 mb-2',
+                      field.value === 'creditcard'
+                        ? 'text-blue-600'
+                        : 'text-gray-500'
                     )}
                   />
                   <span
                     className={cn(
-                      "font-medium",
-                      field.value === "creditcard"
-                        ? "text-blue-700"
-                        : "text-gray-700",
+                      'font-medium',
+                      field.value === 'creditcard'
+                        ? 'text-blue-700'
+                        : 'text-gray-700'
                     )}
                   >
                     บัตรเครดิต
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => field.onChange("promptpay")}
-                  className={cn(
-                    "flex flex-col items-center justify-center p-6 border rounded-lg transition-all duration-150 ease-in-out cursor-pointer",
-                    field.value === "promptpay"
-                      ? "border-blue-500 ring-2 ring-blue-500 bg-blue-50"
-                      : "border-gray-300 hover:border-gray-400",
-                  )}
-                >
-                  <QrCode
-                    className={cn(
-                      "w-10 h-10 mb-2",
-                      field.value === "promptpay"
-                        ? "text-blue-600"
-                        : "text-gray-500",
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "font-medium",
-                      field.value === "promptpay"
-                        ? "text-blue-700"
-                        : "text-gray-700",
-                    )}
-                  >
-                    พร้อมเพย์
                   </span>
                 </button>
               </div>
@@ -533,7 +522,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
         />
 
         {/* Credit Card Fields */}
-        {paymentMethod === "creditcard" && (
+        {paymentMethod === 'creditcard' && (
           <div className="space-y-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-800">
@@ -554,12 +543,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
                       type="text"
                       placeholder="JOHN DOE"
                       {...field}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(
-                          /[^a-zA-Z\s]/g,
-                          "",
-                        );
-                        field.onChange(value.toUpperCase());
+                      onChange={e => {
+                        const value = e.target.value.replace(/[^a-zA-Z\s]/g, '')
+                        field.onChange(value.toUpperCase())
                       }}
                     />
                   </FormControl>
@@ -577,10 +563,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
                   options={{
                     style: {
                       base: {
-                        fontSize: "16px",
-                        color: "#424770",
-                        "::placeholder": {
-                          color: "#aab7c4",
+                        fontSize: '16px',
+                        color: '#424770',
+                        '::placeholder': {
+                          color: '#aab7c4',
                         },
                       },
                     },
@@ -588,16 +574,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
                 />
               </div>
             </div>
-          </div>
-        )}
-
-        {/* PromptPay Info */}
-        {paymentMethod === "promptpay" && (
-          <div className="text-center p-4 border border-dashed border-gray-300 rounded-lg">
-            <QrCode className="w-24 h-24 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600">
-              คลิกชำระเงินเพื่อสร้าง QR Code สำหรับพร้อมเพย์
-            </p>
           </div>
         )}
 
@@ -626,7 +602,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
                     disabled={isValidatingPromo || !field.value?.trim()}
                     className="border-blue-500 text-blue-500 hover:bg-blue-50 cursor-pointer w-full md:w-auto"
                   >
-                    {isValidatingPromo ? "กำลังตรวจสอบ..." : "ใช้โค้ด"}
+                    {isValidatingPromo ? 'กำลังตรวจสอบ...' : 'ใช้โค้ด'}
                   </Button>
                 ) : (
                   <Button
@@ -639,7 +615,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
                   </Button>
                 )}
               </div>
-              
+
               {/* Show discount info if applied */}
               {paymentInfo.discount && (
                 <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -649,21 +625,22 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
                     </span>
                   </div>
                   <div className="text-sm text-green-700 mt-1">
-                    ส่วนลด {paymentInfo.discount.type === 'percentage' 
-                      ? `${paymentInfo.discount.value}%` 
-                      : `฿${paymentInfo.discount.value}`
-                    } = ฿{paymentInfo.discount.amount.toFixed(2)}
+                    ส่วนลด{' '}
+                    {paymentInfo.discount.type === 'percentage'
+                      ? `${paymentInfo.discount.value}%`
+                      : `฿${paymentInfo.discount.value}`}{' '}
+                    = ฿{paymentInfo.discount.amount.toFixed(2)}
                   </div>
                 </div>
               )}
-              
+
               <FormMessage />
             </FormItem>
           )}
         />
 
         {/* Stripe Loading Warning */}
-        {paymentMethod === "creditcard" && (!stripe || !elements) && (
+        {paymentMethod === 'creditcard' && (!stripe || !elements) && (
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
@@ -699,88 +676,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentReady }) => {
           </div>
         )}
       </div>
-
-      {/* PromptPay QR Modal */}
-      <AlertDialog open={showQRModal} onOpenChange={setShowQRModal}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-center">
-              สแกน QR Code เพื่อชำระเงิน
-            </AlertDialogTitle>
-          </AlertDialogHeader>
-
-          <div className="flex flex-col items-center space-y-4 p-4">
-            {qrCodeData && (
-              <>
-                {/* QR Code */}
-                <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
-                  <Image
-                    src={qrCodeData.qrCode}
-                    alt="PromptPay QR Code"
-                    width={192}
-                    height={192}
-                    className="w-48 h-48"
-                    unoptimized={true}
-                  />
-                </div>
-
-                {/* Payment Details */}
-                <div className="text-center space-y-2">
-                  <div className="text-2xl font-bold text-blue-600">
-                    ฿{qrCodeData.amount.toFixed(2)}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    PromptPay ID: {qrCodeData.promptPayId}
-                  </div>
-
-                  {/* Countdown Timer */}
-                  <div className="flex items-center justify-center space-x-2 text-orange-600">
-                    <span className="text-sm">หมดเวลาใน:</span>
-                    <span className="font-mono font-bold">
-                      {Math.floor(qrCountdown / 60)}:
-                      {(qrCountdown % 60).toString().padStart(2, "0")}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Instructions */}
-                <div className="bg-blue-50 p-3 rounded-lg text-center">
-                  <p className="text-sm text-blue-800">
-                    📱 เปิดแอปธนาคารและสแกน QR Code นี้
-                  </p>
-                  <p className="text-xs text-blue-600 mt-1">
-                    💡 สำหรับ Demo: ระบบจะจำลองการชำระเงินอัตโนมัติใน 10 วินาที
-                  </p>
-                </div>
-
-                {/* Manual Payment Success Button (for demo) */}
-                <Button
-                  onClick={() => handlePromptPaySuccess(qrCodeData.paymentId)}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white cursor-pointer"
-                  size="sm"
-                >
-                  ✅ จำลองการชำระเงินสำเร็จ (Demo)
-                </Button>
-
-                {/* Cancel Button */}
-                <Button
-                  variant="outline"
-                  onClick={() => setShowQRModal(false)}
-                  className="w-full cursor-pointer"
-                  size="sm"
-                >
-                  ยกเลิก
-                </Button>
-              </>
-            )}
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
     </Form>
-  );
-};
+  )
+}
 
-export default PaymentForm;
+export default PaymentForm
 
 // Export types for parent component to use
-export type { PaymentFormProps };
+export type { PaymentFormProps }
