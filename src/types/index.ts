@@ -14,34 +14,41 @@ export interface AppProvidersProps {
 }
 
 // User interfaces
+export interface CategoryColor {
+   id?: number;
+   color?: string;
+}
 export interface User {
-   id: number;
-   first_name: string;
-   last_name: string;
-   email: string;
-   tel: string;
-   image_url?: string;
-   created_at: string;
-   updated_at: string;
+  id: number
+  first_name: string
+  last_name: string
+  email: string
+  tel: string
+  image_url?: string
+  created_at: string
+  updated_at: string
 }
 
 // Extended User interface with address fields (from API)
 export interface UserWithAddress extends User {
-   address: string;
-   subdistrict: string;
-   district: string;
-   province: string;
-   postalCode?: string;
+  address: string
+  subdistrict: string
+  district: string
+  province: string
+  postalCode?: string
 }
 
-// Extended User interface with address fields (from API)
-export interface UserWithAddress extends User {
-   address: string;
-   subdistrict: string;
-   district: string;
-   province: string;
-   postalCode?: string;
+export interface RepairCardProps {
+  code: string;
+  status: 'รอดำเนินการ' | 'กำลังดำเนินการ' | 'ดำเนินการสำเร็จ' | 'ยกเลิก';
+  appointment_at: string;
+  technician_name: string;
+  total_price: string;
+  quantity: number;
+  service_title: string;
+  service_unit: string;
 }
+
 
 // Admin interfaces
 export interface Admin {
