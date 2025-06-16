@@ -14,7 +14,8 @@ const fetchServices = async () => {
     created_at,
     updated_at,
     category: categories (
-      name
+      name,
+      color
     ),
     order_num
   `)
@@ -51,6 +52,7 @@ export default async function handler(
         title: svc.title,
         category_id: svc.category_id,
         category_name: svc.category?.name ?? 'Uncategorized',
+        category_color: svc.category?.color ?? '#000000',
         image_url: svc.image_url,
         created_at: svc.created_at,
         updated_at: svc.updated_at,

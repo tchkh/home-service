@@ -104,6 +104,7 @@ export interface ServiceWithDetailsAndCategories {
 
 export interface ServiceWithCategory extends Service {
    category_name: string;
+   category_color: string;
 }
 
 export interface ServiceFormValues {
