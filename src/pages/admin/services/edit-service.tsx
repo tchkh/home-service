@@ -136,7 +136,6 @@ function EditServicePage() {
   const onSubmit = async (data: ServiceFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("[DEBUG] data:", data);
       const formData = new FormData();
       formData.append("title", data.title); // ใช้ serviceName ตาม schema
       formData.append("category", data.category);
@@ -161,8 +160,6 @@ function EditServicePage() {
         console.error("No serviceId provided");
         return;
       } // ถ้าไม่มี serviceId ให้หยุดการทำงาน
-      console.log("[DEBUG] serviceId:", serviceId);
-      console.log("[DEBUG] formData:", formData);
       
       // เรียก API ด้วย PUT method ไปที่ Endpoint สำหรับแก้ไข
       await axios.put(

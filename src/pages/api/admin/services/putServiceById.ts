@@ -161,8 +161,6 @@ export default async function handler(
     { message: string } | { error: string; issues?: z.ZodIssue[] }
   >
 ) {
-  console.log("[DEBUG][putServiceById] req.body:", req.body);
-  console.log("[DEBUG][putServiceById] req.query:", req.query);
   if (req.method !== "PUT") {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
