@@ -58,6 +58,11 @@ export interface Admin {
    email: string;
 }
 
+export interface CategoryName {
+   id: string;
+   name: string;
+}
+
 export interface Service {
    id: string;
    title: string;
@@ -74,10 +79,108 @@ export interface SubService {
    title: string;
    price: string;
    service_unit: string;
+   status: string;
+}
+
+export interface ServiceWithDetails {
+   id: string;
+   title: string;
+   image_url: string;
+   created_at: Date;
+   updated_at: Date;
+   category:
+     | {
+         id: string;
+         name: string;
+         description: string;
+         created_at: Date;
+         updated_at: Date;
+       }[]
+     | null;
+   sub_services: {
+     id: string;
+     title: string;
+     price: number;
+     service_unit: string;
+     status: string;
+   }[];
+}
+
+export interface ServiceWithDetailsPost {
+   id: string;
+   created_at: string;
+   updated_at: string | null;
+   title: string;
+   category_id: number | null;
+   image_url: string;
+ }
+
+export interface ServiceWithDetailsAndCategories {
+   service: ServiceWithDetails;
+   categories: CategoryName[];
+}
+
+export interface ServiceWithDetails {
+   id: string;
+   title: string;
+   image_url: string;
+   created_at: Date;
+   updated_at: Date;
+   category:
+     | {
+         id: string;
+         name: string;
+         description: string;
+         created_at: Date;
+         updated_at: Date;
+       }[]
+     | null;
+   sub_services: {
+     id: string;
+     title: string;
+     price: number;
+     service_unit: string;
+     status: string;
+   }[];
+}
+
+export interface ServiceWithDetailsAndCategories {
+   service: ServiceWithDetails;
+   categories: CategoryName[];
+}
+
+export interface ServiceWithDetails {
+   id: string;
+   title: string;
+   image_url: string;
+   created_at: Date;
+   updated_at: Date;
+   category:
+     | {
+         id: string;
+         name: string;
+         description: string;
+         created_at: Date;
+         updated_at: Date;
+       }[]
+     | null;
+   sub_services: {
+     id: string;
+     title: string;
+     price: number;
+     service_unit: string;
+     status: string;
+   }[];
+}
+
+export interface ServiceWithDetailsAndCategories {
+   service: ServiceWithDetails;
+   categories: CategoryName[];
 }
 
 export interface ServiceWithCategory extends Service {
    category_name: string;
+   category_color: string;
 }
 
 export interface ServiceFormValues {

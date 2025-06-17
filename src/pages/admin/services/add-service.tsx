@@ -11,13 +11,31 @@ import { useRouter } from "next/router"; // Hook
 import Image from "next/image";
 import { serviceSchema, ServiceFormValues } from "../../../schemas/add-service";
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
+import { CategoryName } from "@/types";
+import { useEffect } from "react";
 
 function AddServicePage() {
    const router = useRouter();
+   const [categories, setCategories] = useState<CategoryName[]>([]);
    // เพิ่ม state เก็บไฟล์จริงๆ (File) แยกจาก URL preview
    const [selectedFile, setSelectedFile] = useState<File | null>(null);
    const [selectedImage, setSelectedImage] = useState<string | null>(null);
    const [isSubmitting, setIsSubmitting] = useState(false);
+
+   useEffect(() => {
+      const fetchCategories = async () => {
+         try {
+            const result = await axios.get("/api/admin/services/getAllCategory");
+            if (result.status === 200) {
+               setCategories(result.data);
+            }
+         } catch (error) {
+            console.error("Error fetching categories:", error);
+            return;
+         }
+      };
+      fetchCategories();
+   }, []);
 
    // ตัดการ register ฟิลด์ "image" ออกไป เพราะเราจะควบคุมด้วย state แทน
    const {
@@ -63,13 +81,6 @@ function AddServicePage() {
             formData
          );
 
-         if (result.status === 200) {
-            console.log(
-               "AddServicePage: Response from backend (postService) :",
-               result.data
-            );
-         }
-
          // ถ้าสร้างสำเร็จ ไปหน้า detail-service
          const newId = result.data.id as string;
          router.push(`/admin/services/detail-service?serviceId=${newId}`);
@@ -92,11 +103,6 @@ function AddServicePage() {
          setValue("image", file, { shouldValidate: true });
          setValue("image", file as File, { shouldValidate: true });
       }
-      console.log(
-         "Selected image (preview URL):",
-         file ? URL.createObjectURL(file) : null
-      );
-      console.log("Selected file:", file);
    };
 
    const handleRemoveImage = () => {
@@ -142,16 +148,16 @@ function AddServicePage() {
           <h1 className="ml-5 text-heading-2 text-2xl font-semibold">เพิ่มบริการ</h1>
           {/* ปุ่ม */}
           <div className="flex justify-end space-x-3">
-            <Button
+            <button
               type="button"
               onClick={handleCancel}
-              className="btn btn--secondary px-6 py-3"
+              className="btn btn--secondary h-9 px-6 py-3 text-sm"
             >
               ยกเลิก
-            </Button>
-            <Button type="submit" disabled={isSubmitting} className="btn btn--primary px-6 py-3">
+            </button>
+            <button type="submit" disabled={isSubmitting} className="btn btn--primary h-9 px-6 py-3 text-sm">
               สร้าง
-            </Button>
+            </button>
           </div>
         </header>
 
@@ -181,13 +187,15 @@ function AddServicePage() {
             </Label>
             <select
               id="category"
-              className="w-80 pl-2 border-1 border-[var(--gray-300)] rounded-sm text-sm"
+              className="w-80 h-9 pl-2 border-1 border-[var(--gray-300)] rounded-md text-sm cursor-pointer"
               {...register("category", { required: true })}
             >
               <option value="">เลือกหมวดหมู่</option>
-              <option value="บริการทั่วไป">บริการทั่วไป</option>
-              <option value="บริการห้องครัว">บริการห้องครัว</option>
-              <option value="บริการห้องน้ำ">บริการห้องน้ำ</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
             </select>
             {errors.category && (
               <p className="text-sm text-[var(--red)]">
@@ -315,25 +323,25 @@ function AddServicePage() {
                       </p>
                     )}
                   </div>
-                  <Button
+                  <button
                     type="button"
-                    className="w-[72px] pt-8 ml-2 btn text-[var(--gray-400)] underline cursor-hover"
+                    className="w-[72px] h-9 pt-8 ml-2 btn text-[var(--gray-400)] text-sm underline cursor-hover"
                     onClick={() => {
                       handleRemoveSubService(idx);
                     }}
                   >
                     ลบรายการ
-                  </Button>
+                  </button>
                 </div>
               )
             )}
-            <Button
+            <button
               type="button"
-              className="btn btn--secondary w-[185px] px-[24px] py-[10px]"
+              className="btn btn--secondary w-[185px] h-9 px-[24px] py-[10px] text-sm"
               onClick={() => append({ title: "", price: 0, service_unit: "" })}
             >
-              เพิ่มรายการ +
-            </Button>
+              เพิ่มรายการ &nbsp; <span className="text-xl"> +</span>
+            </button>
           </section>
         </section>
       </form>

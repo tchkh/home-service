@@ -36,6 +36,7 @@ export default async function handler(
       .from('services_details')
       .select('*')
       .eq('service_id', id)
+      .eq('sub_service_status', 'active')
       .order('price', { ascending: true })
 
     // ตรวจสอบ error จาก Supabase

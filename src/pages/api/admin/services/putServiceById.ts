@@ -107,24 +107,47 @@ async function updateServiceWithDetails(
       .eq("id", serviceId);
     if (svcErr) throw svcErr;
 
-    // ลบ sub_services เก่า
-    const { error: delErr } = await supabaseAdmin
-      .from("sub_services")
-      .delete()
-      .eq("service_id", serviceId);
-    if (delErr) throw delErr;
+    // อัปเดต status ของ sub_services เดิมเป็น cancelled (soft delete)
+    // 1. ดึง sub_services เดิมทั้งหมดของ serviceId
+const { data: oldSubs, error: getOldErr } = await supabaseAdmin
+  .from("sub_services")
+  .select("id, title, price, service_unit")
+  .eq("service_id", serviceId)
+  .eq("status", "active");
+if (getOldErr) throw getOldErr;
 
-    // แทรก sub_services ใหม่
-    const insertPayload = payload.sub_services.map((s) => ({
-      service_id: serviceId,
-      title: s.title,
-      price: s.price,
-      service_unit: s.service_unit,
-    }));
-    const { error: insErr } = await supabaseAdmin
-      .from("sub_services")
-      .insert(insertPayload);
-    if (insErr) throw insErr;
+// 2. หา sub_service เดิมที่ถูกลบ (ไม่มีใน payload)
+const payloadKeys = payload.sub_services.map(s => `${s.title}|${s.price}|${s.service_unit}`);
+const toCancel = (oldSubs ?? []).filter(
+  old => !payloadKeys.includes(`${old.title}|${old.price}|${old.service_unit}`)
+);
+if (toCancel.length > 0) {
+  const toCancelIds = toCancel.map(s => s.id);
+  const { error: cancelErr } = await supabaseAdmin
+    .from("sub_services")
+    .update({ status: "cancelled" })
+    .in("id", toCancelIds);
+  if (cancelErr) throw cancelErr;
+}
+
+// 3. หา sub_service ใหม่ (ไม่มีใน oldSubs)
+const oldKeys = (oldSubs ?? []).map(s => `${s.title}|${s.price}|${s.service_unit}`);
+const toInsert = payload.sub_services.filter(
+  s => !oldKeys.includes(`${s.title}|${s.price}|${s.service_unit}`)
+);
+if (toInsert.length > 0) {
+  const insertPayload = toInsert.map(s => ({
+    service_id: serviceId,
+    title: s.title,
+    price: s.price,
+    service_unit: s.service_unit,
+    status: "active",
+  }));
+  const { error: insErr } = await supabaseAdmin
+    .from("sub_services")
+    .insert(insertPayload);
+  if (insErr) throw insErr;
+}
   } catch (error) {
     console.error("Error in updateServiceWithDetails:", error);
     throw error;
@@ -138,8 +161,6 @@ export default async function handler(
     { message: string } | { error: string; issues?: z.ZodIssue[] }
   >
 ) {
-  console.log("[DEBUG][putServiceById] req.body:", req.body);
-  console.log("[DEBUG][putServiceById] req.query:", req.query);
   if (req.method !== "PUT") {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
