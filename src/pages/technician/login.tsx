@@ -6,6 +6,7 @@ import Head from "next/head";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { loginSchema, LoginFormInputs } from "../../schemas/auth";
+import toast from "react-hot-toast";
 
 
 export default function TechnicianLoginPage() {
@@ -34,7 +35,13 @@ export default function TechnicianLoginPage() {
 
       // ถ้าสำเร็จ ทำการ redirect
       if (response.data.success) {
-        router.push("/technician/service-request");
+        toast.success("เข้าสู่ระบบสำเร็จ! กำลังนำทางไปหน้าหลัก...", {
+          duration: 2000,
+        });
+        // รอให้ toast แสดงแล้วค่อย redirect
+        setTimeout(() => {
+          router.push("/technician/service-request");
+        }, 1500);
       }
     } catch (error: unknown) {
       // จัดการกับข้อผิดพลาด
@@ -42,13 +49,19 @@ export default function TechnicianLoginPage() {
         // ตรวจสอบว่าเป็น Axios error
         // ดึงข้อความ error จาก axios response
         if (error.response && error.response.data) {
-          setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+          const errorMessage = "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+          toast.error(errorMessage);
+          setError(errorMessage);
         } else {
-          setError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+          const errorMessage = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
+          toast.error(errorMessage);
+          setError(errorMessage);
         }
       } else {
         // กรณีเป็น error ทั่วไป
-        setError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+        const errorMessage = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
+        toast.error(errorMessage);
+        setError(errorMessage);
       }
     } finally {
       setIsLoading(false);

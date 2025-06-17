@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Service } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = (process.env.NEXT_PUBLIC_APP_URL || '') + '/api';
 
 export const getServices = async (): Promise<Service[]> => {
   try {

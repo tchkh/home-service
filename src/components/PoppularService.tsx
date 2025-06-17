@@ -11,6 +11,7 @@ function PoppularService() {
       image_url: string;
       min_price: string;
       max_price: string;
+      color: string;
    }
    interface SearchType {
       search: string;
@@ -44,9 +45,7 @@ function PoppularService() {
       const getDataService = async () => {
          try {
             // search=${searchTest}&category=${categoryTest}&
-            const res = await axios.get(
-               `/api/service?${queryString}`
-            );
+            const res = await axios.get(`/api/service?${queryString}`);
             setServiceCard(res.data.service);
          } catch (error) {
             console.log("error: ", error);
@@ -68,6 +67,7 @@ function PoppularService() {
                   category={service.category_name}
                   minPrice={service.min_price}
                   maxPrice={service.max_price}
+                  color={service.color}
                />
             ))}
          </div>

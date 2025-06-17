@@ -7,42 +7,61 @@ import { Input } from "@/components/ui/input"; // Component Input จาก Shad
 import { Label } from "@/components/ui/label"; // Component Label จาก Shadcn UI
 import { Trash } from "lucide-react";
 import { useRouter } from "next/router"; // Hook
-import { useSidebar } from "@/contexts/SidebarContext";
 // สำหรับจัดการการเปลี่ยนเส้นทางใน Next.js
 import Image from "next/image";
 import { serviceSchema, ServiceFormValues } from "../../../schemas/add-service";
+import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
+import { CategoryName } from "@/types";
+import { useEffect } from "react";
 
 function AddServicePage() {
-  const router = useRouter();
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
-  // เพิ่ม state เก็บไฟล์จริงๆ (File) แยกจาก URL preview
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+   const router = useRouter();
+   const [categories, setCategories] = useState<CategoryName[]>([]);
+   // เพิ่ม state เก็บไฟล์จริงๆ (File) แยกจาก URL preview
+   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ตัดการ register ฟิลด์ "image" ออกไป เพราะเราจะควบคุมด้วย state แทน
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-    setValue, // ยังใช้ setValue สำหรับ zod validation ถ้าต้องการ
-  } = useForm<ServiceFormValues>({
-    resolver: zodResolver(serviceSchema),
-    defaultValues: {
-      sub_services: [{ title: "", price: 0, service_unit: "" }],
-    },
-  });
+   useEffect(() => {
+      const fetchCategories = async () => {
+         try {
+            const result = await axios.get("/api/admin/services/getAllCategory");
+            if (result.status === 200) {
+               setCategories(result.data);
+            }
+         } catch (error) {
+            console.error("Error fetching categories:", error);
+            return;
+         }
+      };
+      fetchCategories();
+   }, []);
 
-  const {
-    // ดึงฟังก์ชันและ fields ที่จำเป็นจาก useFieldArray hook สำหรับจัดการอาร์เรย์ของบริการย่อย
-    fields, // อาร์เรย์ของฟิลด์ที่ถูกจัดการ
-    append, // ฟังก์ชันสำหรับเพิ่มฟิลด์ใหม่
-    remove, // ฟังก์ชันสำหรับลบฟิลด์
-  } = useFieldArray({ control, name: "sub_services" }); // เชื่อมต่อกับ control ของ useForm และระบุชื่อของอาร์เรย์
+   // ตัดการ register ฟิลด์ "image" ออกไป เพราะเราจะควบคุมด้วย state แทน
+   const {
+      register,
+      handleSubmit,
+      control,
+      formState: { errors },
+      setValue, // ยังใช้ setValue สำหรับ zod validation ถ้าต้องการ
+   } = useForm<ServiceFormValues>({
+      resolver: zodResolver(serviceSchema),
+      defaultValues: {
+         sub_services: [{ title: "", price: 0, service_unit: "" }],
+      },
+   });
+
+   const {
+      // ดึงฟังก์ชันและ fields ที่จำเป็นจาก useFieldArray hook สำหรับจัดการอาร์เรย์ของบริการย่อย
+      fields, // อาร์เรย์ของฟิลด์ที่ถูกจัดการ
+      append, // ฟังก์ชันสำหรับเพิ่มฟิลด์ใหม่
+      remove, // ฟังก์ชันสำหรับลบฟิลด์
+   } = useFieldArray({ control, name: "sub_services" }); // เชื่อมต่อกับ control ของ useForm และระบุชื่อของอาร์เรย์
 
   // ฟังก์ชันที่ถูกเรียกเมื่อมีการ submit ฟอร์ม
   const onSubmit = async (data: ServiceFormValues) => {
     try {
+      setIsSubmitting(true);
       // สร้าง FormData สำหรับ multipart/form-data
       const formData = new FormData();
       formData.append("title", data.title);
@@ -56,148 +75,103 @@ function AddServicePage() {
       // sub_services เป็น JSON string ให้ formidable มา parse
       formData.append("sub_services", JSON.stringify(data.sub_services));
 
-      // เรียก API ด้วย multipart/form-data
-      const result = await axios.post("/api/admin/services/postService", formData);
+         // เรียก API ด้วย multipart/form-data
+         const result = await axios.post(
+            "/api/admin/services/postService",
+            formData
+         );
 
-      if (result.status === 200) {
-        console.log(
-          "AddServicePage: Response from backend (postService) :",
-          result.data
-        );
+         // ถ้าสร้างสำเร็จ ไปหน้า detail-service
+         const newId = result.data.id as string;
+         router.push(`/admin/services/detail-service?serviceId=${newId}`);
+      } catch (err) {
+         console.error("Error creating service:", err);
       }
+   };
 
-      // ถ้าสร้างสำเร็จ ไปหน้า detail-service
-      const newId = result.data.id as string;
-      router.push(`/admin/services/detail-service?serviceId=${newId}`);
-    } catch (err) {
-      console.error("Error creating service:", err);
-    }
-  };
+   // ฟังก์ชันสำหรับจัดการการยกเลิกและกลับไปยังหน้าก่อนหน้า
+   const handleCancel = () => router.push("/admin/services");
 
-  // ฟังก์ชันสำหรับจัดการการยกเลิกและกลับไปยังหน้าก่อนหน้า
-  const handleCancel = () => router.push("/admin/services/service");
+   // ฟังก์ชันสำหรับจัดการเมื่อมีการเปลี่ยนแปลงไฟล์รูปภาพ
+   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0] ?? null;
+      if (file) {
+         // เก็บ URL preview
+         setSelectedImage(URL.createObjectURL(file));
+         // เก็บไฟล์จริงๆ ไว้ใน state
+         setSelectedFile(file);
+         setValue("image", file, { shouldValidate: true });
+         setValue("image", file as File, { shouldValidate: true });
+      }
+   };
 
-  // ฟังก์ชันสำหรับจัดการเมื่อมีการเปลี่ยนแปลงไฟล์รูปภาพ
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-    if (file) {
-      // เก็บ URL preview
-      setSelectedImage(URL.createObjectURL(file));
-      // เก็บไฟล์จริงๆ ไว้ใน state
-      setSelectedFile(file);
-      setValue("image", file, { shouldValidate: true });
-      setValue("image", file as File, { shouldValidate: true });
-    }
-    console.log(
-      "Selected image (preview URL):",
-      file ? URL.createObjectURL(file) : null
-    );
-    console.log("Selected file:", file);
-  };
+   const handleRemoveImage = () => {
+      setSelectedImage(null);
+      setSelectedFile(null);
+      setValue("image", null, { shouldValidate: true });
+   };
 
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-    setSelectedFile(null);
-    setValue("image", null, { shouldValidate: true });
-  };
-
-  const handlePriceChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    index: number
-  ) => {
-    const value = event.target.value;
-    setValue(`sub_services.${index}.price`, Number(value), {
-      shouldValidate: true,
-    });
-  };
-
-  const handleRemoveSubService = (index: number) => {
-    if (index > 0) {
-      remove(index);
-    } else {
-      remove(index);
-      append({
-        title: "",
-        price: 0,
-        service_unit: "",
+   const handlePriceChange = (
+      event: React.ChangeEvent<HTMLInputElement>,
+      index: number
+   ) => {
+      const value = event.target.value;
+      setValue(`sub_services.${index}.price`, Number(value), {
+         shouldValidate: true,
       });
-    }
-  };
+   };
+
+   const handleRemoveSubService = (index: number) => {
+      if (index > 0) {
+         remove(index);
+      } else {
+         remove(index);
+         append({
+            title: "",
+            price: 0,
+            service_unit: "",
+         });
+      }
+   };
 
   return (
-    <div className={`flex min-h-screen bg-[var(--bg)]`}>
+    <main className={`flex min-h-screen bg-[var(--bg)]`}>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-full flex flex-col space-y-6"
       >
         {/* Header */}
-        <div className="relative flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
+        <header className="relative flex flex-row justify-between items-center h-24 pl-8 pr-15 py-5 bg-[var(--white)]">
           {/* Hide & Show sidebar */}
-          <Button
-            type="button"
-            onClick={toggleSidebar}
-            className="absolute top-7 -left-3 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--gray-200)] cursor-pointer"
-          >
-            {isSidebarOpen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-chevron-left-icon lucide-chevron-left"
-              >
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-chevron-right-icon lucide-chevron-right"
-              >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            )}
-          </Button>
+          <ToggleSidebarComponent />
 
-          <h1 className="text-heading-2 text-2xl font-semibold">เพิ่มบริการ</h1>
+          <h1 className="ml-5 text-heading-2 text-2xl font-semibold">เพิ่มบริการ</h1>
           {/* ปุ่ม */}
           <div className="flex justify-end space-x-3">
-            <Button
+            <button
               type="button"
               onClick={handleCancel}
-              className="btn btn--secondary px-6 py-3"
+              className="btn btn--secondary h-9 px-6 py-3 text-sm"
             >
               ยกเลิก
-            </Button>
-            <Button type="submit" className="btn btn--primary px-6 py-3">
+            </button>
+            <button type="submit" disabled={isSubmitting} className="btn btn--primary h-9 px-6 py-3 text-sm">
               สร้าง
-            </Button>
+            </button>
           </div>
-        </div>
+        </header>
 
         {/* Basic Info */}
-        <div className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto px-5 py-10 bg-[var(--white)] border-1 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
-          {/* ชื่อบริการ */}
-          <div className="flex flex-row gap-10 space-y-1">
-            <Label htmlFor="title" className="w-40 text-heading-5">
-              ชื่อบริการ <span className="text-[var(--red)]">*</span>
+        <section className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto px-5 py-10 bg-[var(--white)] border-1 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
+          {/* Service Name */}
+          <section className="flex flex-row items-center gap-10 space-y-1">
+            <Label htmlFor="title" className="block w-40 text-heading-5">
+              ชื่อบริการ<span className="text-[var(--red)]">*</span>
             </Label>
             <Input
               id="title"
               autoComplete="off"
-              className="w-80 border-1 border-[var(--gray-300)]"
+              className="w-80 border-1 border-[var(--gray-300)] text-sm"
               {...register("title", { required: true })}
             />
             {errors.title && (
@@ -205,34 +179,36 @@ function AddServicePage() {
                 {errors.title.message}
               </p>
             )}
-          </div>
-          {/* หมวดหมู่ */}
-          <div className="flex flex-row gap-10 space-y-1">
-            <Label htmlFor="category" className="w-40 text-heading-5">
-              หมวดหมู่ <span className="text-[var(--red)]">*</span>
+          </section>
+          {/* Category */}
+          <section className="flex flex-row gap-10 space-y-1">
+            <Label htmlFor="category" className="block w-40 text-heading-5">
+              หมวดหมู่<span className="text-[var(--red)]">*</span>
             </Label>
             <select
               id="category"
-              className="w-80 border-1 border-[var(--gray-300)] rounded-sm"
+              className="w-80 h-9 pl-2 border-1 border-[var(--gray-300)] rounded-md text-sm cursor-pointer"
               {...register("category", { required: true })}
             >
               <option value="">เลือกหมวดหมู่</option>
-              <option value="บริการทั่วไป">บริการทั่วไป</option>
-              <option value="บริการห้องครัว">บริการห้องครัว</option>
-              <option value="บริการห้องน้ำ">บริการห้องน้ำ</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
             </select>
             {errors.category && (
               <p className="text-sm text-[var(--red)]">
                 {errors.category.message}
               </p>
             )}
-          </div>
-          {/* รูปภาพ */}
-          <div className="flex flex-row items-start gap-10 space-y-1">
-            <Label htmlFor="image-upload" className="w-40 text-heading-5">
-              รูปภาพ <span className="text-[var(--red)]">*</span>
+          </section>
+          {/* Image Upload */}
+          <section className="flex flex-row items-start gap-10 space-y-1">
+            <Label htmlFor="image-upload" className="block w-40 text-heading-5">
+              รูปภาพ<span className="text-[var(--red)]">*</span>
             </Label>
-            <div className="relative w-80 h-40 rounded-md border-1 border-dashed border-[var(--gray-300)] p-6 flex items-center justify-center">
+            <div className="relative flex items-center justify-center w-80 min-h-40 p-6 rounded-md border-1 border-dashed border-[var(--gray-300)]">
               {selectedImage ? (
                 <div className="w-full">
                   <Image
@@ -252,7 +228,7 @@ function AddServicePage() {
                   </Button>
                 </div>
               ) : (
-                <div className="flex flex-col items-center text-center text-[var(--gray-700)]">
+                <div className="flex flex-col items-center text-center text-xs text-[var(--gray-700)]">
                   <Image
                     src="/asset/svgs/add-image.svg"
                     alt="Add Image Icon"
@@ -286,11 +262,11 @@ function AddServicePage() {
                 {errors.image.message as string}
               </p>
             )}
-          </div>
+          </section>
           <div className="mt-4 border-t-1 border-[var(--gray-200)]"></div>
-          {/* บริการย่อย */}
-          <div className="flex flex-col justify-start gap-10 space-y-2">
-            <Label>รายการบริการย่อย</Label>
+          {/* Sub Services */}
+          <section className="flex flex-col justify-start gap-10 space-y-2">
+            <Label className="text-heading-5">รายการบริการย่อย</Label>
             {fields.map(
               (
                 field,
@@ -298,7 +274,7 @@ function AddServicePage() {
               ) => (
                 <div
                   key={field.id}
-                  className="grid grid-cols-9 justify-between gap-4"
+                  className="grid grid-cols-9 justify-between gap-2"
                 >
                   <div className="flex flex-col col-span-4">
                     <span>ชื่อรายการ</span>
@@ -347,29 +323,29 @@ function AddServicePage() {
                       </p>
                     )}
                   </div>
-                  <Button
+                  <button
                     type="button"
-                    className="justify-self-end w-[72px] pt-6 btn text-[var(--gray-400)] underline cursor-hover"
+                    className="w-[72px] h-9 pt-8 ml-2 btn text-[var(--gray-400)] text-sm underline cursor-hover"
                     onClick={() => {
                       handleRemoveSubService(idx);
                     }}
                   >
                     ลบรายการ
-                  </Button>
+                  </button>
                 </div>
               )
             )}
-            <Button
+            <button
               type="button"
-              className="btn btn--secondary w-[185px] px-[24px] py-[10px]"
+              className="btn btn--secondary w-[185px] h-9 px-[24px] py-[10px] text-sm"
               onClick={() => append({ title: "", price: 0, service_unit: "" })}
             >
-              เพิ่มรายการ +
-            </Button>
-          </div>
-        </div>
+              เพิ่มรายการ &nbsp; <span className="text-xl"> +</span>
+            </button>
+          </section>
+        </section>
       </form>
-    </div>
+    </main>
   );
 }
 

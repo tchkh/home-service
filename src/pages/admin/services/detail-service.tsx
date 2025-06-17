@@ -1,123 +1,106 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useSidebar } from "@/contexts/SidebarContext";
 import Image from "next/image";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
 import { ServiceFormValues } from "../../../types/index";
+import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
+import { formatThaiDatetime } from "@/utils/datetime";
 
 function EditServicePage() {
   const router = useRouter();
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
   const [serviceData, setServiceData] = useState<ServiceFormValues | null>(
     null
   );
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   const serviceId = router.query.serviceId;
 
   useEffect(() => {
-    const fetchServiceData = async (serviceId: string) => {
+    const fetchServiceData = async (id: string) => {
+      setIsLoading(true);
+      setFetchError(null);
       try {
-        if (!serviceId) return; // ถ้าไม่มี serviceId ให้หยุดการทำงาน
+        if (!id) {
+          setIsLoading(false);
+          return;
+        }
 
         const result = await axios.get(
-          `/api/admin/services/getServiceById?serviceId=${serviceId}`
+          `/api/admin/services/getServiceById?serviceId=${id}`
         );
-        if (result.status === 200) {
-          console.log(
-            "DetailServicePage: Response from backend (getServiceById) : ",
-            result.data
-          );
 
-          // เช็คว่า image_url มีค่าที่ถูกต้องหรือไม่
-          if (result.data.image_url) {
-            console.log("Image URL:", result.data.image_url);
-          } else {
-            // ถ้าไม่มี https:// ให้เพิ่ม
-            result.data.image_url = `https://${result.data.image_url}`;
-            console.log("Updated Image URL:", result.data.image_url);
+        if (result.status === 200 && result.data) {
+          const serviceData = result.data.service;
+          let imageUrl = serviceData.image_url || "";
+          // ตรวจสอบและปรับปรุง URL รูปภาพ
+          if (imageUrl && !imageUrl.startsWith('http')) {
+            imageUrl = `https://${imageUrl}`;
           }
 
           setServiceData({
-            title: result.data.title || "",
-            category: result.data.category?.name || "",
-            image: result.data.image_url || "",
-            created_at: result.data.created_at || "",
-            updated_at: result.data.updated_at || "",
-            subervices: result.data.sub_services || [],
+            title: serviceData.title || "",
+            category: serviceData.category?.name || "",
+            image: imageUrl || "",
+            created_at: serviceData.created_at || "",
+            updated_at: serviceData.updated_at || "",
+            sub_services: serviceData.sub_services || [],
           });
+        } else {
+          setFetchError(
+            "ไม่สามารถดึงข้อมูลบริการได้: " +
+              (result.data.message || "Unknown error")
+          );
         }
       } catch (error) {
         console.error("Error fetching service data:", error);
-        return;
+        setFetchError("ไม่สามารถโหลดข้อมูลบริการได้ กรุณาลองใหม่อีกครั้ง");
+      } finally {
+        setIsLoading(false);
       }
     };
+
     if (serviceId) {
       fetchServiceData(serviceId as string);
     }
 
-    console.log("DetailServicePage: serviceId:", serviceId);
   }, [serviceId]);
-
-  const setDateTimeFormat = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const amPm = date.getHours() >= 12 ? "PM" : "AM";
-    return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`;
-  };
 
   const handleEdit = () =>
     router.push("/admin/services/edit-service?serviceId=" + serviceId);
 
-  const handleGoBack = () => router.push("/admin/services/service");
+  const handleGoBack = () => router.push("/admin/services");
 
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen bg-[var(--bg)] items-center justify-center">
+        <div>กำลังโหลดข้อมูล...</div>
+      </main>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <main className="flex min-h-screen bg-[var(--bg)] items-center justify-center flex-col p-4">
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          เกิดข้อผิดพลาด
+        </h2>
+        <p className="text-gray-700 text-center">{fetchError}</p>
+        <Button onClick={() => window.location.reload()} className="mt-4">
+          ลองอีกครั้ง
+        </Button>
+      </main>
+    );
+  }
   return (
-    <div className={`flex min-h-screen bg-[var(--bg)]`}>
-      <div className="w-full flex flex-col space-y-6">
+    <main className={`flex min-h-screen bg-[var(--bg)]`}>
+      <section className="w-full flex flex-col mb-16 space-y-6">
         {/* Header */}
-        <div className="relative flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
+        <header className="relative flex flex-row justify-between items-center h-24 pl-12 pr-10 py-5 bg-[var(--white)]">
           {/* Hide & Show sidebar */}
-          <Button
-            type="button"
-            onClick={toggleSidebar}
-            className="absolute top-7 -left-3 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--gray-200)] cursor-pointer"
-          >
-            {isSidebarOpen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-chevron-left-icon lucide-chevron-left"
-              >
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-chevron-right-icon lucide-chevron-right"
-              >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            )}
-          </Button>
+          <ToggleSidebarComponent />
           <div className="flex items-center space-x-4">
             <Button
               type="button"
@@ -144,87 +127,107 @@ function EditServicePage() {
               แก้ไข
             </Button>
           </div>
-        </div>
+        </header>
 
         {/* Basic Info */}
-        <div className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto px-5 py-10 bg-[var(--white)] border-1 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
-          {/* ชื่อบริการ */}
-          <div className="flex flex-row gap-10 space-y-1">
-            <h2 className="w-40 text-heading-5">ชื่อบริการ</h2>
-            <span className="w-80 text-body-1">{serviceData?.title}</span>
-          </div>
-          {/* หมวดหมู่ */}
-          <div className="flex flex-row gap-10 space-y-1">
-            <h2 className="w-40 text-heading-5">หมวดหมู่</h2>
-            <span className="w-80 text-body-1">
-              {/* Todo: ดึงหมวดหมู่ */}
-              {serviceData?.category}
-            </span>
-          </div>
+        <section className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto px-5 py-10 bg-[var(--white)] border-1 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
+          {/* Service Name */}
+          <section className="flex flex-row items-center gap-10 space-y-1">
+            <h2 className="w-40 text-heading-5 text-[var(--gray-700)]">
+              ชื่อบริการ
+            </h2>
+            <span className="w-80 text-sm">{serviceData?.title}</span>
+          </section>
+          {/* Category */}
+          <section className="flex flex-row items-center gap-10 space-y-1">
+            <h2 className="w-40 text-heading-5 text-[var(--gray-700)]">
+              หมวดหมู่
+            </h2>
+            <span className="w-80 text-sm">{serviceData?.category}</span>
+          </section>
           {/* Image Upload */}
-          <div className="flex flex-row items-start gap-10 space-y-1">
-            <h2 className="w-40 text-heading-5">รูปภาพ</h2>
+          <section className="flex flex-row items-start gap-10 space-y-1">
+            <h2 className="w-40 text-heading-5 text-[var(--gray-700)]">
+              รูปภาพ
+            </h2>
             <div className="w-80">
               {serviceData?.image ? (
                 <Image
                   src={serviceData.image}
-                  alt="preview"
+                  alt={serviceData.title || "Service Image"}
                   width={500}
                   height={300}
                   className="object-contain rounded"
                 />
-              ) : // อาจจะแสดง Placeholder อื่นๆ หรือไม่แสดงอะไรเลย
-              null}
+              ) : null}
             </div>
-          </div>
-          <div className="mt-4 border-t-1 border-[var(--gray-200)]"></div>
+          </section>
+          <div className="mt-4 border-t-2 border-[var(--gray-200)]"></div>
           {/* Sub-services */}
-          <div className="flex flex-col justify-start gap-10 space-y-2">
-            <Label className="text-heading-5">รายการบริการย่อย</Label>
-            {serviceData?.subervices?.map((subService) => (
+          <section className="flex flex-col justify-start gap-10 space-y-2">
+            <h2 className="text-heading-5 text-[var(--gray-700)]">
+              รายการบริการย่อย
+            </h2>
+            {serviceData?.sub_services?.map((subService) => (
               <div
-                key={subService.id} // ตรวจสอบให้แน่ใจว่า subService มี id ที่ไม่ซ้ำกัน
+                key={subService.id}
                 className="grid grid-cols-8 justify-between items-center gap-4"
               >
                 <div className="flex flex-col col-span-4">
-                  <span>ชื่อรายการ</span>
-                  {subService.title}
+                  <h2 className="text-body-3 text-[var(--gray-700)]">
+                    ชื่อรายการ
+                  </h2>
+                  <span className="text-body-3 text-[var(--black)]">
+                    {subService.title}
+                  </span>
                 </div>
                 <div className="flex flex-col col-span-2">
-                  <span>ค่าบริการ / 1 หน่วย</span>
-                  {subService.price}
+                  <h2 className="text-body-3 text-[var(--gray-700)]">
+                    ค่าบริการ / 1 หน่วย
+                  </h2>
+                  <span className="text-body-3 text-[var(--black)]">
+                    {subService.price}
+                  </span>
                 </div>
                 <div className="flex flex-col col-span-2">
-                  <span>หน่วยการบริการ</span>
-                  {subService.service_unit}
+                  <span className="text-body-3 text-[var(--gray-700)]">
+                    หน่วยการบริการ
+                  </span>
+                  <span className="text-body-3 text-[var(--black)]">
+                    {subService.service_unit}
+                  </span>
                 </div>
               </div>
             ))}
-          </div>
+          </section>
           {/* เส้นใต้ */}
-          <div className="mt-4 border-t-1 border-[var(--gray-200)]"></div>
+          <div className="mt-4 border-t-2 border-[var(--gray-200)]"></div>
           {/* Create Time & Update Time */}
-          <div className="flex flex-col justify-start gap-10 space-y-2">
-            <div className="flex flex-row justify-start gap-10 space-y-2">
-              <span className="w-40">สร้างเมื่อ</span>
-              <span>
+          <section className="flex flex-col justify-start gap-10 space-y-2">
+            <div className="flex flex-row justify-start items-center gap-10 space-y-2">
+              <span className="w-40 text-heading-5 text-[var(--gray-700)]">
+                สร้างเมื่อ
+              </span>
+              <span className="text-body-3 text-[var(--gray-900)]">
                 {serviceData?.created_at
-                  ? setDateTimeFormat(new Date(serviceData.created_at))
-                  : "N/A"}
+                  ? formatThaiDatetime(serviceData.created_at)
+                  : "ไม่ระบุ"}
               </span>
             </div>
-            <div className="flex flex-row justify-start gap-10 space-y-2">
-              <span className="w-40">แก้ไขล่าสุด</span>
-              <span>
+            <div className="flex flex-row justify-start items-center gap-10 space-y-2">
+              <span className="w-40 text-heading-5 text-[var(--gray-700)]">
+                แก้ไขล่าสุด
+              </span>
+              <span className="text-body-3 text-[var(--gray-900)]">
                 {serviceData?.updated_at
-                  ? setDateTimeFormat(new Date(serviceData.updated_at))
-                  : "N/A"}
+                  ? formatThaiDatetime(serviceData.updated_at)
+                  : "ไม่ระบุ"}
               </span>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          </section>
+        </section>
+      </section>
+    </main>
   );
 }
 

@@ -19,62 +19,67 @@ import {
 
 import { ArrowLeft, Trash, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/router"; // เพิ่ม import useRouter
-import { useSidebar } from "@/contexts/SidebarContext";
 import Image from "next/image";
 import {
   serviceSchema,
   ServiceFormValues,
 } from "../../../schemas/edit-service";
+import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
+import { CategoryName } from "@/types";
+import { SubService } from "@/types";
+import { formatThaiDatetime } from "@/utils/datetime";
 
 function EditServicePage() {
   const router = useRouter(); // สร้าง router instance
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
+
+  const [categories, setCategories] = useState<CategoryName[]>([]);
   // เพิ่ม state เก็บไฟล์จริงๆ (File) แยกจาก URL preview
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [serviceData, setServiceData] = useState<ServiceFormValues | null>(
     null
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const serviceId = router.query.serviceId;
 
   // ฟังก์ชันสําหรับดึงข้อมูล Service จาก API
   useEffect(() => {
-    const fetchServiceData = async (serviceId: string) => {
+    const fetchServiceData = async (id: string) => {
       try {
-        if (!serviceId) return; // ถ้าไม่มี serviceId ให้หยุดการทำงาน
-
-        const result = await axios.get(
-          `/api/admin/services/getServiceById?serviceId=${serviceId}`
-        );
-        if (result.status === 200) {
-          setServiceData({
-            title: result.data.title || "",
-            category: result.data.category?.name || "",
-            image: result.data.image_url || "",
-            sub_services: result.data.sub_services || [],
-            created_at: result.data.created_at || "",
-            updated_at: result.data.updated_at || "",
-          });
-          setSelectedImage(result.data.image_url);
+        const result = await axios.get(`/api/admin/services/getServiceById?serviceId=${id}`);
+        if (result.data) {
+          // Map ข้อมูลให้ตรงกับ schema ของ form
+          const raw = result.data;
+          const mappedData = {
+            title: raw.service.title || "",
+            category: raw.service.category.name || "",
+            image: raw.service.image_url || "",
+            sub_services: Array.isArray(raw.service.sub_services)
+              ? raw.service.sub_services.map((s: SubService) => ({
+                  title: s.title || "",
+                  price: s.price ?? "",
+                  service_unit: s.service_unit || "",
+                  // เพิ่ม field อื่นๆ ที่ schema ต้องการ
+                }))
+              : [],
+            created_at: raw.service.created_at || "",
+            updated_at: raw.service.updated_at || "",
+          };
+          setServiceData(mappedData);
+          setCategories(raw.categories || []);
+          setSelectedImage(raw.service.image_url);
           setSelectedFile(null);
-          console.log(
-            "EditServicePage: Response from backend (getServiceById) : ",
-            result.data
-          );
         }
       } catch (error) {
         console.error("Error fetching service data:", error);
-        return;
       }
     };
-
+  
     if (serviceId) {
       fetchServiceData(serviceId as string);
     }
-
-    console.log("EditServicePage: serviceId for (getServiceById)", serviceId);
   }, [serviceId]);
-
+  
   // react-hook-form + zod
   const {
     register,
@@ -92,11 +97,7 @@ function EditServicePage() {
   // **ใช้ useEffect เพื่ออัปเดต Form ด้วยข้อมูลที่ดึงมา**
   useEffect(() => {
     if (serviceData) {
-      reset(serviceData);
-      console.log(
-        "EditServicePage: serviceData for (putServiceById)",
-        serviceData
-      );
+      reset(serviceData as ServiceFormValues);
     }
   }, [serviceData, reset]);
 
@@ -106,53 +107,65 @@ function EditServicePage() {
     name: "sub_services",
   });
 
-  const setDateTimeFormat = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const amPm = date.getHours() >= 12 ? "PM" : "AM";
-    return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`;
+  const validateImage = (file?: File | null, url?: string | null): string | null => {
+   if (file) {
+      // Validate file type
+      const validTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!validTypes.includes(file.type)) {
+        return "กรุณาเลือกไฟล์รูปภาพที่เป็น .jpg, .png หรือ .webp เท่านั้น";
+      }
+      // Validate file size (ไม่เกิน 2MB)
+      const maxSizeMB = 2;
+      if (file.size > maxSizeMB * 1024 * 1024) {
+        return "ไฟล์รูปภาพต้องมีขนาดไม่เกิน 2MB";
+      }
+      return null;
+    } else if (url) {
+      // Validate URL
+      try {
+        new URL(url);
+        return null;
+      } catch {
+        return "URL รูปภาพไม่ถูกต้อง";
+      }
+    }
+    return "กรุณาเลือกไฟล์รูปภาพ";
   };
 
   // ฟังก์ชันที่ถูกเรียกเมื่อมีการ submit ฟอร์ม
   const onSubmit = async (data: ServiceFormValues) => {
     try {
+      setIsSubmitting(true);
       const formData = new FormData();
       formData.append("title", data.title); // ใช้ serviceName ตาม schema
       formData.append("category", data.category);
 
       // จัดการรูปภาพ
+      const errorMsg = validateImage(selectedFile, selectedImage);
+      if (errorMsg) {
+        alert(errorMsg);
+        setIsSubmitting(false);
+        return;
+      }
       if (selectedFile) {
-        formData.append("image", selectedFile); // ส่ง File
+        formData.append("image", selectedFile);
       } else if (selectedImage) {
-        formData.append("image", selectedImage); // ส่ง URL ในรูป string
+        formData.append("image", selectedImage);
       }
 
       // sub_services เป็น JSON string
       formData.append("sub_services", JSON.stringify(data.sub_services)); // ใช้ sub_services ตาม schema
 
-      // ดึง serviceId จาก URL query parameter
-      const serviceId = router.query.serviceId as string;
-
       if (!serviceId) {
         console.error("No serviceId provided");
         return;
       } // ถ้าไม่มี serviceId ให้หยุดการทำงาน
-
+      
       // เรียก API ด้วย PUT method ไปที่ Endpoint สำหรับแก้ไข
-      const result = await axios.put(
+      await axios.put(
         `/api/admin/services/putServiceById?serviceId=${serviceId}`,
         formData
       );
-
-      if (result.status === 200) {
-        console.log(
-          "EditServicePage: Response from backend (putServiceById) :",
-          result.data
-        );
-      }
 
       // ถ้าแก้ไขสำเร็จ ไปหน้า detail-service
       router.push(`/admin/services/detail-service?serviceId=${serviceId}`);
@@ -160,12 +173,13 @@ function EditServicePage() {
       console.error("Error updating service:", err);
       // จัดการ Error (เช่น แสดงข้อความผิดพลาดให้ผู้ใช้)
     }
+    setIsSubmitting(false);
   };
 
   const handleCancel = () =>
     router.push("/admin/services/detail-service?serviceId=" + serviceId);
 
-  const handleGoBack = () => router.push("/admin/services/service");
+  const handleGoBack = () => router.push("/admin/services");
 
   // ฟังก์ชันสำหรับจัดการเมื่อมีการเปลี่ยนแปลงไฟล์รูปภาพ
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,13 +190,7 @@ function EditServicePage() {
       // เก็บไฟล์จริงๆ ไว้ใน state
       setSelectedFile(file);
       setValue("image", file, { shouldValidate: true });
-      setValue("image", file as File, { shouldValidate: true });
     }
-    console.log(
-      "Selected image (preview URL):",
-      file ? URL.createObjectURL(file) : null
-    );
-    console.log("Selected file:", file);
   };
 
   const handleRemoveImage = () => {
@@ -203,34 +211,24 @@ function EditServicePage() {
 
   const handleDeleteService = async () => {
     try {
-      // ดึง serviceId จาก URL query parameter
-      const serviceId = router.query.serviceId as string;
-
       if (!serviceId) {
         console.error("No serviceId provided");
         return;
       } // ถ้าไม่มี serviceId ให้หยุดการทำงาน
 
-      const result = await axios.delete(
+      await axios.delete(
         `/api/admin/services/deleteServiceById?serviceId=${serviceId}`
       );
-      if (result.status === 200) {
-        console.log(
-          "EditServicePage: Response from backend (deleteServiceById) :",
-          result.data
-        );
-      }
-      router.push("/admin/services/service");
+      router.push("/admin/services");
     } catch (err) {
       console.error("Error deleting service:", err);
     }
   };
 
   const handleRemoveSubService = (index: number) => {
-    if (index > 0) {
-      remove(index);
-    } else {
-      remove(index);
+    remove(index);
+    // หลังลบ ถ้า array ว่างจริง ๆ ค่อย append ใหม่
+    if (fields.length === 1) {
       append({
         title: "",
         price: 0,
@@ -240,52 +238,19 @@ function EditServicePage() {
   };
 
   return (
-    <div className={` flex min-h-screen bg-[var(--bg)]`}>
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col">
+    <main className={` flex min-h-screen bg-[var(--bg)]`}>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="relative flex flex-col w-full mb-16 space-y-6"
+      >
         {/* Header */}
-        <div className="relative flex flex-row justify-between items-center px-8 py-5 bg-[var(--white)]">
-          <Button
-            type="button"
-            onClick={toggleSidebar}
-            className="absolute top-7 -left-3 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--gray-200)] cursor-pointer"
-          >
-            {isSidebarOpen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-chevron-left-icon lucide-chevron-left"
-              >
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-chevron-right-icon lucide-chevron-right"
-              >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            )}
-          </Button>
+        <header className="relative flex flex-row justify-between items-center h-24 pl-12 pr-15 py-5 bg-[var(--white)]">
+          <ToggleSidebarComponent />
           <div className="flex items-center space-x-4">
             <Button
               type="button"
               variant="ghost"
-              className="p-2 hover:bg-[var(--gray-100)]  active:bg-[var(--gray-200)] cursor-pointer rounded-full"
+              className="p-2 hover:bg-[var(--gray-100)] active:bg-[var(--gray-200)] cursor-pointer rounded-full"
               onClick={handleGoBack}
             >
               <ArrowLeft className="h-5 w-5" />
@@ -299,30 +264,37 @@ function EditServicePage() {
           </div>
           {/* ปุ่ม */}
           <div className="flex justify-end space-x-3">
-            <Button
+            <button
               type="button"
               onClick={handleCancel}
-              className="btn btn--secondary px-6 py-3"
+              className="btn btn--secondary h-9 px-6 py-3 text-sm"
             >
               ยกเลิก
-            </Button>
-            <Button type="submit" className="btn btn--primary px-6 py-3">
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn btn--primary h-9 px-6 py-3 text-sm"
+            >
               บันทึก
-            </Button>
+            </button>
           </div>
-        </div>
+        </header>
 
         {/* Basic Info */}
-        <div className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto px-5 py-10 mt-6 bg-[var(--white)] border-1 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
-          {/* ชื่อบริการ */}
-          <div className="flex flex-row gap-10 space-y-1">
-            <Label htmlFor="title" className="w-40 text-heading-5">
-              ชื่อบริการ <span className="text-[var(--red)]">*</span>
+        <section className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto px-5 py-10 bg-[var(--white)] border-1 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
+          {/* Service Name */}
+          <section className="flex flex-row gap-10 space-y-1">
+            <Label
+              htmlFor="title"
+              className="w-40 text-heading-5 text-[var(--gray-700)]"
+            >
+              ชื่อบริการ<span className="text-[var(--red)]">*</span>
             </Label>
             <Input
               id="title"
               autoComplete="off"
-              className="w-80 border-1 border-[var(--gray-300)] text-body-1"
+              className="w-80 border-1 border-[var(--gray-300)] text-sm"
               {...register("title", { required: true })}
               defaultValue={serviceData?.title}
             />
@@ -331,35 +303,43 @@ function EditServicePage() {
                 {errors.title.message}
               </p>
             )}
-          </div>
-          {/* หมวดหมู่ */}
-          <div className="flex flex-row gap-10 space-y-1">
-            <Label htmlFor="category" className="w-40 text-heading-5">
-              หมวดหมู่ <span className="text-[var(--red)]">*</span>
+          </section>
+          {/* Category */}
+          <section className="flex flex-row gap-10 space-y-1">
+            <Label
+              htmlFor="category"
+              className="w-40 text-heading-5 text-[var(--gray-700)]"
+            >
+              หมวดหมู่<span className="text-[var(--red)]">*</span>
             </Label>
             <select
               id="category"
-              className="w-80 border-1 border-[var(--gray-300)] rounded-sm text-body-1"
+              className="w-80 h-9 pl-2 border-1 border-[var(--gray-300)] rounded-md text-sm cursor-pointer"
               {...register("category", { required: true })}
               defaultValue={serviceData?.category}
             >
               <option value="">เลือกหมวดหมู่</option>
-              <option value="บริการทั่วไป">บริการทั่วไป</option>
-              <option value="บริการห้องครัว">บริการห้องครัว</option>
-              <option value="บริการห้องน้ํา">บริการห้องน้ํา</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
             </select>
             {errors.category && (
               <p className="text-sm text-[var(--red)]">
                 {errors.category.message}
               </p>
             )}
-          </div>
+          </section>
           {/* Image Upload */}
-          <div className="flex flex-row items-start gap-10 space-y-1">
-            <Label htmlFor="image-upload" className="w-40 text-heading-5">
-              รูปภาพ <span className="text-[var(--red)]">*</span>
+          <section className="flex flex-row items-start gap-10 space-y-1">
+            <Label
+              htmlFor="image-upload"
+              className="w-40 text-heading-5 text-[var(--gray-700)]"
+            >
+              รูปภาพ<span className="text-[var(--red)]">*</span>
             </Label>
-            <div className="relative w-80 rounded-md border-1 border-dashed border-[var(--gray-300)] p-6 flex items-center justify-center">
+            <div className="relative flex items-center justify-center w-80 min-h-40 p-6 rounded-md border-1 border-dashed border-[var(--gray-300)]">
               {selectedImage ? (
                 <div className="w-full">
                   <Image
@@ -369,17 +349,16 @@ function EditServicePage() {
                     height={300}
                     className="rounded object-contain "
                   />
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
                     className="absolute bottom-[-36px] right-[-10px] btn btn--ghost text-xs text-[var(--blue-600)] cursor-hover"
                     onClick={handleRemoveImage}
                   >
                     <Trash className="h-4 w-4" /> ลบรูปภาพ
-                  </Button>
+                  </button>
                 </div>
               ) : (
-                <div className="flex flex-col items-center text-center text-[var(--gray-700)]">
+                <div className="flex flex-col items-center text-center text-xs text-[var(--gray-700)]">
                   <Image
                     src="/asset/svgs/add-image.svg"
                     alt="Add Image Icon"
@@ -413,11 +392,13 @@ function EditServicePage() {
                 {errors.image.message as string}
               </p>
             )}
-          </div>
-          <div className="mt-4 border-t-1 border-[var(--gray-200)]"></div>
+          </section>
+          <div className="mt-4 border-t-2 border-[var(--gray-200)]"></div>
           {/* Sub-services */}
-          <div className="flex flex-col justify-start gap-10 space-y-2">
-            <Label>รายการบริการย่อย</Label>
+          <section className="flex flex-col justify-start gap-10 space-y-2">
+            <Label className="text-heading-5 text-[var(--gray-700)]">
+              รายการบริการย่อย
+            </Label>
             {fields.map(
               (
                 field,
@@ -428,7 +409,7 @@ function EditServicePage() {
                   className="grid grid-cols-9 justify-between gap-4"
                 >
                   <div className="flex flex-col col-span-4">
-                    <span>
+                    <span className="text-body-3 text-[var(--gray-700)]">
                       ชื่อรายการ <span className="text-[var(--red)]">*</span>
                     </span>
                     <Input
@@ -445,8 +426,8 @@ function EditServicePage() {
                     )}
                   </div>
                   <div className="flex flex-col col-span-2">
-                    <span>
-                      ค่าบริการ / 1 หน่วย{" "}
+                    <span className="text-body-3 text-[var(--gray-700)]">
+                      ค่าบริการ / 1 หน่วย
                       <span className="text-[var(--red)]">*</span>
                     </span>
                     <Input
@@ -467,8 +448,8 @@ function EditServicePage() {
                     )}
                   </div>
                   <div className="flex flex-col col-span-2">
-                    <span>
-                      หน่วยการบริการ{" "}
+                    <span className="text-body-3 text-[var(--gray-700)]">
+                      หน่วยการบริการ
                       <span className="text-[var(--red)]">*</span>
                     </span>
                     <Input
@@ -489,57 +470,58 @@ function EditServicePage() {
                       </p>
                     )}
                   </div>
-                  <Button
-                    variant="default"
+                  <button
                     type="button"
-                    className="justify-self-end w-[72px] pt-6 btn btn--ghost text-[var(--gray-400)]"
-                    onClick={() => {
-                      handleRemoveSubService(idx);
-                    }}
+                    className="w-[72px] h-9 pt-8 ml-2 btn btn--ghost text-[var(--gray-400)] cursor-pointer text-sm"
+                    onClick={() => handleRemoveSubService(idx)}
                   >
                     ลบรายการ
-                  </Button>
+                  </button>
                 </div>
               )
             )}
-            <Button
+            <button
               type="button"
-              className="btn btn--secondary w-[185px] px-[24px] py-[10px]"
+              className="btn btn--secondary w-[185px] h-9 px-[24px] py-[10px] text-sm"
               onClick={() => append({ title: "", price: 0, service_unit: "" })}
             >
-              เพิ่มรายการ +
-            </Button>
-          </div>
+              เพิ่มรายการ &nbsp; <span className="text-xl">+</span>
+            </button>
+          </section>
           {/* เส้นใต้ */}
-          <div className="mt-4 border-t-1 border-[var(--gray-200)]"></div>
+          <div className="mt-4 border-t-2 border-[var(--gray-200)]"></div>
           {/* Create Time & Update Time */}
-          <div className="flex flex-col justify-start gap-10 space-y-2">
-            <div className="flex flex-row justify-start gap-10 space-y-2">
-              <span className="w-40">สร้างเมื่อ</span>
-              <span>
+          <section className="flex flex-col justify-start gap-10 space-y-2">
+            <div className="flex flex-row justify-start items-center gap-10 space-y-2">
+              <span className="w-40 text-heading-5 text-[var(--gray-700)]">
+                สร้างเมื่อ
+              </span>
+              <span className="text-body-3 text-[var(--gray-900)]">
                 {serviceData?.created_at
-                  ? setDateTimeFormat(new Date(serviceData.created_at))
-                  : "N/A"}
+                  ? formatThaiDatetime(serviceData.created_at)
+                  : "ไม่ระบุ"}
               </span>
             </div>
-            <div className="flex flex-row justify-start gap-10 space-y-2">
-              <span className="w-40">แก้ไขล่าสุด</span>
-              <span>
+            <div className="flex flex-row justify-start items-center gap-10 space-y-2">
+              <span className="w-40 text-heading-5 text-[var(--gray-700)]">
+                แก้ไขล่าสุด
+              </span>
+              <span className="text-body-3 text-[var(--gray-900)]">
                 {serviceData?.updated_at
-                  ? setDateTimeFormat(new Date(serviceData.updated_at))
-                  : "N/A"}
+                  ? formatThaiDatetime(serviceData.updated_at)
+                  : "ไม่ระบุ"}
               </span>
             </div>
-          </div>
-        </div>
+          </section>
+        </section>
         {/* ปุ่มลบ service */}
-        <div className="flex justify-end mr-8">
+        <div className="absolute -bottom-4 right-12">
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
                 type="button"
                 variant="ghost"
-                className="underline text-[var(--gray-600)] flex items-center space-x-1"
+                className="underline text-[var(--gray-600)] flex items-center space-x-1 cursor-pointer"
               >
                 <Trash />
                 <span>ลบบริการ</span>
@@ -563,11 +545,11 @@ function EditServicePage() {
               <AlertDialogFooter className="flex flex-row justify-center sm:flex-row sm:justify-center items-center gap-2 mt-2">
                 <AlertDialogAction
                   onClick={handleDeleteService}
-                  className="w-1/3 px-4 py-2 btn btn--primary"
+                  className="w-1/3 px-4 py-2 btn btn--primary cursor-pointer"
                 >
                   ลบรายการ
                 </AlertDialogAction>
-                <AlertDialogCancel className="w-1/3 px-4 py-2 btn btn--secondary">
+                <AlertDialogCancel className="w-1/3 px-4 py-2 btn btn--secondary cursor-pointer">
                   ยกเลิก
                 </AlertDialogCancel>
               </AlertDialogFooter>
@@ -575,7 +557,7 @@ function EditServicePage() {
           </AlertDialog>
         </div>
       </form>
-    </div>
+    </main>
   );
 }
 

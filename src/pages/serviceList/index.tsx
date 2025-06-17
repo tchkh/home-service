@@ -3,6 +3,7 @@ import ServiceCard from "@/components/ServiceCard";
 import LoadingServiceCard from "@/components/LoadingServiceCard";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState, useRef } from "react";
+import { useResetBookingOnNavigation } from "@/hooks/useResetBookingOnNavigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
    faMagnifyingGlass,
@@ -25,23 +26,10 @@ import {
    PopoverTrigger,
 } from "@/components/ui/popover";
 
-// import { string } from "zod";
-// import { string } from "zod";
-// import { string } from "zod";
-// import { number } from 'zod';
-// import { boolean } from 'zod';
-
 const prompt = Prompt({
    subsets: ["latin", "thai"],
    weight: ["300", "400", "500", "600"],
 });
-// ส่วน icon
-const iconSearch = (
-   <FontAwesomeIcon
-      className="text-[var(--gray-300)]"
-      icon={faMagnifyingGlass}
-   />
-);
 
 /* 
 เก็บใน useState เป็น object
@@ -61,6 +49,9 @@ const iconSearch = (
 // };
 
 export default function Home() {
+   // Reset booking data when user navigates to service list page
+   useResetBookingOnNavigation()
+   
    interface ServiceCardProps {
       id: number;
       category_name: string;
@@ -68,6 +59,7 @@ export default function Home() {
       image_url: string;
       min_price: string;
       max_price: string;
+      color: string;
    }
    interface SearchType {
       search: string;
@@ -79,7 +71,7 @@ export default function Home() {
    }
    // ส่วน DATA
    const [dataCard, setDataCard] = useState<ServiceCardProps[]>([]);
-   // console.log('dataCard: ', dataCard);
+   // console.log("dataCard: ", dataCard);
    const [fetchDataQuery, setFetchDataQuery] = useState<SearchType>({
       search: "",
       category: "บริการทั้งหมด",
@@ -342,7 +334,6 @@ export default function Home() {
       }, 600);
       return () => clearTimeout(timer); // ล้าง timer ถ้า query เปลี่ยนก่อน 3 วิ
    }, [dataQuery.search]);
-
    // ตรวจจับการคลิกนอกกล่อง
    useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
@@ -370,9 +361,9 @@ export default function Home() {
                โดยพนักงานแม่บ้าน และช่างมืออาชีพ
             </p>
          </section>
-         {/* ส่วน search bar  max-w-[1130px]*/}
-         <section className="sticky top-[49px] md:top-[59px] z-50 bg-[var(--white)] w-full h-[134px] md:h-[84px] flex justify-center ">
-            <div className="container flex flex-col md:justify-between items-center px-5 md:px-50 py-4 gap-y-4 md:flex-row     ">
+         {/* ส่วน search bar  */}
+         <section className="sticky top-[51px] md:top-[80px] z-50 bg-[var(--white)] w-full h-[134px] md:h-[84px] flex justify-center ">
+            <div className="container flex flex-col md:justify-between items-center px-5 md:mx-50 py-4 gap-y-4 md:flex-row  ">
                {/* ส่วนค้นหา */}
                <section
                   className={`flex gap-x-4 w-full md:max-w-[350px] relative`}
@@ -380,13 +371,16 @@ export default function Home() {
                   <div ref={boxRef} className="w-full">
                      <label htmlFor="inputSearch" className="relative w-full ">
                         <span className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                           {iconSearch}
+                           <FontAwesomeIcon
+                              className="text-[var(--gray-300)]"
+                              icon={faMagnifyingGlass}
+                           />
                         </span>
                         <input
                            id="inputSearch"
                            type="text"
                            placeholder="ค้นหารายการ..."
-                           className=" text-body-2 pl-10 border-2 border-[var(--gray-300)] min-w-[240px] w-full h-[45px] rounded-lg  placeholder:text-[16px] placeholder:text-[var(--gray-700)] " // เพิ่ม padding ด้านซ้ายเพื่อให้มีพื้นที่สำหรับ icon
+                           className=" text-body-2 pl-10 border-2 border-[var(--gray-300)] min-w-[240px] w-full h-[45px] rounded-lg  placeholder:text-[16px] placeholder:text-[var(--gray-700)]  " // เพิ่ม padding ด้านซ้ายเพื่อให้มีพื้นที่สำหรับ icon
                            value={dataQuery.search}
                            onChange={inputSearch}
                            onFocus={() => setShowBox(true)}
@@ -422,7 +416,7 @@ export default function Home() {
                      onValueChange={changeCategory}
                      value={dataQuery.category}
                   >
-                     <SelectTrigger className="relative box-border w-[114px]  md:w-[120px] h-[42px] px-0 py-0 border-0 ">
+                     <SelectTrigger className="relative box-border w-[114px]  md:w-[120px] h-[42px] px-0 py-0 border-0 cursor-pointer">
                         <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
                            หมวดหมู่บริการ
                            <p
@@ -433,14 +427,14 @@ export default function Home() {
                            </p>
                         </h2>
                      </SelectTrigger>
-                     <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
+                     <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)] ">
                         <SelectItem
                            value={"บริการทั้งหมด"}
-                           className={`${
+                           className={`cursor-pointer ${
                               dataQuery.category === "บริการทั้งหมด"
                                  ? "text-[var(--blue-700)]"
                                  : ""
-                           }`}
+                           } cursor-pointer`}
                         >
                            บริการทั้งหมด
                         </SelectItem>
@@ -448,11 +442,11 @@ export default function Home() {
                            <SelectItem
                               key={index}
                               value={value}
-                              className={`${
+                              className={`cursor-pointer ${
                                  value === dataQuery.category
                                     ? "text-[var(--blue-700)]"
                                     : ""
-                              }`}
+                              } cursor-pointer`}
                            >
                               {value}
                            </SelectItem>
@@ -462,7 +456,7 @@ export default function Home() {
                   <div className="border-1 border-[var(--gray-300)] h-full "></div>
                   {/* ส่วน ราคา Slider */}
                   <Popover>
-                     <PopoverTrigger className="flex flex-col items-start relative box-border w-[114px] md:w-[120px] h-[42px] px-[10px]  ">
+                     <PopoverTrigger className="flex flex-col items-start relative box-border w-[114px] md:w-[120px] h-[42px] px-[10px] cursor-pointer ">
                         <p className="text-body-4 text-[var(--gray-700)]">
                            ราคา
                         </p>
@@ -474,7 +468,7 @@ export default function Home() {
                            className="absolute top-[12px] right-[5px] text-[13px] text-[#7F7F7F] "
                         />
                      </PopoverTrigger>
-                     <PopoverContent className="w-[253px] h-[112px] flex flex-col items-start bg-[var(--white)] box-border gap-y-4 py-5 px-4 rounded-lg border-0 ">
+                     <PopoverContent className="w-[253px] h-[112px] flex flex-col items-start bg-[var(--white)] box-border gap-y-4 py-5 px-4 rounded-lg border-0 cursor-pointer">
                         <p className="text-body-3 text-[var(--gray-700)]">
                            {range[0]}-{range[1]}฿
                         </p>
@@ -497,7 +491,7 @@ export default function Home() {
                                     // ส่วนที่ต้องการให้ hidden
                                     // onPointerDown={() => setIsDragging(index)}
                                     // onPointerUp={() => setIsDragging(null)}
-                                    className="relative block size-[13px] rounded-full bg-[var(--blue-700)] shadow-md hover:bg-[var(--blue-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)]"
+                                    className="relative block size-[13px] rounded-full bg-[var(--blue-700)] shadow-md hover:bg-[var(--blue-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)] cursor-pointer"
                                  >
                                     <div className="block absolute top-[4px] left-[4px] size-[5px] rounded-full bg-[var(--white)]"></div>
                                     <div className="text-body-4 absolute top-[15px] left-1/2 -translate-x-1/2 whitespace-nowrap text-[var(--blue-700)]">
@@ -522,7 +516,7 @@ export default function Home() {
                         onValueChange={changeSortBy}
                         value={dataQuery.sortBy}
                      >
-                        <SelectTrigger className="relative box-border w-[114px] md:w-fit  h-[42px] px-[10px] py-0 border-0 ">
+                        <SelectTrigger className="relative box-border w-[114px] md:w-fit  h-[42px] px-[10px] py-0 border-0 cursor-pointer">
                            <h2 className="text-body-4 text-[var(--gray-700)] h-full flex flex-col items-start justify-between ">
                               เรียงตาม
                               <p className="text-heading-5 w-[84px]  lg:w-fit overflow-hidden text-ellipsis text-[var(--gray-950)] ">
@@ -530,16 +524,16 @@ export default function Home() {
                               </p>
                            </h2>
                         </SelectTrigger>
-                        <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)]">
+                        <SelectContent className="text-body-3 gap-y-2 bg-[var(--white)] text-[var(--gray-700)] ">
                            {Object.entries(typeSortBy).map(([value, label]) => (
                               <SelectItem
                                  key={value}
                                  value={value}
-                                 className={`${
+                                 className={`cursor-pointer ${
                                     value === dataQuery.sortBy
                                        ? "text-[var(--blue-700)]"
                                        : ""
-                                 }`}
+                                 } cursor-pointer`}
                               >
                                  {label}
                               </SelectItem>
@@ -574,6 +568,7 @@ export default function Home() {
                      category={service.category_name}
                      minPrice={service.min_price}
                      maxPrice={service.max_price}
+                     color={service.color}
                   />
                ))}
             {!dataCard[0] && !loading && (

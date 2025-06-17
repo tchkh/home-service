@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTag } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link";
+import CategoryStyle from "./serviceComponent/CategoryStyle";
 
 interface ServiceCardProps {
    id: number;
@@ -9,20 +11,21 @@ interface ServiceCardProps {
    image: string;
    minPrice: string;
    maxPrice: string;
+   color: string;
 }
 
-const getCategoryTagStyle = (category: string) => {
-   switch (category) {
-      case "บริการทั่วไป":
-         return "text-[var(--blue-800)] bg-[var(--blue-100)]";
-      case "บริการห้องครัว":
-         return "text-[var(--purple-900)] bg-[var(--purple-100)]";
-      case "บริการห้องน้ำ":
-         return "text-[var(--green-900)] bg-[var(--green-100)]";
-      default:
-         return "text-[var(--blue-800)] bg-[var(--blue-100)]";
-   }
-};
+// const getCategoryTagStyle = (category: string) => {
+//    switch (category) {
+//       case "บริการทั่วไป":
+//          return "text-[var(--blue-800)] bg-[var(--blue-100)]";
+//       case "บริการห้องครัว":
+//          return "text-[var(--purple-900)] bg-[var(--purple-100)]";
+//       case "บริการห้องน้ำ":
+//          return "text-[var(--green-900)] bg-[var(--green-100)]";
+//       default:
+//          return "text-[var(--blue-800)] bg-[var(--blue-100)]";
+//    }
+// };
 
 export default function ServiceCard({
    title,
@@ -31,6 +34,7 @@ export default function ServiceCard({
    minPrice,
    maxPrice,
    id,
+   color,
 }: ServiceCardProps) {
    // max-w-[350px] max-h-[365px]  md:my-[48px] md:mx-[37px]my-6 mx-4
    return (
@@ -51,13 +55,11 @@ export default function ServiceCard({
             />
          </div>
          <div className="m-4  gap-y-2 flex flex-col justify-start ">
-            <h3
-               className={`${getCategoryTagStyle(
-                  category
-               )} text-[var(--blue-800)] bg-[var(--blue-100)] rounded-[8px] grid place-items-center w-[80px] h-[26px] font-medium text-body-4`}
-            >
-               {category}
-            </h3>
+            <CategoryStyle
+               text={category}
+               color={color}
+               className="min-w-[80px] w-fit h-[26px] text-body-4 grid place-items-center"
+            />
 
             <h4 className="mr-2 text-heading-2">{title}</h4>
 
@@ -73,9 +75,11 @@ export default function ServiceCard({
                ค่าบริการประมาณ {minPrice} - {maxPrice} ฿
             </h4>
          </div>
-         <button className="btn btn--ghost mx-4 mb-[18px] w-fit ">
-            ดูรายละเอียด
-         </button>
+         <Link href={`/service/${id}`}>
+            <button className="btn btn--ghost mx-4 mb-[18px] w-fit ">
+               เลือกบริการ
+            </button>
+         </Link>
       </div>
    );
 }

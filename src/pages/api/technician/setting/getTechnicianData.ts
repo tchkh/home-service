@@ -1,10 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "@/lib/supabase";
 import { TechnicianData } from "@/types";
+import { getAuthenticatedClient } from "@/utils/api-helpers";
 
 async function fetchTechnicianData(technicianId: string): Promise<TechnicianData | null> {
     try {
-        const { data: techData, error: techError } = await supabase
+      const { data: techData, error: techError } = await supabase
           .from('technicians')
           .select(`
             id,
@@ -23,7 +24,7 @@ async function fetchTechnicianData(technicianId: string): Promise<TechnicianData
             )
           `)
           .eq("id", technicianId)
-          .single()
+          .maybeSingle()
     
         if (techError) {
           console.error("Error fetching technician data:", techError);
@@ -73,9 +74,15 @@ export default async function handler(
   }
 
   try {
-    const technicianId = req.query.technicianId as string;
+    const authResult = await getAuthenticatedClient(req, res);
+    if (!authResult) {
+      return;
+    }
+
+    const { session } = authResult;
+    const technicianId = session.user.id;
     const technicianData = await fetchTechnicianData(technicianId);
-    console.log("fetchTechnicianData: ", technicianData);
+    
     if (!technicianData) {
       return res.status(404).json({ message: "Technician not found" });
     }

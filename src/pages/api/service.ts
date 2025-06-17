@@ -1,4 +1,4 @@
-import supabase from "@/lib/supabase";
+import supabase from '@/lib/supabase';
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -23,8 +23,9 @@ export default async function handler(
             try {
                // ดึงจำนวนมาเช็คก่อนว่า เกินไหม
                const { count, error } = await supabase
-                  .from("services_with_card")
-                  .select("*", { count: "exact", head: true });
+                  .from("services_with_card2")
+                  .select("*", { count: "exact", head: true })
+                  .eq("service_status", "active")
                if (error) {
                   return res
                      .status(500)
@@ -51,8 +52,11 @@ export default async function handler(
             limit = 8;
          }
          let query = supabase
-            .from("services_with_card")
+            .from("services_with_card2")
+            // head: false นับจำนวนแล้ว เอาข้อมูลมาด้วย
             .select("*", { count: "exact", head: false })
+            .eq("service_status", "active")
+            .eq("sub_service_status", "active")
             .range(0, limit);
 
          if (search) {
@@ -80,6 +84,8 @@ export default async function handler(
          } else if (sortBy === "descending ") {
             query = query.order("service_title", { ascending: false });
          } else if (sortBy === "title") {
+            query = query.order("order_num", { ascending: true });
+         } else if (sortBy === "poppular") {
             query = query.order("id", { ascending: true });
          }
 
@@ -88,6 +94,7 @@ export default async function handler(
             console.log("error: ", error);
             return res.status(500).json({ error: "Error fetching services" });
          }
+
          return res.status(200).json({ count, service });
       } catch (error) {
          console.log("error at get methor", error);

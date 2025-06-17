@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useSidebar } from "@/contexts/SidebarContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getServices } from "@/services/serviceAPI";
-import { deleteService } from "@/services/serviceAPI";
+import { getServices } from "@/lib/serviceAPI";
+import { deleteService } from "@/lib/serviceAPI";
 import { toast } from "sonner";
 import {
   Table,
@@ -26,10 +25,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Plus,
-  Pencil,
-  Trash2,
   GripVertical,
   AlertTriangle,
+  SquarePen,
+  Trash2,
+  Search,
 } from "lucide-react";
 import { ServiceWithCategory } from "@/types";
 import axios from "axios";
@@ -52,17 +52,22 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { cn } from "@/lib/utils";
+import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
+import CategoryStyle from "@/components/serviceComponent/CategoryStyle";
 
 function DraggableRow({
   id,
   serviceId,
   services,
   children,
+  className,
 }: {
   id: string;
   serviceId: string;
   services: ServiceWithCategory[];
   children: React.ReactNode;
+  className?: string;
 }) {
   const {
     attributes,
@@ -120,17 +125,19 @@ function DraggableRow({
       ref={combinedRef}
       style={style}
       onClick={handleRowClick}
-      className={`hover:bg-gray-50 cursor-pointer ${
-        isDragging ? "shadow-md border border-blue-500 bg-blue-50" : ""
-      } ${
-        isOver && activeId && activeId !== id
-          ? "border-t-2 border-blue-400"
-          : ""
-      } ${
-        services[services.length - 1]?.id === id
-          ? "border-b border-gray-200"
-          : "border-b border-gray-100"
-      } transition-all duration-200`}
+      className={cn(
+        `hover:bg-gray-50 cursor-pointer ${className} ${
+          isDragging ? "shadow-md border border-blue-500 bg-blue-50" : ""
+        } ${
+          isOver && activeId && activeId !== id
+            ? "border-t-2 border-blue-400"
+            : ""
+        } ${
+          services[services.length - 1]?.id === id
+            ? "border-b border-gray-200"
+            : "border-b border-gray-100"
+        } transition-all duration-200`
+      )}
     >
       {React.Children.map(children, (child, index) => {
         if (
@@ -171,14 +178,7 @@ function DraggableRow({
   );
 }
 
-const categoryVariants = {
-  บริการทั่วไป: "bg-blue-100 text-blue-800 hover:bg-blue-200",
-  บริการห้องครัว: "bg-purple-100 text-purple-800 hover:bg-purple-200",
-  บริการห้องน้ำ: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200",
-} as const;
-
 const ServicePage = () => {
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -212,7 +212,9 @@ const ServicePage = () => {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   );
 
   async function updateServiceOrder(oldOrder: number, newOrder: number) {
@@ -288,10 +290,16 @@ const ServicePage = () => {
     );
   }, [sortedServices, search]);
 
-  function convertDateAndTime(dateString: string) {
+  const convertDateAndTimeFormat = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString();
-  }
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const amPm = date.getHours() >= 12 ? "PM" : "AM";
+    return `${day}/${month}/${year} ${hours}:${minutes}${amPm}`;
+  };
 
   // --- LOADING SKELETON ---
   const renderLoadingSkeleton = () => (
@@ -308,8 +316,8 @@ const ServicePage = () => {
   // --- ERROR STATE ---
   if (error) {
     return (
-      <div className="p-6 bg-[var(--bg)] min-h-screen flex flex-col items-center justify-center">
-        <div className="text-center max-w-md">
+      <main className="p-6 bg-[var(--bg)] min-h-screen flex flex-col items-center justify-center">
+        <section className="text-center max-w-md">
           <div className="text-[var(--red)] text-5xl mb-4">⚠️</div>
           <h2 className="text-xl font-semibold mb-2">เกิดข้อผิดพลาด</h2>
           <p className="text-[var(--gray-600)] mb-6">{error}</p>
@@ -327,66 +335,29 @@ const ServicePage = () => {
               "ลองอีกครั้ง"
             )}
           </Button>
-        </div>
-      </div>
+        </section>
+      </main>
     );
   }
 
   // --- MAIN RENDER ---
   return (
-    <div className={`flex flex-col min-h-screen mb-10 bg-[var(--bg)]`}>
+    <main className={`flex flex-col min-h-screen mb-16 bg-[var(--bg)]`}>
       {/* Header & Search */}
-      <div className="relative flex flex-row justify-between items-center px-10 py-7 bg-[var(--white)]">
-        <Button
-          type="button"
-          onClick={toggleSidebar}
-          className="absolute top-7 -left-4 w-9 h-9 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--white)] shadow-[0_0_0_1px_var(--white)] rounded-full cursor-pointer"
-        >
-          {isSidebarOpen ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 30 24"
-              fill="none"
-              stroke="var(--white)"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-chevron-left-icon lucide-chevron-left"
-            >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          ) : (
-            <>
-              <span>&quot;</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 26 24"
-                fill="none"
-                stroke="var(--white)"
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-chevron-right-icon lucide-chevron-right"
-              >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            </>
-          )}
-        </Button>
+      <header className="relative flex flex-row justify-between items-center z-100 h-24 pl-12 pr-12 py-5 bg-[var(--white)]">
+        <ToggleSidebarComponent />
 
         <div>
           <h1 className="text-2xl font-bold text-[var(--black)]">บริการ</h1>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <div className="w-full md:w-80">
+          <div className="relative w-full md:w-80">
+            <Search className="absolute top-1/2 left-2 transform -translate-y-1/2 w-4 h-4 text-[var(--gray-300)]" />
             <Input
               placeholder="ค้นหาบริการ..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 border-2 border-[var(--gray-200)] rounded-md"
             />
           </div>
           <Link href="/admin/services/add-service">
@@ -396,10 +367,10 @@ const ServicePage = () => {
             </Button>
           </Link>
         </div>
-      </div>
+      </header>
 
       {/* Main Table & DnD */}
-      <div className="flex flex-col gap-[40px] w-[90%] max-w-[95%] mx-auto  mt-10 bg-[var(--white)] border-2 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
+      <section className="flex flex-col gap-[40px] w-[92%] max-w-[95%] mx-auto mt-10 bg-[var(--white)] border-2 border-[var(--gray-200)] rounded-2xl shadow-lg overflow-hidden">
         {isLoading ? (
           <div className="p-6">{renderLoadingSkeleton()}</div>
         ) : filteredServices.length === 0 ? (
@@ -440,16 +411,16 @@ const ServicePage = () => {
               strategy={verticalListSortingStrategy}
             >
               <Table>
-                <TableHeader className="bg-[var(--bg)] text-[var(--gray-700)] bo">
+                <TableHeader className="bg-[var(--bg)] text-body-3 text-[var(--gray-700)]">
                   <TableRow>
                     <TableHead className="w-[10px] text-center"></TableHead>
                     <TableHead className="text-center">ลำดับ</TableHead>
-                    <TableHead>ชื่อบริการ</TableHead>
-                    <TableHead>หมวดหมู่</TableHead>
+                    <TableHead className="w-60">ชื่อบริการ</TableHead>
+                    <TableHead className="w-60">หมวดหมู่</TableHead>
                     <TableHead>สร้างเมื่อ</TableHead>
                     <TableHead>แก้ไขล่าสุด</TableHead>
                     <TableHead className="w-[120px] text-center">
-                      action
+                      Action
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -460,54 +431,49 @@ const ServicePage = () => {
                       id={service.order_num.toString()}
                       serviceId={service.id}
                       services={services}
+                      className="h-18"
                     >
                       <TableCell className="text-center"></TableCell>
-                      <TableCell className="font-medium text-center">
+                      <TableCell className="text-center">
                         {service.order_num}
                       </TableCell>
                       <TableCell>{service.title}</TableCell>
                       <TableCell>
-                        <Link
-                          href={`/admin/categories/category?categoryId=${service.category_id}`}
-                        >
-                          <span
-                            className={`px-2 py-1 rounded text-xs ${
-                              categoryVariants[
-                                service.category_name as keyof typeof categoryVariants
-                              ] || ""
-                            }`}
-                          >
-                            {service.category_name}
-                          </span>
+                        <Link href={`/admin/categories/${service.category_id}`}>
+                          <CategoryStyle
+                            text={service.category_name}
+                            color={service.category_color}
+                            className="w-fit px-2 py-1 text-xs"
+                          />
                         </Link>
                       </TableCell>
                       <TableCell>
-                        {convertDateAndTime(service.created_at)}
+                        {convertDateAndTimeFormat(service.created_at)}
                       </TableCell>
                       <TableCell>
-                        {convertDateAndTime(service.updated_at)}
+                        {convertDateAndTimeFormat(service.updated_at)}
                       </TableCell>
                       <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center">
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="text-[var(--gray-500)] hover:text-[var(--red)] cursor-pointer"
+                            className="text-[var(--gray-500)] hover:text-[var(--red)] hover:bg-[var(--gray-100)] cursor-pointer"
                             onClick={() => setDeleteId(service.id)}
                             disabled={isDeleting}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 />
                           </Button>
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="text-[var(--blue-600)] hover:text-[var(--blue-500)] cursor-pointer"
+                            className="text-[var(--blue-600)] hover:text-[var(--blue-400)] hover:bg-[var(--gray-100)] cursor-pointer"
                             asChild
                           >
                             <Link
                               href={`/admin/services/edit-service?serviceId=${service.id}`}
                             >
-                              <Pencil className="h-4 w-4" />
+                              <SquarePen />
                             </Link>
                           </Button>
                         </div>
@@ -519,7 +485,7 @@ const ServicePage = () => {
             </SortableContext>
           </DndContext>
         )}
-      </div>
+      </section>
 
       {/* Delete Dialog */}
       <AlertDialog
@@ -560,7 +526,7 @@ const ServicePage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </main>
   );
 };
 

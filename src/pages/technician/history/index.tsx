@@ -1,12 +1,11 @@
 import MobileHeader from "@/components/shared/MobileHeader";
-import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { useSidebar } from "@/contexts/SidebarContext";
 import JobsTable from "@/components/shared/JobsTable";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { Search } from "lucide-react";
 import { TechnicianHistoryProps } from "@/types";
+import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
 import {
   Select,
   SelectContent,
@@ -18,7 +17,6 @@ import {
 export default function TechnicianHistoryPage({
   initialData,
 }: TechnicianHistoryProps) {
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
   const [selectedService, setSelectedService] = useState<string>("all");
   const [data, setData] = useState(
     initialData || {
@@ -29,6 +27,7 @@ export default function TechnicianHistoryPage({
     }
   );
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
 
   const fetchHistoryData = async () => {
@@ -37,6 +36,9 @@ export default function TechnicianHistoryPage({
       const params = new URLSearchParams();
       if (selectedService !== "all") {
         params.append("service_id", selectedService);
+      }
+      if (searchTerm.trim() !== "") {
+        params.append("search", searchTerm.trim());
       }
 
       const response = await axios.get(`/api/technician/history?${params}`);
@@ -49,9 +51,13 @@ export default function TechnicianHistoryPage({
   };
 
   useEffect(() => {
-    fetchHistoryData();
+    const timer = setTimeout(() => {
+      fetchHistoryData();
+    }, 500);
+
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedService]);
+  }, [searchTerm, selectedService]);
 
   const handleActionClick = (jobId: string) => {
     router.push(`/technician/history/${jobId}`);
@@ -63,45 +69,9 @@ export default function TechnicianHistoryPage({
       {/* Mobile Header */}
       <MobileHeader />
       {/* Header */}
-      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center px-8 md:py-5 py-4 bg-[var(--white)] shadow-lg overflow-hidden">
+      <header className="relative mt-18 md:mt-0 flex flex-row justify-between items-center md:h-24 px-8 md:py-5 py-4 bg-[var(--white)] border-b-1 border-[var(--gray-300)]">
         {/* Hide & Show sidebar */}
-        <Button
-          type="button"
-          onClick={toggleSidebar}
-          className="absolute top-7 -left-3 bg-[var(--blue-950)] hover:bg-[var(--blue-800)] active:bg-[var(--blue-900)] border-1 border-[var(--gray-200)] cursor-pointer hidden md:block"
-        >
-          {isSidebarOpen ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-chevron-left-icon lucide-chevron-left"
-            >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-chevron-right-icon lucide-chevron-right"
-            >
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          )}
-        </Button>
+        <ToggleSidebarComponent />
         <div className="flex flex-col md:flex md:flex-row md:justify-between w-full gap-4">
           <h1 className="text-heading-2 text-2xl font-semibold content-center">
             ประวัติการซ่อม
@@ -110,7 +80,9 @@ export default function TechnicianHistoryPage({
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--gray-300)] w-5 h-5" />
             <input
               type="text"
+              value={searchTerm}
               placeholder="ค้นหารายการคำสั่งซ่อม"
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="h-[44px] w-full border border-[var(--gray-300)] rounded-[8px] py-[10px] pl-10 pr-[16px]"
             />
           </div>
@@ -119,10 +91,10 @@ export default function TechnicianHistoryPage({
 
       {/* Content */}
       <main className="px-8 md:py-5 py-4">
-        <div className="flex flex-col md:flex md:flex-row gap-3">
-          <p>บริการ</p>
+        <div className="flex flex-col md:flex md:flex-row gap-3 ">
+          <p className="content-center">บริการ</p>
           <Select value={selectedService} onValueChange={setSelectedService}>
-            <SelectTrigger className="border-1 border-[var(--gray-300)] rounded-[8px] py-2.5 px-4 md:w-[224px] w-full cursor-pointer">
+            <SelectTrigger className="border-1 border-[var(--gray-300)] bg-[var(--white)] rounded-[8px] py-2.5 px-4 md:w-[224px] w-full cursor-pointer">
               <SelectValue placeholder="เลือกบริการ" />
             </SelectTrigger>
             <SelectContent className="bg-white border-0">
@@ -153,6 +125,7 @@ export default function TechnicianHistoryPage({
         hasJobs={data.hasJobs}
         message={data.message}
         onActionClick={handleActionClick}
+        showActions={false}
       />
     </>
   );
