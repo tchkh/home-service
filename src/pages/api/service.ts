@@ -81,6 +81,8 @@ export default async function handler(
          } else if (sortBy === "descending ") {
             query = query.order("service_title", { ascending: false });
          } else if (sortBy === "title") {
+            query = query.order("order_num", { ascending: true });
+         } else if (sortBy === "poppular") {
             query = query.order("id", { ascending: true });
          }
 

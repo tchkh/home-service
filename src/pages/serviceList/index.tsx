@@ -361,9 +361,9 @@ export default function Home() {
                โดยพนักงานแม่บ้าน และช่างมืออาชีพ
             </p>
          </section>
-         {/* ส่วน search bar  max-w-[1130px]*/}
-         <section className="sticky top-[51px] md:top-[80px] z-50 bg-[var(--white)] w-full h-[134px] md:h-[84px] flex ">
-            <div className="container flex flex-col md:justify-between items-center px-5 md:px-50 py-4 gap-y-4 md:flex-row     ">
+         {/* ส่วน search bar  */}
+         <section className="sticky top-[51px] md:top-[80px] z-50 bg-[var(--white)] w-full h-[134px] md:h-[84px] flex justify-center ">
+            <div className="container flex flex-col md:justify-between items-center px-5 md:mx-50 py-4 gap-y-4 md:flex-row  ">
                {/* ส่วนค้นหา */}
                <section
                   className={`flex gap-x-4 w-full md:max-w-[350px] relative`}
@@ -380,7 +380,7 @@ export default function Home() {
                            id="inputSearch"
                            type="text"
                            placeholder="ค้นหารายการ..."
-                           className=" text-body-2 pl-10 border-2 border-[var(--gray-300)] min-w-[240px] w-full h-[45px] rounded-lg  placeholder:text-[16px] placeholder:text-[var(--gray-700)] " // เพิ่ม padding ด้านซ้ายเพื่อให้มีพื้นที่สำหรับ icon
+                           className=" text-body-2 pl-10 border-2 border-[var(--gray-300)] min-w-[240px] w-full h-[45px] rounded-lg  placeholder:text-[16px] placeholder:text-[var(--gray-700)]  " // เพิ่ม padding ด้านซ้ายเพื่อให้มีพื้นที่สำหรับ icon
                            value={dataQuery.search}
                            onChange={inputSearch}
                            onFocus={() => setShowBox(true)}
@@ -434,7 +434,7 @@ export default function Home() {
                               dataQuery.category === "บริการทั้งหมด"
                                  ? "text-[var(--blue-700)]"
                                  : ""
-                           }`}
+                           } cursor-pointer`}
                         >
                            บริการทั้งหมด
                         </SelectItem>
@@ -446,7 +446,7 @@ export default function Home() {
                                  value === dataQuery.category
                                     ? "text-[var(--blue-700)]"
                                     : ""
-                              }`}
+                              } cursor-pointer`}
                            >
                               {value}
                            </SelectItem>
@@ -491,7 +491,7 @@ export default function Home() {
                                     // ส่วนที่ต้องการให้ hidden
                                     // onPointerDown={() => setIsDragging(index)}
                                     // onPointerUp={() => setIsDragging(null)}
-                                    className="relative block size-[13px] rounded-full bg-[var(--blue-700)] shadow-md hover:bg-[var(--blue-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)]"
+                                    className="relative block size-[13px] rounded-full bg-[var(--blue-700)] shadow-md hover:bg-[var(--blue-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)] cursor-pointer"
                                  >
                                     <div className="block absolute top-[4px] left-[4px] size-[5px] rounded-full bg-[var(--white)]"></div>
                                     <div className="text-body-4 absolute top-[15px] left-1/2 -translate-x-1/2 whitespace-nowrap text-[var(--blue-700)]">
@@ -533,7 +533,7 @@ export default function Home() {
                                     value === dataQuery.sortBy
                                        ? "text-[var(--blue-700)]"
                                        : ""
-                                 }`}
+                                 } cursor-pointer`}
                               >
                                  {label}
                               </SelectItem>

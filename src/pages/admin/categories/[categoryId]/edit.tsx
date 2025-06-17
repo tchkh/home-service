@@ -282,7 +282,7 @@ export default function CategoryForm() {
             </div>
             <button
                onClick={() => setToggleDeleteConfirm(true)}
-               className="btn absolute right-0 -bottom-[48px]  h-[24px] w-fit text-[16px] text-[var(--gray-600)]"
+               className="btn absolute right-0 -bottom-[48px]  h-[24px] w-fit text-[16px] text-[var(--gray-600)] hover:text-[var(--red)]"
             >
                <Trash2 className="h-4 w-4" />
                <p className="underline underline-offset-2">{actionDelete}</p>
