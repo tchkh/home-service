@@ -3,9 +3,14 @@ import { useRouter } from 'next/router'
 import PoppularService from '@/components/PoppularService'
 import Image from 'next/image'
 import futureHome from '../../public/asset/images/futureHome.png'
+import { useResetBookingOnNavigation } from '@/hooks/useResetBookingOnNavigation'
 
 export default function Home() {
   const router = useRouter()
+  
+  // Reset booking data when user navigates to home page
+  useResetBookingOnNavigation()
+  
   return (
     <div>
       <Navbar />

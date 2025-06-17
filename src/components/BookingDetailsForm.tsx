@@ -41,7 +41,10 @@ import {
 const BookingDetailsForm: React.FC = () => {
   const { customerInfo, updateCustomerInfo } = useBookingStore()
   const { user } = useUser()
-  const [gettingLocation, setGettingLocation] = useState(false)
+
+  // Time picker state
+  const [tempTime, setTempTime] = useState({ hour: '00', minute: '00' })
+  const [isTimeOpen, setIsTimeOpen] = useState(false)
 
   // ใช้ Thailand Address Hook
   const {
@@ -82,6 +85,21 @@ const BookingDetailsForm: React.FC = () => {
     },
   })
 
+  // Time picker handlers
+  const handleConfirmTime = () => {
+    form.setValue('serviceTime', `${tempTime.hour}:${tempTime.minute}`)
+    setIsTimeOpen(false)
+  }
+
+  // Initialize temp time when service time changes
+  useEffect(() => {
+    const serviceTime = form.getValues('serviceTime')
+    if (serviceTime) {
+      const [hour, minute] = serviceTime.split(':')
+      setTempTime({ hour, minute })
+    }
+  }, [form, customerInfo.serviceTime])
+
   // Update store when form values change
   useEffect(() => {
     const subscription = form.watch(value => {
@@ -100,53 +118,14 @@ const BookingDetailsForm: React.FC = () => {
     return () => subscription.unsubscribe()
   }, [form, updateCustomerInfo])
 
-  // GPS Location handler
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      alert('เบราว์เซอร์ของคุณไม่รองรับ GPS')
-      return
-    }
-
-    setGettingLocation(true)
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude } = position.coords
-        // Update form values
-        form.setValue('latitude', latitude)
-        form.setValue('longitude', longitude)
-        // Update store
-        updateCustomerInfo({ latitude, longitude })
-        setGettingLocation(false)
-        console.log('📍 GPS Location saved:', { latitude, longitude })
-      },
-      error => {
-        console.error('GPS Error:', error)
-        setGettingLocation(false)
-        let message = 'ไม่สามารถระบุตำแหน่งได้'
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            message = 'กรุณาอนุญาตให้เข้าถึงตำแหน่งที่ตั้ง'
-            break
-          case error.POSITION_UNAVAILABLE:
-            message = 'ไม่สามารถระบุตำแหน่งได้ในขณะนี้'
-            break
-          case error.TIMEOUT:
-            message = 'หมดเวลารอการระบุตำแหน่ง'
-            break
-        }
-        alert(message)
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000, // 5 minutes
-      }
-    )
-  }
-
   // Auto-fill user's default address
   const handleUseDefaultAddress = () => {
-    if (!user?.address || !user?.province || !user?.district || !user?.subdistrict) {
+    if (
+      !user?.address ||
+      !user?.province ||
+      !user?.district ||
+      !user?.subdistrict
+    ) {
       alert('คุณยังไม่มีที่อยู่เริ่มต้น กรุณาตั้งค่าที่อยู่ในหน้าโปรไฟล์')
       return
     }
@@ -164,7 +143,9 @@ const BookingDetailsForm: React.FC = () => {
         const subdistrictsList = getSubdistrictsByDistrict(userDistrict.code)
         setSubdistricts(subdistrictsList)
 
-        const userSubdistrict = subdistrictsList.find(s => s.nameTh === user.subdistrict)
+        const userSubdistrict = subdistrictsList.find(
+          s => s.nameTh === user.subdistrict
+        )
         if (userSubdistrict) {
           setSelectedSubdistrictCode(userSubdistrict.code)
           const postal = getPostalCode(userSubdistrict.code)
@@ -179,7 +160,7 @@ const BookingDetailsForm: React.FC = () => {
       form.setValue('province', user.province)
       form.setValue('district', user.district)
       form.setValue('subDistrict', user.subdistrict)
-      
+
       // Set additional info if user has postal code data
       if (user.postalCode) {
         form.setValue('additionalInfo', user.postalCode)
@@ -295,7 +276,7 @@ const BookingDetailsForm: React.FC = () => {
                         className={cn(
                           'w-full justify-start text-left font-normal',
                           'flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50',
-                          'h-9 transition-colors',
+                          'h-9 transition-colors cursor-pointer',
                           !field.value && 'text-muted-foreground'
                         )}
                       >
@@ -342,73 +323,104 @@ const BookingDetailsForm: React.FC = () => {
                 <FormLabel>
                   เวลาที่สะดวกใช้บริการ <span className="text-red-500">*</span>
                 </FormLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <div className="flex items-center">
+                <FormControl>
+                  <Popover open={isTimeOpen} onOpenChange={setIsTimeOpen}>
+                    <PopoverTrigger>
+                      <button
+                        type="button"
+                        className={cn(
+                          'w-full justify-start text-left font-normal',
+                          'flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50',
+                          'h-9 transition-colors cursor-pointer',
+                          !field.value && 'text-muted-foreground'
+                        )}
+                      >
                         <Clock className="mr-2 h-4 w-4 text-gray-400" />
-                        <SelectValue placeholder="เลือกเวลา">
+                        <span className="truncate">
                           {field.value || 'เลือกเวลา'}
-                        </SelectValue>
-                      </div>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="w-auto p-0 border-gray-300">
-                    <div className="flex">
-                      {/* Hours Column */}
-                      <div className="border-r border-gray-200">
-                        <div className="max-h-[200px] overflow-y-auto w-16">
-                          {Array.from({ length: 24 }, (_, i) => i).map(hour => (
-                            <button
-                              key={hour}
-                              type="button"
-                              className="w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100"
-                              onClick={() => {
-                                const currentMinute = field.value
-                                  ? field.value.split(':')[1]
-                                  : '00'
-                                field.onChange(
-                                  `${hour
-                                    .toString()
-                                    .padStart(2, '0')}:${currentMinute}`
-                                )
-                              }}
-                            >
-                              {hour.toString().padStart(2, '0')}
-                            </button>
-                          ))}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="min-w-0 max-w-34 rounded-lg shadow-lg bg-white overflow-hidden z-50"
+                      align="start"
+                      side="bottom"
+                      sideOffset={4}
+                    >
+                      <div className="flex">
+                        {/* Hours Column */}
+                        <div className="border-r border-gray-200">
+                          <div className="max-h-[200px] overflow-y-auto w-16">
+                            {Array.from({ length: 24 }, (_, i) => i).map(
+                              hour => (
+                                <button
+                                  key={hour}
+                                  type="button"
+                                  className={cn(
+                                    'w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100',
+                                    tempTime.hour ===
+                                      hour.toString().padStart(2, '0') &&
+                                      'bg-blue-100'
+                                  )}
+                                  onClick={() => {
+                                    setTempTime(prev => ({
+                                      ...prev,
+                                      hour: hour.toString().padStart(2, '0'),
+                                    }))
+                                  }}
+                                >
+                                  {hour.toString().padStart(2, '0')}
+                                </button>
+                              )
+                            )}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Minutes Column */}
-                      <div>
-                        <div className="max-h-[200px] overflow-y-auto w-16">
-                          {Array.from({ length: 60 }, (_, i) => i).map(
-                            minute => (
-                              <button
-                                key={minute}
-                                type="button"
-                                className="w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100"
-                                onClick={() => {
-                                  const currentHour = field.value
-                                    ? field.value.split(':')[0]
-                                    : '00'
-                                  field.onChange(
-                                    `${currentHour}:${minute
-                                      .toString()
-                                      .padStart(2, '0')}`
-                                  )
-                                }}
-                              >
-                                {minute.toString().padStart(2, '0')}
-                              </button>
-                            )
-                          )}
+                        {/* Minutes Column */}
+                        <div>
+                          <div className="max-h-[200px] overflow-y-auto w-16">
+                            {Array.from({ length: 60 }, (_, i) => i).map(
+                              minute => (
+                                <button
+                                  key={minute}
+                                  type="button"
+                                  className={cn(
+                                    'w-full px-3 py-2 hover:bg-blue-50 cursor-pointer text-center text-sm transition-colors focus:outline-none focus:bg-blue-100',
+                                    tempTime.minute ===
+                                      minute.toString().padStart(2, '0') &&
+                                      'bg-blue-100'
+                                  )}
+                                  onClick={() => {
+                                    setTempTime(prev => ({
+                                      ...prev,
+                                      minute: minute
+                                        .toString()
+                                        .padStart(2, '0'),
+                                    }))
+                                  }}
+                                >
+                                  {minute.toString().padStart(2, '0')}
+                                </button>
+                              )
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </SelectContent>
-                </Select>
+                      {/* Time Display and Confirm Button */}
+                      <div className="border-t border-gray-200 px-3 py-2 flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">
+                          {tempTime.hour}:{tempTime.minute}
+                        </span>
+                        <button
+                          onClick={handleConfirmTime}
+                          className="text-blue-700 underline text-sm font-bold px-2 cursor-pointer"
+                        >
+                          ยืนยัน
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -626,35 +638,6 @@ const BookingDetailsForm: React.FC = () => {
             </FormItem>
           )}
         />
-
-        {/* GPS Location Button */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-            <div>
-              <h4 className="font-medium text-green-800">
-                📍 ระบุตำแหน่งที่ตั้งแม่นยำ
-              </h4>
-              <p className="text-sm text-green-600 mt-1">
-                ช่วยให้ช่างค้นหาตำแหน่งของคุณได้ง่ายขึ้น
-              </p>
-              {form.watch('latitude') && form.watch('longitude') && (
-                <p className="text-xs text-green-700 mt-1">
-                  ✅ ตำแหน่ง GPS ถูกบันทึกแล้ว
-                </p>
-              )}
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleGetLocation}
-              className="border-green-500 text-green-600 hover:bg-green-50 cursor-pointer w-full md:w-auto"
-            >
-              <MapPin className="w-4 h-4 mr-2" />
-              {gettingLocation ? 'กำลังค้นหา...' : 'ใช้ตำแหน่งปัจจุบัน'}
-            </Button>
-          </div>
-        </div>
       </div>
     </Form>
   )

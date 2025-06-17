@@ -50,7 +50,8 @@ export default function LoginPage() {
         await refetchUser()
         // รอให้ toast แสดงแล้วค่อย redirect
         setTimeout(() => {
-          router.push('/')
+          const redirectPath = router.query.redirect as string
+          router.push(redirectPath || '/')
         }, 1500)
         return
       }
@@ -62,7 +63,7 @@ export default function LoginPage() {
           axiosError.response?.data?.error ??
           axiosError.response?.data?.message ??
           'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง'
-        
+
         toast.error(errorMessage)
         setError(errorMessage)
         setIsLoading(false)
@@ -93,8 +94,9 @@ export default function LoginPage() {
 
           // รอให้ toast แสดงแล้วค่อย redirect
           setTimeout(() => {
-            router.push('/').catch(() => {
-              window.location.href = '/'
+            const redirectPath = router.query.redirect as string
+            router.push(redirectPath || '/').catch(() => {
+              window.location.href = redirectPath || '/'
             })
           }, 1500)
           return
@@ -132,10 +134,15 @@ export default function LoginPage() {
   // ฟังก์ชันสำหรับเข้าสู่ระบบด้วย Facebook
   const handleFacebookLogin = async () => {
     try {
+      const redirectPath = router.query.redirect as string
+      const redirectTo = redirectPath
+        ? `${window.location.origin}${redirectPath}`
+        : `${window.location.origin}/dashboard`
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo,
         },
       })
 
