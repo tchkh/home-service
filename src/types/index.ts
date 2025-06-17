@@ -120,6 +120,64 @@ export interface ServiceWithDetailsAndCategories {
    categories: CategoryName[];
 }
 
+export interface ServiceWithDetails {
+   id: string;
+   title: string;
+   image_url: string;
+   created_at: Date;
+   updated_at: Date;
+   category:
+     | {
+         id: string;
+         name: string;
+         description: string;
+         created_at: Date;
+         updated_at: Date;
+       }[]
+     | null;
+   sub_services: {
+     id: string;
+     title: string;
+     price: number;
+     service_unit: string;
+     status: string;
+   }[];
+}
+
+export interface ServiceWithDetailsAndCategories {
+   service: ServiceWithDetails;
+   categories: CategoryName[];
+}
+
+export interface ServiceWithDetails {
+   id: string;
+   title: string;
+   image_url: string;
+   created_at: Date;
+   updated_at: Date;
+   category:
+     | {
+         id: string;
+         name: string;
+         description: string;
+         created_at: Date;
+         updated_at: Date;
+       }[]
+     | null;
+   sub_services: {
+     id: string;
+     title: string;
+     price: number;
+     service_unit: string;
+     status: string;
+   }[];
+}
+
+export interface ServiceWithDetailsAndCategories {
+   service: ServiceWithDetails;
+   categories: CategoryName[];
+}
+
 export interface ServiceWithCategory extends Service {
    category_name: string;
    category_color: string;
