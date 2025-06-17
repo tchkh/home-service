@@ -1,4 +1,4 @@
-import supabase from "@/lib/supabase";
+import supabase from '@/lib/supabase';
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -23,8 +23,9 @@ export default async function handler(
             try {
                // ดึงจำนวนมาเช็คก่อนว่า เกินไหม
                const { count, error } = await supabase
-                  .from("services_with_card")
-                  .select("*", { count: "exact", head: true });
+                  .from("services_with_card2")
+                  .select("*", { count: "exact", head: true })
+                  .eq("service_status", "active")
                if (error) {
                   return res
                      .status(500)
@@ -54,6 +55,8 @@ export default async function handler(
             .from("services_with_card2")
             // head: false นับจำนวนแล้ว เอาข้อมูลมาด้วย
             .select("*", { count: "exact", head: false })
+            .eq("service_status", "active")
+            .eq("sub_service_status", "active")
             .range(0, limit);
 
          if (search) {
