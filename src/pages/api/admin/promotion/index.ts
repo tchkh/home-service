@@ -66,7 +66,11 @@ export default async function handler(
          start_date,
          end_date,
       } = req.body as PomotionData;
-
+      if (!start_date || !end_date) {
+         return res
+            .status(400)
+            .json({ error: "Start date and end date are required" });
+      }
       const now = new Date();
       const startDate = new Date(start_date);
 
@@ -105,7 +109,14 @@ export default async function handler(
          if (errorNumberNotNagativeUselimit.error) {
             errors.push("จำนวนการใช้" + errorNumberNotNagativeUselimit.error);
          }
-
+         if (
+            // discount_type &&
+            discount_type === "percentage" && discount_value
+               ? discount_value
+               : 0 < 100
+         ) {
+            errors.push("ส่วนลดแบบ Percentage ห้ามเกิน 100%");
+         }
          // เช็ควันหมดและวันเริ่ม ไม่น้อยกว่าเวลาปัจจุบัน
          const thenEndError =
             "วันเริ่ม Promotion ต้องมาถึงก่อนวันหมด Promotion";
@@ -184,7 +195,11 @@ export default async function handler(
          start_date,
          end_date,
       } = req.body as PomotionData;
-
+      if (!start_date || !end_date) {
+         return res
+            .status(400)
+            .json({ error: "Start date and end date are required" });
+      }
       const now = new Date();
       const startDate = new Date(start_date);
 

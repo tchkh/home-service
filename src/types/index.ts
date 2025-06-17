@@ -427,11 +427,11 @@ export interface PomotionData {
    id?: string;
    code: string;
    discount_type: string;
-   discount_value: number;
+   discount_value: number | null;
    usage_limit: number;
    used_count?: number;
-   start_date: Date;
-   end_date: Date;
+   start_date: Date | null;
+   end_date: Date | null;
    created_at?: Date;
    updated_at?: Date;
 }
