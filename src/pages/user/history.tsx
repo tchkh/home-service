@@ -55,7 +55,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const baseUrl = `${protocol}://${host}`;
   console.log("[DEBUG] baseUrl: ", baseUrl);
   try {
-    const response = await axios.get(`${baseUrl}/api/getHistoryData`, {
+    const response = await axios.get(`${baseUrl}/api/user/getHistoryData`, {
       headers: {
         Cookie: cookie,
       },
