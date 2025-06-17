@@ -357,9 +357,9 @@ export default function Home() {
                โดยพนักงานแม่บ้าน และช่างมืออาชีพ
             </p>
          </section>
-         {/* ส่วน search bar  max-w-[1130px]*/}
+         {/* ส่วน search bar  */}
          <section className="sticky top-[49px] md:top-[59px] z-50 bg-[var(--white)] w-full h-[134px] md:h-[84px] flex justify-center ">
-            <div className="container flex flex-col md:justify-between items-center px-5 md:px-50 py-4 gap-y-4 md:flex-row  ">
+            <div className="container flex flex-col md:justify-between items-center px-5 md:mx-50 py-4 gap-y-4 md:flex-row  ">
                {/* ส่วนค้นหา */}
                <section
                   className={`flex gap-x-4 w-full md:max-w-[350px] relative`}
