@@ -29,7 +29,7 @@ const fetchOrderListData = async (
       `)
       .order("created_at", { ascending: false })
       .eq("user_id", userId)
-      .eq("status_id", 1 || 2);
+      .in("status_id", [1, 2]);
 
     if (error) {
       throw new Error(error.message);
