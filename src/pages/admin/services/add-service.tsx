@@ -11,13 +11,31 @@ import { useRouter } from "next/router"; // Hook
 import Image from "next/image";
 import { serviceSchema, ServiceFormValues } from "../../../schemas/add-service";
 import ToggleSidebarComponent from "@/components/ToggleSidebarComponent";
+import { CategoryName } from "@/types";
+import { useEffect } from "react";
 
 function AddServicePage() {
    const router = useRouter();
+   const [categories, setCategories] = useState<CategoryName[]>([]);
    // เพิ่ม state เก็บไฟล์จริงๆ (File) แยกจาก URL preview
    const [selectedFile, setSelectedFile] = useState<File | null>(null);
    const [selectedImage, setSelectedImage] = useState<string | null>(null);
    const [isSubmitting, setIsSubmitting] = useState(false);
+
+   useEffect(() => {
+      const fetchCategories = async () => {
+         try {
+            const result = await axios.get("/api/admin/services/getAllCategory");
+            if (result.status === 200) {
+               setCategories(result.data);
+            }
+         } catch (error) {
+            console.error("Error fetching categories:", error);
+            return;
+         }
+      };
+      fetchCategories();
+   }, []);
 
    // ตัดการ register ฟิลด์ "image" ออกไป เพราะเราจะควบคุมด้วย state แทน
    const {
@@ -181,13 +199,15 @@ function AddServicePage() {
             </Label>
             <select
               id="category"
-              className="w-80 pl-2 border-1 border-[var(--gray-300)] rounded-sm text-sm"
+              className="w-80 h-9 pl-2 border-1 border-[var(--gray-300)] rounded-md text-sm"
               {...register("category", { required: true })}
             >
               <option value="">เลือกหมวดหมู่</option>
-              <option value="บริการทั่วไป">บริการทั่วไป</option>
-              <option value="บริการห้องครัว">บริการห้องครัว</option>
-              <option value="บริการห้องน้ำ">บริการห้องน้ำ</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
             </select>
             {errors.category && (
               <p className="text-sm text-[var(--red)]">
