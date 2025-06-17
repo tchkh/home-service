@@ -8,6 +8,7 @@ import {
   CreateServiceSchema,
   CreateServicePayload,
 } from "../../../../schemas/post-service";
+import { ServiceWithDetailsPost } from "@/types";
 
 // 1. บอก Next.js ว่าอย่าใช้ built-in bodyParser
 export const config = {
@@ -16,16 +17,7 @@ export const config = {
   },
 };
 
-interface ServiceWithDetails {
-  id: string;
-  created_at: string;
-  updated_at: string | null;
-  title: string;
-  category_id: number | null;
-  image_url: string;
-}
-
-// 3. ฟังก์ชันสำหรับอัปโหลดไฟล์ขึ้น Supabase Storage
+// 2. ฟังก์ชันสำหรับอัปโหลดไฟล์ขึ้น Supabase Storage
 async function uploadImageToStorage(
   filePath: string,
   originalFilename: string
@@ -58,11 +50,11 @@ async function uploadImageToStorage(
   return data.publicUrl;
 }
 
-// 4. ฟังก์ชันสำหรับสร้าง Service + Sub-services
+// 3. ฟังก์ชันสำหรับสร้าง Service + Sub-services
 async function createServiceInDB(
   payload: CreateServicePayload & { image_url: string },
   subServices: { title: string; price: number; service_unit: string }[]
-): Promise<ServiceWithDetails> {
+): Promise<ServiceWithDetailsPost> {
   const { title, category, image_url } = payload;
   const now = new Date().toISOString();
 
@@ -90,6 +82,7 @@ async function createServiceInDB(
         image_url,
         created_at: now,
         updated_at: now,
+        status: "active",
       })
       .select("*")
       .single();
@@ -107,7 +100,7 @@ async function createServiceInDB(
       }));
       const { error: subError } = await supabase
         .from("sub_services")
-        .insert(payloads);
+        .insert({ payloads, status: "active" });
       if (subError) {
         console.error("Error creating sub-services:", subError);
         // อาจ rollback service ได้ตามต้องการ
@@ -132,20 +125,20 @@ async function createServiceInDB(
       .eq("id", serviceData.id)
       .single();
     if (fetchError || !fullData) {
-      return serviceData as ServiceWithDetails;
+      return serviceData as ServiceWithDetailsPost;
     }
-    return fullData as ServiceWithDetails;
+    return fullData as ServiceWithDetailsPost;
   } catch (error) {
     console.error("Error creating service:", error);
     throw error;
   }
 }
 
-// 5. Handler หลัก
+// 4. Handler หลัก
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<
-    ServiceWithDetails | { message: string; errors?: z.ZodIssue[] }
+    ServiceWithDetailsPost | { message: string; errors?: z.ZodIssue[] }
   >
 ) {
   if (req.method !== "POST") {

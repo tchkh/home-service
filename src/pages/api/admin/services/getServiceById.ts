@@ -6,12 +6,9 @@ import { getAuthenticatedClient } from "@/utils/api-helpers";
 import { ServiceWithDetails } from "@/types";
 import { CategoryName } from "@/types";
 import { ServiceWithDetailsAndCategories } from "@/types";
-// 2. กำหนด Interface สำหรับโครงสร้างข้อมูลของ Service ที่มีข้อมูลที่เกี่ยวข้อง
+import { SubService } from "@/types";
 
-
-
-
-// 3. ฟังก์ชันสำหรับดึงข้อมูล Service พร้อม Categories และ Sub-services จาก Supabase
+// 1. ฟังก์ชันสำหรับดึงข้อมูล Service พร้อม Categories และ Sub-services จาก Supabase
 async function fetchServiceWithDetails(
   serviceId: string
 ): Promise<ServiceWithDetails | null> {
@@ -26,22 +23,25 @@ async function fetchServiceWithDetails(
         created_at,
         updated_at,
         category: categories (
-          id,
-          name,
-          description,
-          created_at,
-          updated_at
+          name
         ),
         sub_services: sub_services (
           id,
           title,
           price,
-          service_unit
+          service_unit,
+          status
         )
       `
       )
       .eq("id", serviceId) // กรองข้อมูลด้วย serviceId ที่ระบุ
-      .single(); // ดึงข้อมูลเพียงรายการเดียว (เนื่องจากเราใช้ serviceId ซึ่งเป็น Primary Key)
+      .eq("status", "active") // กรองข้อมูลด้วย status ที่ระบุ
+      .single();
+
+    // กรอง sub_services เฉพาะที่ status เป็น active
+    if (data && data.sub_services) {
+      data.sub_services = data.sub_services.filter((s: SubService) => s.status === "active");
+    } // ดึงข้อมูลเพียงรายการเดียว (เนื่องจากเราใช้ serviceId ซึ่งเป็น Primary Key)
 
     if (error) {
       console.error("Error fetching service with details:", error);
@@ -83,7 +83,7 @@ const getAllCategories = async () : Promise<CategoryName[] | null> => {
    }
 };
 
-// 4. Handler Function สำหรับ API Route ของ Next.js
+// 2. Handler Function สำหรับ API Route ของ Next.js
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ServiceWithDetailsAndCategories | { message: string }> // กำหนด Type ของ Response

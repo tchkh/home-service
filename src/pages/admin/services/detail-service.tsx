@@ -34,6 +34,7 @@ function EditServicePage() {
 
         if (result.status === 200 && result.data) {
           const serviceData = result.data.service;
+          console.log("[DEBUG] serviceData: ", serviceData);
           let imageUrl = serviceData.image_url || "";
           // ตรวจสอบและปรับปรุง URL รูปภาพ
           if (imageUrl && !imageUrl.startsWith('http')) {

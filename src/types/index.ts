@@ -79,6 +79,7 @@ export interface SubService {
    title: string;
    price: string;
    service_unit: string;
+   status: string;
 }
 
 export interface ServiceWithDetails {
@@ -101,8 +102,18 @@ export interface ServiceWithDetails {
      title: string;
      price: number;
      service_unit: string;
+     status: string;
    }[];
 }
+
+export interface ServiceWithDetailsPost {
+   id: string;
+   created_at: string;
+   updated_at: string | null;
+   title: string;
+   category_id: number | null;
+   image_url: string;
+ }
 
 export interface ServiceWithDetailsAndCategories {
    service: ServiceWithDetails;

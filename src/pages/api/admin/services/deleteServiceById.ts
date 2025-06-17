@@ -57,13 +57,13 @@ export default async function handler(
   }
 
   try {
-    // Delete sub_services first
+    // Update sub_services first (soft delete)
     const { error: delSubErr } = await supabaseAdmin
       .from("sub_services")
-      .delete()
+      .update({ status: "cancelled" })
       .eq("service_id", serviceId);
     if (delSubErr) {
-      console.error("Error deleting sub_services:", delSubErr);
+      console.error("Error soft deleting sub_services:", delSubErr);
       throw delSubErr;
     }
 
@@ -74,7 +74,7 @@ export default async function handler(
       .eq("id", serviceId)
       .single();
     if (SelectErr || !deletedService) {
-      console.error("Error deleting service:", SelectErr);
+      console.error("Error soft deleting service:", SelectErr);
       throw SelectErr;
     }
     const deletedOrderNum = deletedService.order_num;
@@ -88,13 +88,13 @@ export default async function handler(
     if (!oldErr && oldData?.image_url) {
       await deleteImageFromStorage(oldData.image_url);
     }
-    // Delete service
+    // Update service (soft delete)
     const { error: delSvcErr } = await supabaseAdmin
       .from("services")
-      .delete()
+      .update({ status: "cancelled" })
       .eq("id", serviceId);
     if (delSvcErr) {
-      console.error("Error deleting service:", delSvcErr);
+      console.error("Error soft deleting service:", delSvcErr);
       throw delSvcErr;
     }
 

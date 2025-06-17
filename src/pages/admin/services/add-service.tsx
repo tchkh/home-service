@@ -81,13 +81,6 @@ function AddServicePage() {
             formData
          );
 
-         if (result.status === 200) {
-            console.log(
-               "AddServicePage: Response from backend (postService) :",
-               result.data
-            );
-         }
-
          // ถ้าสร้างสำเร็จ ไปหน้า detail-service
          const newId = result.data.id as string;
          router.push(`/admin/services/detail-service?serviceId=${newId}`);
@@ -110,11 +103,6 @@ function AddServicePage() {
          setValue("image", file, { shouldValidate: true });
          setValue("image", file as File, { shouldValidate: true });
       }
-      console.log(
-         "Selected image (preview URL):",
-         file ? URL.createObjectURL(file) : null
-      );
-      console.log("Selected file:", file);
    };
 
    const handleRemoveImage = () => {

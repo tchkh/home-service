@@ -19,7 +19,8 @@ const fetchServices = async () => {
     ),
     order_num
   `)
-  .order('order_num', { ascending: true });
+  .order('order_num', { ascending: true })
+  .eq("status", "active");
 
 if (error) {
   console.error('Error fetching services:', error);
