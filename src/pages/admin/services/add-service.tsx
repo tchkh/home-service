@@ -148,16 +148,16 @@ function AddServicePage() {
           <h1 className="ml-5 text-heading-2 text-2xl font-semibold">เพิ่มบริการ</h1>
           {/* ปุ่ม */}
           <div className="flex justify-end space-x-3">
-            <Button
+            <button
               type="button"
               onClick={handleCancel}
-              className="btn btn--secondary px-6 py-3"
+              className="btn btn--secondary h-9 px-6 py-3 text-sm"
             >
               ยกเลิก
-            </Button>
-            <Button type="submit" disabled={isSubmitting} className="btn btn--primary px-6 py-3">
+            </button>
+            <button type="submit" disabled={isSubmitting} className="btn btn--primary h-9 px-6 py-3 text-sm">
               สร้าง
-            </Button>
+            </button>
           </div>
         </header>
 
@@ -187,7 +187,7 @@ function AddServicePage() {
             </Label>
             <select
               id="category"
-              className="w-80 h-9 pl-2 border-1 border-[var(--gray-300)] rounded-md text-sm"
+              className="w-80 h-9 pl-2 border-1 border-[var(--gray-300)] rounded-md text-sm cursor-pointer"
               {...register("category", { required: true })}
             >
               <option value="">เลือกหมวดหมู่</option>
@@ -323,25 +323,25 @@ function AddServicePage() {
                       </p>
                     )}
                   </div>
-                  <Button
+                  <button
                     type="button"
-                    className="w-[72px] pt-8 ml-2 btn text-[var(--gray-400)] underline cursor-hover"
+                    className="w-[72px] h-9 pt-8 ml-2 btn text-[var(--gray-400)] text-sm underline cursor-hover"
                     onClick={() => {
                       handleRemoveSubService(idx);
                     }}
                   >
                     ลบรายการ
-                  </Button>
+                  </button>
                 </div>
               )
             )}
-            <Button
+            <button
               type="button"
-              className="btn btn--secondary w-[185px] px-[24px] py-[10px]"
+              className="btn btn--secondary w-[185px] h-9 px-[24px] py-[10px] text-sm"
               onClick={() => append({ title: "", price: 0, service_unit: "" })}
             >
-              เพิ่มรายการ +
-            </Button>
+              เพิ่มรายการ &nbsp; <span className="text-xl"> +</span>
+            </button>
           </section>
         </section>
       </form>

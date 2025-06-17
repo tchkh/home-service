@@ -264,20 +264,20 @@ function EditServicePage() {
           </div>
           {/* ปุ่ม */}
           <div className="flex justify-end space-x-3">
-            <Button
+            <button
               type="button"
               onClick={handleCancel}
-              className="btn btn--secondary px-6 py-3"
+              className="btn btn--secondary h-9 px-6 py-3 text-sm"
             >
               ยกเลิก
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
               disabled={isSubmitting}
-              className="btn btn--primary px-6 py-3"
+              className="btn btn--primary h-9 px-6 py-3 text-sm"
             >
               บันทึก
-            </Button>
+            </button>
           </div>
         </header>
 
@@ -314,7 +314,7 @@ function EditServicePage() {
             </Label>
             <select
               id="category"
-              className="w-80 h-9 pl-2 border-1 border-[var(--gray-300)] rounded-md text-sm"
+              className="w-80 h-9 pl-2 border-1 border-[var(--gray-300)] rounded-md text-sm cursor-pointer"
               {...register("category", { required: true })}
               defaultValue={serviceData?.category}
             >
@@ -349,14 +349,13 @@ function EditServicePage() {
                     height={300}
                     className="rounded object-contain "
                   />
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
                     className="absolute bottom-[-36px] right-[-10px] btn btn--ghost text-xs text-[var(--blue-600)] cursor-hover"
                     onClick={handleRemoveImage}
                   >
                     <Trash className="h-4 w-4" /> ลบรูปภาพ
-                  </Button>
+                  </button>
                 </div>
               ) : (
                 <div className="flex flex-col items-center text-center text-xs text-[var(--gray-700)]">
@@ -471,26 +470,23 @@ function EditServicePage() {
                       </p>
                     )}
                   </div>
-                  <Button
-                    variant="default"
+                  <button
                     type="button"
-                    className="w-[72px] pt-8 ml-2 btn btn--ghost text-[var(--gray-400)] cursor-pointer"
-                    onClick={() => {
-                      handleRemoveSubService(idx);
-                    }}
+                    className="w-[72px] h-9 pt-8 ml-2 btn btn--ghost text-[var(--gray-400)] cursor-pointer text-sm"
+                    onClick={() => handleRemoveSubService(idx)}
                   >
                     ลบรายการ
-                  </Button>
+                  </button>
                 </div>
               )
             )}
-            <Button
+            <button
               type="button"
-              className="btn btn--secondary w-[185px] px-[24px] py-[10px]"
+              className="btn btn--secondary w-[185px] h-9 px-[24px] py-[10px] text-sm"
               onClick={() => append({ title: "", price: 0, service_unit: "" })}
             >
-              เพิ่มรายการ +
-            </Button>
+              เพิ่มรายการ &nbsp; <span className="text-xl">+</span>
+            </button>
           </section>
           {/* เส้นใต้ */}
           <div className="mt-4 border-t-2 border-[var(--gray-200)]"></div>
