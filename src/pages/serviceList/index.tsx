@@ -50,8 +50,8 @@ const prompt = Prompt({
 
 export default function Home() {
    // Reset booking data when user navigates to service list page
-   useResetBookingOnNavigation()
-   
+   useResetBookingOnNavigation();
+
    interface ServiceCardProps {
       id: number;
       category_name: string;
@@ -387,7 +387,7 @@ export default function Home() {
                         />
                      </label>
                      {showBox && dataQuery.search && (
-                        <ul className="absolute left-[5px] mt-1 rounded  bg-white w-[95%] md:max-w-[350px] shadow-[0px_1px_10px_1px_rgba(0,0,0,0.25)]">
+                        <ul className="absolute z-1 left-[5px] mt-1 rounded  bg-white w-[95%] md:max-w-[350px] shadow-[0px_1px_10px_1px_rgba(0,0,0,0.25)]">
                            {autocompleteData?.map((dataAuto) => (
                               <li
                                  key={dataAuto}
